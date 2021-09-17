@@ -100,6 +100,13 @@ function signalExpression(
         if (t.isArrowFunctionExpression(p.parent) && p.parent.params.includes(p.node)) {
           return;
         }
+        // function (x)
+        if (t.isFunctionExpression(p.parent) && p.parent.params.includes(p.node)) {
+          return;
+        }
+        if (t.isFunctionDeclaration(p.parent) && p.parent.params.includes(p.node)) {
+          return;
+        }
         // x:
         if (t.isLabeledStatement(p.parent) && p.parent.label === p.node) {
           return;
@@ -110,6 +117,28 @@ function signalExpression(
         }
         // function x() {}
         if (t.isFunctionDeclaration(p.parent) && p.parent.id === p.node) {
+          return;
+        }
+        // (y = x) => {}
+        // function z(y = x) {}
+        if (
+          t.isAssignmentPattern(p.parent)
+          && p.parent.left === p.node
+          && (
+            (
+              t.isArrowFunctionExpression(p.parentPath.parent)
+              && p.parentPath.parent.params.includes(p.parent)
+            )
+            || (
+              t.isFunctionDeclaration(p.parentPath.parent)
+              && p.parentPath.parent.params.includes(p.parent)
+            )
+            || (
+              t.isFunctionExpression(p.parentPath.parent)
+              && p.parentPath.parent.params.includes(p.parent)
+            )
+          )
+        ) {
           return;
         }
         if (
@@ -237,6 +266,13 @@ function memoExpression(
         if (t.isArrowFunctionExpression(p.parent) && p.parent.params.includes(p.node)) {
           return;
         }
+        // function (x)
+        if (t.isFunctionExpression(p.parent) && p.parent.params.includes(p.node)) {
+          return;
+        }
+        if (t.isFunctionDeclaration(p.parent) && p.parent.params.includes(p.node)) {
+          return;
+        }
         // x:
         if (t.isLabeledStatement(p.parent) && p.parent.label === p.node) {
           return;
@@ -247,6 +283,28 @@ function memoExpression(
         }
         // function x() {}
         if (t.isFunctionDeclaration(p.parent) && p.parent.id === p.node) {
+          return;
+        }
+        // (y = x) => {}
+        // function z(y = x) {}
+        if (
+          t.isAssignmentPattern(p.parent)
+          && p.parent.left === p.node
+          && (
+            (
+              t.isArrowFunctionExpression(p.parentPath.parent)
+              && p.parentPath.parent.params.includes(p.parent)
+            )
+            || (
+              t.isFunctionDeclaration(p.parentPath.parent)
+              && p.parentPath.parent.params.includes(p.parent)
+            )
+            || (
+              t.isFunctionExpression(p.parentPath.parent)
+              && p.parentPath.parent.params.includes(p.parent)
+            )
+          )
+        ) {
           return;
         }
         if (
