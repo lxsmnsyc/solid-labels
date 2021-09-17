@@ -3,7 +3,7 @@ const plugin = require('../dist/cjs');
 
 const code = `
 function Example() {
-  signal: var x;
+  signal: var x, y = 'Hello', z;
 }
 `;
 babel.transformAsync(code, {

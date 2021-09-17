@@ -17,39 +17,12 @@ function getHookIdentifier(
   return newID;
 }
 
-function signalExpression(
+function signalSingleExpression(
   hooks: Map<string, t.Identifier>,
   path: NodePath<t.LabeledStatement>,
-  body: t.Statement,
+  signalIdentifier: t.Identifier,
+  stateIdentifier: t.Expression,
 ): void {
-  let signalIdentifier: t.Identifier;
-  let stateIdentifier: t.Expression;
-  if (t.isExpressionStatement(body)) {
-    if (!t.isAssignmentExpression(body.expression)) {
-      throw new Error('Expected assignment expression');
-    }
-    if (body.expression.operator !== '=') {
-      throw new Error('Invalid assignment expression operator');
-    }
-    const leftExpr = body.expression.left;
-    const rightExpr = body.expression.right;
-    if (!t.isIdentifier(leftExpr)) {
-      throw new Error('Expected identifier');
-    }
-    signalIdentifier = leftExpr;
-    stateIdentifier = rightExpr;
-  } else if (t.isVariableDeclaration(body)) {
-    const declarator = body.declarations[0];
-    const leftExpr = declarator.id;
-    const rightExpr = declarator.init;
-    if (!t.isIdentifier(leftExpr)) {
-      throw new Error('Expected identifier');
-    }
-    signalIdentifier = leftExpr;
-    stateIdentifier = rightExpr ?? t.identifier('undefined');
-  } else {
-    throw new Error('Expected assignment expression or variable declaration');
-  }
   const readIdentifier = path.scope.generateUidIdentifier(signalIdentifier.name);
   const writeIdentifier = path.scope.generateUidIdentifier(`set${signalIdentifier.name}`);
   const expr = t.variableDeclaration(
@@ -74,7 +47,7 @@ function signalExpression(
     )],
   );
 
-  path.replaceWith(expr);
+  path.insertAfter(expr);
 
   const parent = path.getFunctionParent();
   if (parent) {
@@ -204,13 +177,11 @@ function signalExpression(
   }
 }
 
-function memoExpression(
+function signalExpression(
   hooks: Map<string, t.Identifier>,
   path: NodePath<t.LabeledStatement>,
   body: t.Statement,
 ): void {
-  let memoIdentifier: t.Identifier;
-  let stateIdentifier: t.Expression;
   if (t.isExpressionStatement(body)) {
     if (!t.isAssignmentExpression(body.expression)) {
       throw new Error('Expected assignment expression');
@@ -223,20 +194,30 @@ function memoExpression(
     if (!t.isIdentifier(leftExpr)) {
       throw new Error('Expected identifier');
     }
-    memoIdentifier = leftExpr;
-    stateIdentifier = rightExpr;
+    signalSingleExpression(hooks, path, leftExpr, rightExpr);
+    path.remove();
   } else if (t.isVariableDeclaration(body)) {
-    const declarator = body.declarations[0];
-    const leftExpr = declarator.id;
-    const rightExpr = declarator.init;
-    if (!t.isIdentifier(leftExpr)) {
-      throw new Error('Expected identifier');
+    for (let i = body.declarations.length - 1; i >= 0; i -= 1) {
+      const declarator = body.declarations[i];
+      const leftExpr = declarator.id;
+      const rightExpr = declarator.init;
+      if (!t.isIdentifier(leftExpr)) {
+        throw new Error('Expected identifier');
+      }
+      signalSingleExpression(hooks, path, leftExpr, rightExpr ?? t.identifier('undefined'));
     }
-    memoIdentifier = leftExpr;
-    stateIdentifier = rightExpr ?? t.identifier('undefined');
+    path.remove();
   } else {
     throw new Error('Expected assignment expression or variable declaration');
   }
+}
+
+function memoSingleExpression(
+  hooks: Map<string, t.Identifier>,
+  path: NodePath<t.LabeledStatement>,
+  memoIdentifier: t.Identifier,
+  stateIdentifier: t.Expression,
+): void {
   const readIdentifier = path.scope.generateUidIdentifier(memoIdentifier.name);
   const expr = t.variableDeclaration(
     'const',
@@ -260,7 +241,7 @@ function memoExpression(
     )],
   );
 
-  path.replaceWith(expr);
+  path.insertAfter(expr);
 
   const parent = path.getFunctionParent();
   if (parent) {
@@ -361,6 +342,41 @@ function memoExpression(
         }
       },
     });
+  }
+}
+
+function memoExpression(
+  hooks: Map<string, t.Identifier>,
+  path: NodePath<t.LabeledStatement>,
+  body: t.Statement,
+): void {
+  if (t.isExpressionStatement(body)) {
+    if (!t.isAssignmentExpression(body.expression)) {
+      throw new Error('Expected assignment expression');
+    }
+    if (body.expression.operator !== '=') {
+      throw new Error('Invalid assignment expression operator');
+    }
+    const leftExpr = body.expression.left;
+    const rightExpr = body.expression.right;
+    if (!t.isIdentifier(leftExpr)) {
+      throw new Error('Expected identifier');
+    }
+    memoSingleExpression(hooks, path, leftExpr, rightExpr);
+    path.remove();
+  } else if (t.isVariableDeclaration(body)) {
+    for (let i = body.declarations.length - 1; i >= 0; i -= 1) {
+      const declarator = body.declarations[i];
+      const leftExpr = declarator.id;
+      const rightExpr = declarator.init;
+      if (!t.isIdentifier(leftExpr)) {
+        throw new Error('Expected identifier');
+      }
+      memoSingleExpression(hooks, path, leftExpr, rightExpr ?? t.identifier('undefined'));
+    }
+    path.remove();
+  } else {
+    throw new Error('Expected assignment expression or variable declaration');
   }
 }
 
