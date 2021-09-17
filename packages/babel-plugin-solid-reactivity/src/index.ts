@@ -57,10 +57,87 @@ function signalExpression(
   const parent = path.getFunctionParent();
   if (parent) {
     parent.traverse({
-      Identifier(p) {
+      ObjectProperty(p) {
         if (
           !p.scope.hasOwnBinding(signalIdentifier.name)
-          && p.node.name === signalIdentifier.name
+          && p.node.shorthand
+          && t.isIdentifier(p.node.key)
+          && p.node.key.name === signalIdentifier.name
+          && t.isIdentifier(p.node.value)
+          && p.node.value.name === signalIdentifier.name
+        ) {
+          p.insertAfter(
+            t.objectMethod(
+              'get',
+              signalIdentifier,
+              [],
+              t.blockStatement([
+                t.returnStatement(
+                  t.callExpression(
+                    readIdentifier,
+                    [],
+                  ),
+                ),
+              ]),
+            ),
+          );
+          const param = p.scope.generateUidIdentifier('value');
+          p.insertAfter(
+            t.objectMethod(
+              'set',
+              signalIdentifier,
+              [param],
+              t.blockStatement([
+                t.expressionStatement(
+                  t.callExpression(
+                    writeIdentifier,
+                    [
+                      t.arrowFunctionExpression(
+                        [],
+                        param,
+                      ),
+                    ],
+                  ),
+                ),
+              ]),
+            ),
+          );
+          p.remove();
+        }
+      },
+      Identifier(p) {
+        if (p.node.name !== signalIdentifier.name) {
+          return;
+        }
+        // { x }
+        if (t.isObjectMethod(p.parent) && p.parent.key === p.node) {
+          return;
+        }
+        if (t.isObjectProperty(p.parent) && p.parent.key === p.node) {
+          return;
+        }
+        // const x
+        if (t.isVariableDeclarator(p.parent) && p.parent.id === p.node) {
+          return;
+        }
+        // const [x]
+        if (t.isArrayPattern(p.parent) && p.parent.elements.includes(p.node)) {
+          return;
+        }
+        // (x) => {}
+        if (t.isArrowFunctionExpression(p.parent) && p.parent.params.includes(p.node)) {
+          return;
+        }
+        // x:
+        if (t.isLabeledStatement(p.parent) && p.parent.label === p.node) {
+          return;
+        }
+        // obj.x
+        if (t.isMemberExpression(p.parent) && p.parent.property === p.node) {
+          return;
+        }
+        if (
+          !p.scope.hasOwnBinding(signalIdentifier.name)
         ) {
           p.replaceWith(
             t.callExpression(
@@ -141,10 +218,66 @@ function memoExpression(
   const parent = path.getFunctionParent();
   if (parent) {
     parent.traverse({
-      Identifier(p) {
+      ObjectProperty(p) {
         if (
           !p.scope.hasOwnBinding(memoIdentifier.name)
-          && p.node.name === memoIdentifier.name
+          && p.node.shorthand
+          && t.isIdentifier(p.node.key)
+          && p.node.key.name === memoIdentifier.name
+          && t.isIdentifier(p.node.value)
+          && p.node.value.name === memoIdentifier.name
+        ) {
+          p.insertAfter(
+            t.objectMethod(
+              'get',
+              memoIdentifier,
+              [],
+              t.blockStatement([
+                t.returnStatement(
+                  t.callExpression(
+                    readIdentifier,
+                    [],
+                  ),
+                ),
+              ]),
+            ),
+          );
+          p.remove();
+        }
+      },
+      Identifier(p) {
+        if (p.node.name !== memoIdentifier.name) {
+          return;
+        }
+        // { x }
+        if (t.isObjectMethod(p.parent) && p.parent.key === p.node) {
+          return;
+        }
+        if (t.isObjectProperty(p.parent) && p.parent.key === p.node) {
+          return;
+        }
+        // const x
+        if (t.isVariableDeclarator(p.parent) && p.parent.id === p.node) {
+          return;
+        }
+        // const [x]
+        if (t.isArrayPattern(p.parent) && p.parent.elements.includes(p.node)) {
+          return;
+        }
+        // (x) => {}
+        if (t.isArrowFunctionExpression(p.parent) && p.parent.params.includes(p.node)) {
+          return;
+        }
+        // x:
+        if (t.isLabeledStatement(p.parent) && p.parent.label === p.node) {
+          return;
+        }
+        // obj.x
+        if (t.isMemberExpression(p.parent) && p.parent.property === p.node) {
+          return;
+        }
+        if (
+          !p.scope.hasOwnBinding(memoIdentifier.name)
         ) {
           p.replaceWith(
             t.callExpression(

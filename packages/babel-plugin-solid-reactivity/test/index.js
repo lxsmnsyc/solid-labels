@@ -2,19 +2,10 @@ const babel = require('@babel/core');
 const plugin = require('../dist/cjs');
 
 const code = `
-function Component() {
+function Example() {
   signal: x = 0;
-  memo: y = x + 10;
-  effect: {
-    console.log('X-Value', y);
-    console.log('Y-Value', y);
-  }
-  function increment() {
-    batch: {
-      x += 1;
-      x += 1;
-    }
-  }
+  
+  return { x };
 }
 `;
 babel.transformAsync(code, {
