@@ -18,13 +18,13 @@
   "keywords": [
     "pridepack"
   ],
-  "name": "solid.macro",
+  "name": "babel-plugin-solid-reactivity",
   "devDependencies": {
-    "@types/babel-plugin-macros": "^2.8.5",
+    "@babel/core": "^7.15.5",
+    "@types/babel__core": "^7.1.16",
     "@types/babel__traverse": "^7.14.2",
     "@types/jest": "^27.0.1",
     "@types/node": "^16.9.1",
-    "babel-plugin-macros": "^3.1.0",
     "eslint": "^7.32.0",
     "eslint-config-lxsmnsyc": "^0.2.3",
     "pridepack": "^0.12.2",
@@ -32,7 +32,8 @@
     "typescript": "^4.4.3"
   },
   "peerDependencies": {
-    "babel-plugin-macros": "^3.1.0"
+    "@babel/core": "^7.15.5",
+    "@types/babel__core": "^7.1.16"
   },
   "scripts": {
     "prepublish": "pridepack clean && pridepack build",
