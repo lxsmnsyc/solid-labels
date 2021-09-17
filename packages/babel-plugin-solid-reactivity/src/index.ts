@@ -158,22 +158,36 @@ function signalSingleExpression(
           t.isIdentifier(identifier)
           && identifier.name === signalIdentifier.name
         ) {
-          const param = p.scope.generateUidIdentifier('current');
-          p.replaceWith(
-            t.callExpression(
-              writeIdentifier,
-              [
-                t.arrowFunctionExpression(
-                  [param],
-                  t.assignmentExpression(
-                    p.node.operator,
-                    param,
+          if (p.node.operator === '=') {
+            p.replaceWith(
+              t.callExpression(
+                writeIdentifier,
+                [
+                  t.arrowFunctionExpression(
+                    [],
                     expression,
                   ),
-                ),
-              ],
-            ),
-          );
+                ],
+              ),
+            );
+          } else {
+            const param = p.scope.generateUidIdentifier('current');
+            p.replaceWith(
+              t.callExpression(
+                writeIdentifier,
+                [
+                  t.arrowFunctionExpression(
+                    [param],
+                    t.assignmentExpression(
+                      p.node.operator,
+                      param,
+                      expression,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
         }
       },
     });
