@@ -367,7 +367,7 @@ function computedExpression(
   path: NodePath<t.LabeledStatement>,
   body: t.Statement,
 ): void {
-  let callback: t.ArrowFunctionExpression;
+  let callback: t.Expression;
   if (t.isBlockStatement(body)) {
     callback = t.arrowFunctionExpression(
       [],
@@ -393,7 +393,7 @@ function renderEffectExpression(
   path: NodePath<t.LabeledStatement>,
   body: t.Statement,
 ): void {
-  let callback: t.ArrowFunctionExpression;
+  let callback: t.Expression;
   if (t.isBlockStatement(body)) {
     callback = t.arrowFunctionExpression(
       [],
@@ -419,7 +419,7 @@ function mountExpression(
   path: NodePath<t.LabeledStatement>,
   body: t.Statement,
 ): void {
-  let callback: t.ArrowFunctionExpression;
+  let callback: t.Expression;
   if (t.isBlockStatement(body)) {
     callback = t.arrowFunctionExpression(
       [],
@@ -445,7 +445,7 @@ function cleanupExpression(
   path: NodePath<t.LabeledStatement>,
   body: t.Statement,
 ): void {
-  let callback: t.ArrowFunctionExpression;
+  let callback: t.Expression;
   if (t.isBlockStatement(body)) {
     callback = t.arrowFunctionExpression(
       [],
@@ -471,7 +471,7 @@ function errorExpression(
   path: NodePath<t.LabeledStatement>,
   body: t.Statement,
 ): void {
-  let callback: t.ArrowFunctionExpression;
+  let callback: t.Expression;
   if (t.isBlockStatement(body)) {
     callback = t.arrowFunctionExpression(
       [],
@@ -497,7 +497,7 @@ function rootExpression(
   path: NodePath<t.LabeledStatement>,
   body: t.Statement,
 ): void {
-  let callback: t.ArrowFunctionExpression;
+  let callback: t.Expression;
   if (t.isBlockStatement(body)) {
     callback = t.arrowFunctionExpression(
       [],
@@ -523,7 +523,7 @@ function untrackExpression(
   path: NodePath<t.LabeledStatement>,
   body: t.Statement,
 ): void {
-  let callback: t.ArrowFunctionExpression;
+  let callback: t.Expression;
   if (t.isBlockStatement(body)) {
     callback = t.arrowFunctionExpression(
       [],
@@ -549,7 +549,7 @@ function batchExpression(
   path: NodePath<t.LabeledStatement>,
   body: t.Statement,
 ): void {
-  let callback: t.ArrowFunctionExpression;
+  let callback: t.Expression;
   if (t.isBlockStatement(body)) {
     callback = t.arrowFunctionExpression(
       [],
