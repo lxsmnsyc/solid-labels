@@ -49,7 +49,7 @@ function signalSingleExpression(
 
   path.insertAfter(expr);
 
-  const parent = path.getFunctionParent();
+  const parent = path.findParent((p) => t.isBlockStatement(p.node));
   if (parent) {
     parent.traverse({
       ObjectProperty(p) {
@@ -243,7 +243,7 @@ function memoSingleExpression(
 
   path.insertAfter(expr);
 
-  const parent = path.getFunctionParent();
+  const parent = path.findParent((p) => t.isBlockStatement(p.node));
   if (parent) {
     parent.traverse({
       ObjectProperty(p) {
