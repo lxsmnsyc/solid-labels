@@ -4,8 +4,6 @@ const plugin = require('../dist/cjs');
 const code = `
 function Example() {
   signal: x = 0;
-  
-  return { x };
 }
 `;
 babel.transformAsync(code, {

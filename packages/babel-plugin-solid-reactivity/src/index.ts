@@ -66,43 +66,15 @@ function signalExpression(
           && t.isIdentifier(p.node.value)
           && p.node.value.name === signalIdentifier.name
         ) {
-          p.insertAfter(
-            t.objectMethod(
-              'get',
+          p.replaceWith(
+            t.objectProperty(
               signalIdentifier,
-              [],
-              t.blockStatement([
-                t.returnStatement(
-                  t.callExpression(
-                    readIdentifier,
-                    [],
-                  ),
-                ),
-              ]),
+              t.callExpression(
+                readIdentifier,
+                [],
+              ),
             ),
           );
-          const param = p.scope.generateUidIdentifier('value');
-          p.insertAfter(
-            t.objectMethod(
-              'set',
-              signalIdentifier,
-              [param],
-              t.blockStatement([
-                t.expressionStatement(
-                  t.callExpression(
-                    writeIdentifier,
-                    [
-                      t.arrowFunctionExpression(
-                        [],
-                        param,
-                      ),
-                    ],
-                  ),
-                ),
-              ]),
-            ),
-          );
-          p.remove();
         }
       },
       Identifier(p) {
@@ -227,22 +199,15 @@ function memoExpression(
           && t.isIdentifier(p.node.value)
           && p.node.value.name === memoIdentifier.name
         ) {
-          p.insertAfter(
-            t.objectMethod(
-              'get',
-              memoIdentifier,
-              [],
-              t.blockStatement([
-                t.returnStatement(
-                  t.callExpression(
-                    readIdentifier,
-                    [],
-                  ),
-                ),
-              ]),
+          p.replaceWith(
+            t.objectProperty(
+              signalIdentifier,
+              t.callExpression(
+                readIdentifier,
+                [],
+              ),
             ),
           );
-          p.remove();
         }
       },
       Identifier(p) {
