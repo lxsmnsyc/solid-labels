@@ -108,6 +108,10 @@ function signalExpression(
         if (t.isMemberExpression(p.parent) && p.parent.property === p.node) {
           return;
         }
+        // function x() {}
+        if (t.isFunctionDeclaration(p.parent) && p.parent.id === p.node) {
+          return;
+        }
         if (
           !p.scope.hasOwnBinding(signalIdentifier.name)
         ) {
@@ -239,6 +243,10 @@ function memoExpression(
         }
         // obj.x
         if (t.isMemberExpression(p.parent) && p.parent.property === p.node) {
+          return;
+        }
+        // function x() {}
+        if (t.isFunctionDeclaration(p.parent) && p.parent.id === p.node) {
           return;
         }
         if (
