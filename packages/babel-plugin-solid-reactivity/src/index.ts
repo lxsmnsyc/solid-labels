@@ -49,13 +49,15 @@ function signalSingleExpression(
 
   path.insertAfter(expr);
 
-  const parent = path.findParent((p) => t.isBlockStatement(p.node));
+  const parent = path.scope.path;
   if (parent) {
     parent.traverse({
       ObjectProperty(p) {
+        if (p.scope !== path.scope && p.scope.hasOwnBinding(signalIdentifier.name)) {
+          return;
+        }
         if (
-          !p.scope.hasOwnBinding(signalIdentifier.name)
-          && p.node.shorthand
+          p.node.shorthand
           && t.isIdentifier(p.node.key)
           && p.node.key.name === signalIdentifier.name
           && t.isIdentifier(p.node.value)
@@ -74,6 +76,9 @@ function signalSingleExpression(
       },
       Identifier(p) {
         if (p.node.name !== signalIdentifier.name) {
+          return;
+        }
+        if (p.scope !== path.scope && p.scope.hasOwnBinding(signalIdentifier.name)) {
           return;
         }
         // { x }
@@ -136,23 +141,21 @@ function signalSingleExpression(
         ) {
           return;
         }
-        if (
-          !p.scope.hasOwnBinding(signalIdentifier.name)
-        ) {
-          p.replaceWith(
-            t.callExpression(
-              readIdentifier,
-              [],
-            ),
-          );
-        }
+        p.replaceWith(
+          t.callExpression(
+            readIdentifier,
+            [],
+          ),
+        );
       },
       AssignmentExpression(p) {
+        if (p.scope !== path.scope && p.scope.hasOwnBinding(signalIdentifier.name)) {
+          return;
+        }
         const identifier = p.node.left;
         const expression = p.node.right;
         if (
           t.isIdentifier(identifier)
-          && !p.scope.hasOwnBinding(signalIdentifier.name)
           && identifier.name === signalIdentifier.name
         ) {
           const param = p.scope.generateUidIdentifier('current');
@@ -243,13 +246,15 @@ function memoSingleExpression(
 
   path.insertAfter(expr);
 
-  const parent = path.findParent((p) => t.isBlockStatement(p.node));
+  const parent = path.scope.path;
   if (parent) {
     parent.traverse({
       ObjectProperty(p) {
+        if (p.scope !== path.scope && p.scope.hasOwnBinding(memoIdentifier.name)) {
+          return;
+        }
         if (
-          !p.scope.hasOwnBinding(memoIdentifier.name)
-          && p.node.shorthand
+          p.node.shorthand
           && t.isIdentifier(p.node.key)
           && p.node.key.name === memoIdentifier.name
           && t.isIdentifier(p.node.value)
@@ -268,6 +273,9 @@ function memoSingleExpression(
       },
       Identifier(p) {
         if (p.node.name !== memoIdentifier.name) {
+          return;
+        }
+        if (p.scope !== path.scope && p.scope.hasOwnBinding(memoIdentifier.name)) {
           return;
         }
         // { x }
@@ -330,16 +338,12 @@ function memoSingleExpression(
         ) {
           return;
         }
-        if (
-          !p.scope.hasOwnBinding(memoIdentifier.name)
-        ) {
-          p.replaceWith(
-            t.callExpression(
-              readIdentifier,
-              [],
-            ),
-          );
-        }
+        p.replaceWith(
+          t.callExpression(
+            readIdentifier,
+            [],
+          ),
+        );
       },
     });
   }
