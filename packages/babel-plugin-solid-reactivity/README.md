@@ -10,16 +10,6 @@
 yarn add babel-plugin-solid-labels
 ```
 
-## Usage
-
-`.babelrc`
-
-```json
-{
-  "plugins": ["babel-plugin-solid-labels"]
-}
-```
-
 ## Labels
 
 ### `signal`

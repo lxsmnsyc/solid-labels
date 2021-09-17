@@ -1,8 +1,24 @@
 import { PluginObj } from '@babel/core';
+import { addNamed } from '@babel/helper-module-imports';
 import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 
+function getHookIdentifier(
+  hooks: Map<string, t.Identifier>,
+  path: NodePath,
+  name: string,
+): t.Identifier {
+  const current = hooks.get(name);
+  if (current) {
+    return current;
+  }
+  const newID = addNamed(path, name, 'solid-js');
+  hooks.set(name, newID);
+  return newID;
+}
+
 function signalExpression(
+  hooks: Map<string, t.Identifier>,
   path: NodePath<t.LabeledStatement>,
   body: t.Statement,
 ): void {
@@ -30,7 +46,7 @@ function signalExpression(
         writeIdentifier,
       ]),
       t.callExpression(
-        t.identifier('createSignal'),
+        getHookIdentifier(hooks, path, 'createSignal'),
         [stateIdentifier],
       ),
     )],
@@ -43,7 +59,8 @@ function signalExpression(
     parent.traverse({
       Identifier(p) {
         if (
-          p.node.name === signalIdentifier.name
+          !p.scope.hasOwnBinding(signalIdentifier.name)
+          && p.node.name === signalIdentifier.name
         ) {
           p.replaceWith(
             t.callExpression(
@@ -58,7 +75,7 @@ function signalExpression(
         const expression = p.node.right;
         if (
           t.isIdentifier(identifier)
-          // && p.scope.hasBinding(signalIdentifier.name)
+          && !p.scope.hasOwnBinding(signalIdentifier.name)
           && identifier.name === signalIdentifier.name
         ) {
           const param = p.scope.generateUidIdentifier('current');
@@ -84,6 +101,7 @@ function signalExpression(
 }
 
 function memoExpression(
+  hooks: Map<string, t.Identifier>,
   path: NodePath<t.LabeledStatement>,
   body: t.Statement,
 ): void {
@@ -107,7 +125,7 @@ function memoExpression(
     [t.variableDeclarator(
       readIdentifier,
       t.callExpression(
-        t.identifier('createMemo'),
+        getHookIdentifier(hooks, path, 'createMemo'),
         [
           t.arrowFunctionExpression(
             [],
@@ -124,7 +142,10 @@ function memoExpression(
   if (parent) {
     parent.traverse({
       Identifier(p) {
-        if (p.node.name === memoIdentifier.name) {
+        if (
+          !p.scope.hasOwnBinding(memoIdentifier.name)
+          && p.node.name === memoIdentifier.name
+        ) {
           p.replaceWith(
             t.callExpression(
               readIdentifier,
@@ -138,6 +159,7 @@ function memoExpression(
 }
 
 function effectExpression(
+  hooks: Map<string, t.Identifier>,
   path: NodePath<t.LabeledStatement>,
   body: t.Statement,
 ): void {
@@ -154,7 +176,7 @@ function effectExpression(
   }
   path.replaceWith(
     t.callExpression(
-      t.identifier('createEffect'),
+      getHookIdentifier(hooks, path, 'createEffect'),
       [
         callback,
       ],
@@ -163,6 +185,7 @@ function effectExpression(
 }
 
 function computedExpression(
+  hooks: Map<string, t.Identifier>,
   path: NodePath<t.LabeledStatement>,
   body: t.Statement,
 ): void {
@@ -179,7 +202,7 @@ function computedExpression(
   }
   path.replaceWith(
     t.callExpression(
-      t.identifier('createComputed'),
+      getHookIdentifier(hooks, path, 'createComputed'),
       [
         callback,
       ],
@@ -188,6 +211,7 @@ function computedExpression(
 }
 
 function renderEffectExpression(
+  hooks: Map<string, t.Identifier>,
   path: NodePath<t.LabeledStatement>,
   body: t.Statement,
 ): void {
@@ -204,7 +228,7 @@ function renderEffectExpression(
   }
   path.replaceWith(
     t.callExpression(
-      t.identifier('createRenderEffect'),
+      getHookIdentifier(hooks, path, 'createRenderEffect'),
       [
         callback,
       ],
@@ -213,46 +237,7 @@ function renderEffectExpression(
 }
 
 function mountExpression(
-  path: NodePath<t.LabeledStatement>,
-  body: t.Statement,
-): void {
-  if (!t.isBlockStatement(body)) {
-    throw new Error('Expected expression statement');
-  }
-  path.replaceWith(
-    t.callExpression(
-      t.identifier('onMount'),
-      [
-        t.arrowFunctionExpression(
-          [],
-          body,
-        ),
-      ],
-    ),
-  );
-}
-
-function cleanupExpression(
-  path: NodePath<t.LabeledStatement>,
-  body: t.Statement,
-): void {
-  if (!t.isBlockStatement(body)) {
-    throw new Error('Expected expression statement');
-  }
-  path.replaceWith(
-    t.callExpression(
-      t.identifier('onCleanup'),
-      [
-        t.arrowFunctionExpression(
-          [],
-          body,
-        ),
-      ],
-    ),
-  );
-}
-
-function errorExpression(
+  hooks: Map<string, t.Identifier>,
   path: NodePath<t.LabeledStatement>,
   body: t.Statement,
 ): void {
@@ -269,7 +254,59 @@ function errorExpression(
   }
   path.replaceWith(
     t.callExpression(
-      t.identifier('onError'),
+      getHookIdentifier(hooks, path, 'onMount'),
+      [
+        callback,
+      ],
+    ),
+  );
+}
+
+function cleanupExpression(
+  hooks: Map<string, t.Identifier>,
+  path: NodePath<t.LabeledStatement>,
+  body: t.Statement,
+): void {
+  let callback: t.ArrowFunctionExpression;
+  if (t.isBlockStatement(body)) {
+    callback = t.arrowFunctionExpression(
+      [],
+      body,
+    );
+  } else if (t.isExpressionStatement(body) && t.isArrowFunctionExpression(body.expression)) {
+    callback = body.expression;
+  } else {
+    throw new Error('Expected arrow function or block expression');
+  }
+  path.replaceWith(
+    t.callExpression(
+      getHookIdentifier(hooks, path, 'onCleanup'),
+      [
+        callback,
+      ],
+    ),
+  );
+}
+
+function errorExpression(
+  hooks: Map<string, t.Identifier>,
+  path: NodePath<t.LabeledStatement>,
+  body: t.Statement,
+): void {
+  let callback: t.ArrowFunctionExpression;
+  if (t.isBlockStatement(body)) {
+    callback = t.arrowFunctionExpression(
+      [],
+      body,
+    );
+  } else if (t.isExpressionStatement(body) && t.isArrowFunctionExpression(body.expression)) {
+    callback = body.expression;
+  } else {
+    throw new Error('Expected arrow function or block expression');
+  }
+  path.replaceWith(
+    t.callExpression(
+      getHookIdentifier(hooks, path, 'onError'),
       [
         callback,
       ],
@@ -278,6 +315,7 @@ function errorExpression(
 }
 
 function rootExpression(
+  hooks: Map<string, t.Identifier>,
   path: NodePath<t.LabeledStatement>,
   body: t.Statement,
 ): void {
@@ -294,7 +332,7 @@ function rootExpression(
   }
   path.replaceWith(
     t.callExpression(
-      t.identifier('createRoot'),
+      getHookIdentifier(hooks, path, 'createRoot'),
       [
         callback,
       ],
@@ -303,84 +341,103 @@ function rootExpression(
 }
 
 function untrackExpression(
+  hooks: Map<string, t.Identifier>,
   path: NodePath<t.LabeledStatement>,
   body: t.Statement,
 ): void {
-  if (!t.isBlockStatement(body)) {
-    throw new Error('Expected expression statement');
+  let callback: t.ArrowFunctionExpression;
+  if (t.isBlockStatement(body)) {
+    callback = t.arrowFunctionExpression(
+      [],
+      body,
+    );
+  } else if (t.isExpressionStatement(body) && t.isArrowFunctionExpression(body.expression)) {
+    callback = body.expression;
+  } else {
+    throw new Error('Expected arrow function or block expression');
   }
   path.replaceWith(
     t.callExpression(
-      t.identifier('untrack'),
+      getHookIdentifier(hooks, path, 'untrack'),
       [
-        t.arrowFunctionExpression(
-          [],
-          body,
-        ),
+        callback,
       ],
     ),
   );
 }
 
 function batchExpression(
+  hooks: Map<string, t.Identifier>,
   path: NodePath<t.LabeledStatement>,
   body: t.Statement,
 ): void {
-  if (!t.isBlockStatement(body)) {
-    throw new Error('Expected expression statement');
+  let callback: t.ArrowFunctionExpression;
+  if (t.isBlockStatement(body)) {
+    callback = t.arrowFunctionExpression(
+      [],
+      body,
+    );
+  } else if (t.isExpressionStatement(body) && t.isArrowFunctionExpression(body.expression)) {
+    callback = body.expression;
+  } else {
+    throw new Error('Expected arrow function or block expression');
   }
   path.replaceWith(
     t.callExpression(
-      t.identifier('batch'),
+      getHookIdentifier(hooks, path, 'batch'),
       [
-        t.arrowFunctionExpression(
-          [],
-          body,
-        ),
+        callback,
       ],
     ),
   );
 }
 
-export default function solidReactivityPlugin(): PluginObj {
+interface State {
+  hooks: Map<string, t.Identifier>;
+}
+
+export default function solidReactivityPlugin(): PluginObj<State> {
   return {
+    pre() {
+      this.hooks = new Map();
+    },
     visitor: {
-      LabeledStatement(path) {
+      LabeledStatement(path, state) {
         const { label, body } = path.node;
 
         switch (label.name) {
           case 'signal':
-            signalExpression(path, body);
+            signalExpression(state.hooks, path, body);
             break;
           case 'effect':
-            effectExpression(path, body);
+            effectExpression(state.hooks, path, body);
             break;
           case 'computed':
-            computedExpression(path, body);
+            computedExpression(state.hooks, path, body);
             break;
           case 'renderEffect':
-            renderEffectExpression(path, body);
+            renderEffectExpression(state.hooks, path, body);
             break;
           case 'memo':
-            memoExpression(path, body);
+            memoExpression(state.hooks, path, body);
             break;
           case 'mount':
-            mountExpression(path, body);
+            mountExpression(state.hooks, path, body);
             break;
           case 'cleanup':
-            cleanupExpression(path, body);
+            cleanupExpression(state.hooks, path, body);
             break;
           case 'error':
-            errorExpression(path, body);
+            errorExpression(state.hooks, path, body);
             break;
           case 'untrack':
-            untrackExpression(path, body);
+            untrackExpression(state.hooks, path, body);
             break;
           case 'batch':
-            batchExpression(path, body);
+            batchExpression(state.hooks, path, body);
             break;
           case 'root':
-            rootExpression(path, body);
+            rootExpression(state.hooks, path, body);
             break;
           default:
             break;

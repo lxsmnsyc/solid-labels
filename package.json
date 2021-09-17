@@ -1,5 +1,5 @@
 {
-  "name": "solid-use-workspace",
+  "name": "babel-plugin-solid-labels-workspace",
   "private": true,
   "workspaces": [
     "packages/*",
@@ -27,11 +27,11 @@
   "author": "Alexis Munsayac <alexis.munsayac@gmail.com>",
   "license": "MIT",
   "repository": {
-    "url": "https://github.com/lxsmnsyc/solid-use.git",
+    "url": "https://github.com/lxsmnsyc/babel-plugin-solid-labels.git",
     "type": "git"
   },
-  "homepage": "https://github.com/lxsmnsyc/solid-use",
+  "homepage": "https://github.com/lxsmnsyc/babel-plugin-solid-labels",
   "bugs": {
-    "url": "https://github.com/lxsmnsyc/solid-use/issues"
+    "url": "https://github.com/lxsmnsyc/babel-plugin-solid-labels/issues"
   }
 }

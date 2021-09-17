@@ -18,7 +18,7 @@
   "keywords": [
     "pridepack"
   ],
-  "name": "babel-plugin-solid-reactivity",
+  "name": "babel-plugin-solid-labels",
   "devDependencies": {
     "@babel/core": "^7.15.5",
     "@types/babel__core": "^7.1.16",
@@ -48,5 +48,19 @@
     "@babel/helper-module-imports": "^7.15.4",
     "@babel/traverse": "^7.15.4",
     "@babel/types": "^7.15.6"
-  }
+  },
+  "description": "Simple, reactive labels for SolidJS",
+  "repository": {
+    "url": "https://github.com/lxsmnsyc/babel-plugin-solid-labels.git",
+    "type": "git"
+  },
+  "homepage": "https://github.com/lxsmnsyc/babel-plugin-solid-labels/tree/main/packages/babel-plugin-solid-labels",
+  "bugs": {
+    "url": "https://github.com/lxsmnsyc/babel-plugin-solid-labels/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "Alexis Munsayac",
+  "private": false
 }
