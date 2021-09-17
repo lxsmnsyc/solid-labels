@@ -201,7 +201,7 @@ function memoExpression(
         ) {
           p.replaceWith(
             t.objectProperty(
-              signalIdentifier,
+              memoIdentifier,
               t.callExpression(
                 readIdentifier,
                 [],
