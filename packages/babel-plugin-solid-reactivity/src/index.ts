@@ -347,10 +347,8 @@ function effectExpression(
       [],
       body,
     );
-  } else if (t.isExpressionStatement(body) && t.isArrowFunctionExpression(body.expression)) {
+  } else if (t.isExpressionStatement(body)) {
     callback = body.expression;
-  } else if (t.isExpression(body)) {
-    callback = body;
   } else {
     throw new Error('Expected arrow function or block expression');
   }
@@ -375,10 +373,8 @@ function computedExpression(
       [],
       body,
     );
-  } else if (t.isExpressionStatement(body) && t.isArrowFunctionExpression(body.expression)) {
+  } else if (t.isExpressionStatement(body)) {
     callback = body.expression;
-  } else if (t.isExpression(body)) {
-    callback = body;
   } else {
     throw new Error('Expected arrow function or block expression');
   }
@@ -403,10 +399,8 @@ function renderEffectExpression(
       [],
       body,
     );
-  } else if (t.isExpressionStatement(body) && t.isArrowFunctionExpression(body.expression)) {
+  } else if (t.isExpressionStatement(body)) {
     callback = body.expression;
-  } else if (t.isExpression(body)) {
-    callback = body;
   } else {
     throw new Error('Expected arrow function or block expression');
   }
@@ -431,10 +425,8 @@ function mountExpression(
       [],
       body,
     );
-  } else if (t.isExpressionStatement(body) && t.isArrowFunctionExpression(body.expression)) {
+  } else if (t.isExpressionStatement(body)) {
     callback = body.expression;
-  } else if (t.isExpression(body)) {
-    callback = body;
   } else {
     throw new Error('Expected arrow function or block expression');
   }
@@ -459,10 +451,8 @@ function cleanupExpression(
       [],
       body,
     );
-  } else if (t.isExpressionStatement(body) && t.isArrowFunctionExpression(body.expression)) {
+  } else if (t.isExpressionStatement(body)) {
     callback = body.expression;
-  } else if (t.isExpression(body)) {
-    callback = body;
   } else {
     throw new Error('Expected arrow function or block expression');
   }
@@ -487,10 +477,8 @@ function errorExpression(
       [],
       body,
     );
-  } else if (t.isExpressionStatement(body) && t.isArrowFunctionExpression(body.expression)) {
+  } else if (t.isExpressionStatement(body)) {
     callback = body.expression;
-  } else if (t.isExpression(body)) {
-    callback = body;
   } else {
     throw new Error('Expected arrow function or block expression');
   }
@@ -515,10 +503,8 @@ function rootExpression(
       [],
       body,
     );
-  } else if (t.isExpressionStatement(body) && t.isArrowFunctionExpression(body.expression)) {
+  } else if (t.isExpressionStatement(body)) {
     callback = body.expression;
-  } else if (t.isExpression(body)) {
-    callback = body;
   } else {
     throw new Error('Expected arrow function or block expression');
   }
@@ -543,10 +529,8 @@ function untrackExpression(
       [],
       body,
     );
-  } else if (t.isExpressionStatement(body) && t.isArrowFunctionExpression(body.expression)) {
+  } else if (t.isExpressionStatement(body)) {
     callback = body.expression;
-  } else if (t.isExpression(body)) {
-    callback = body;
   } else {
     throw new Error('Expected arrow function or block expression');
   }
@@ -571,10 +555,8 @@ function batchExpression(
       [],
       body,
     );
-  } else if (t.isExpressionStatement(body) && t.isArrowFunctionExpression(body.expression)) {
+  } else if (t.isExpressionStatement(body)) {
     callback = body.expression;
-  } else if (t.isExpression(body)) {
-    callback = body;
   } else {
     throw new Error('Expected arrow function or block expression');
   }
