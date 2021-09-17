@@ -47,7 +47,15 @@ function signalExpression(
       ]),
       t.callExpression(
         getHookIdentifier(hooks, path, 'createSignal'),
-        [stateIdentifier],
+        [
+          stateIdentifier,
+          t.objectExpression([
+            t.objectProperty(
+              t.identifier('name'),
+              t.stringLiteral(signalIdentifier.name),
+            ),
+          ]),
+        ],
       ),
     )],
   );
@@ -213,6 +221,12 @@ function memoExpression(
             [],
             stateIdentifier,
           ),
+          t.objectExpression([
+            t.objectProperty(
+              t.identifier('name'),
+              t.stringLiteral(memoIdentifier.name),
+            ),
+          ]),
         ],
       ),
     )],
