@@ -2,12 +2,22 @@
 
 > Simple reactive labels for SolidJS
 
-[![NPM](https://img.shields.io/npm/v/babel-plugin-solid-labels.svg)](https://www.npmjs.com/package/babel-plugin-solid-labels) [![JavaScript Style Guide](https://badgen.net/badge/code%20style/airbnb/ff5a5f?icon=airbnb)](https://github.com/airbnb/javascript)[![Open in CodeSandbox](https://img.shields.io/badge/Open%20in-CodeSandbox-blue?style=flat-square&logo=codesandbox)](https://codesandbox.io/s/github/LXSMNSYC/babel-plugin-solid-labels/tree/main/examples/demo)
+[![NPM](https://img.shields.io/npm/v/babel-plugin-solid-labels.svg)](https://www.npmjs.com/package/babel-plugin-solid-labels) [![JavaScript Style Guide](https://badgen.net/badge/code%20style/airbnb/ff5a5f?icon=airbnb)](https://github.com/airbnb/javascript)[![Open in CodeSandbox](https://img.shields.io/badge/Open%20in-CodeSandbox-blue?style=flat-square&logo=codesandbox)](https://codesandbox.io/s/github/LXSMNSYC/babel-plugin-solid-labels/tree/main/examples/vite-example)
 
 ## Install
 
 ```bash
 yarn add babel-plugin-solid-labels
+```
+
+## Usage
+
+`.babelrc`
+
+```json
+{
+  "plugins": ["babel-plugin-solid-labels"]
+}
 ```
 
 ## Labels
@@ -213,10 +223,58 @@ _createRoot(() => {
 });
 ```
 
+## Tooling
+
+### TypeScript
+
+`tsconfig.json`
+
+```json
+{
+  "compilerOptions": {
+    "allowUnusedLabels": true,
+  }
+}
+```
+
+### ESLint
+
+```json
+{
+  "rules": {
+    "no-var": "off",
+    "no-restricted-syntax": "off",
+    "no-labels": "off",
+    "vars-on-top": "off",
+    "no-unused-labels": "off"
+  },
+}
+```
+
+### Vite
+
+`esbuild-plugin-solid`
+
+```js
+// vite.config.js
+import { defineConfig } from 'vite';
+import solidPlugin from 'vite-plugin-solid';
+import solidLabels from 'babel-plugin-solid-labels';
+
+export default defineConfig({
+  plugins: [
+    solidPlugin({
+      babel: {
+        plugins: [solidLabels],
+      },
+    }),
+  ],
+});
+```
+
 ## Limitations
 
 - Detecting shadowed identifier for `signal` and `memo`.
-- Detecting special identifier cases for `signal` and `memo`.
 
 ## TODO
 

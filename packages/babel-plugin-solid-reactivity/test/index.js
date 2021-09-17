@@ -10,6 +10,7 @@ function Example() {
   }
 
   x += y = 2;
+  x++;
 }
 `;
 babel.transformAsync(code, {
