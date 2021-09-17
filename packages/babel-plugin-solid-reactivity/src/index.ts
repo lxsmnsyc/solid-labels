@@ -148,6 +148,72 @@ function signalSingleExpression(
           ),
         );
       },
+      UpdateExpression(p) {
+        if (p.scope !== path.scope && p.scope.hasOwnBinding(signalIdentifier.name)) {
+          return;
+        }
+        if (t.isIdentifier(p.node.argument) && p.node.argument.name === signalIdentifier.name) {
+          const param = p.scope.generateUidIdentifier('current');
+          if (p.node.prefix) {
+            p.replaceWith(
+              t.callExpression(
+                writeIdentifier,
+                [
+                  t.arrowFunctionExpression(
+                    [param],
+                    t.binaryExpression(
+                      p.node.operator === '++' ? '+' : '-',
+                      param,
+                      t.numericLiteral(1),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          } else {
+            p.replaceWith(
+              t.callExpression(
+                t.arrowFunctionExpression(
+                  [],
+                  t.blockStatement([
+                    t.variableDeclaration(
+                      'const',
+                      [
+                        t.variableDeclarator(
+                          param,
+                          t.callExpression(
+                            readIdentifier,
+                            [],
+                          ),
+                        ),
+                      ],
+                    ),
+                    t.expressionStatement(
+                      t.callExpression(
+                        writeIdentifier,
+                        [
+                          t.arrowFunctionExpression(
+                            [],
+                            t.binaryExpression(
+                              p.node.operator === '++' ? '+' : '-',
+                              param,
+                              t.numericLiteral(1),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    t.returnStatement(
+                      param,
+                    ),
+                  ]),
+                ),
+                [],
+              ),
+            );
+          }
+        }
+      },
       AssignmentExpression(p) {
         if (p.scope !== path.scope && p.scope.hasOwnBinding(signalIdentifier.name)) {
           return;
