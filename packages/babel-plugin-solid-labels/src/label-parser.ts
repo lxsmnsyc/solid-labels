@@ -527,56 +527,32 @@ function createCallbackLabel(label: string) {
   };
 }
 
-const effectExpression = createCallbackLabel('createEffect');
-const computedExpression = createCallbackLabel('createComputed');
-const renderEffectExpression = createCallbackLabel('createRenderEffect');
-const mountExpression = createCallbackLabel('onMount');
-const cleanupExpression = createCallbackLabel('onCleanup');
-const errorExpression = createCallbackLabel('onError');
-const rootExpression = createCallbackLabel('createRoot');
-const untrackExpression = createCallbackLabel('untrack');
-const batchExpression = createCallbackLabel('batch');
+type LabelExpression = (
+  hooks: ImportHook,
+  path: NodePath<t.LabeledStatement>,
+  body: t.Statement,
+) => void;
+
+const EXPRESSIONS: Record<string, LabelExpression> = {
+  signal: signalExpression,
+  memo: memoExpression,
+  effect: createCallbackLabel('createEffect'),
+  computed: createCallbackLabel('createComputed'),
+  renderEffect: createCallbackLabel('createRenderEffect'),
+  mount: createCallbackLabel('onMount'),
+  cleanup: createCallbackLabel('onCleanup'),
+  error: createCallbackLabel('onError'),
+  root: createCallbackLabel('createRoot'),
+  untrack: createCallbackLabel('untrack'),
+  batch: createCallbackLabel('batch'),
+};
 
 const LABEL_PARSER: Visitor<State> = {
   LabeledStatement(path, state) {
     const { label, body } = path.node;
 
-    switch (label.name) {
-      case 'signal':
-        signalExpression(state.hooks, path, body);
-        break;
-      case 'effect':
-        effectExpression(state.hooks, path, body);
-        break;
-      case 'computed':
-        computedExpression(state.hooks, path, body);
-        break;
-      case 'renderEffect':
-        renderEffectExpression(state.hooks, path, body);
-        break;
-      case 'memo':
-        memoExpression(state.hooks, path, body);
-        break;
-      case 'mount':
-        mountExpression(state.hooks, path, body);
-        break;
-      case 'cleanup':
-        cleanupExpression(state.hooks, path, body);
-        break;
-      case 'error':
-        errorExpression(state.hooks, path, body);
-        break;
-      case 'untrack':
-        untrackExpression(state.hooks, path, body);
-        break;
-      case 'batch':
-        batchExpression(state.hooks, path, body);
-        break;
-      case 'root':
-        rootExpression(state.hooks, path, body);
-        break;
-      default:
-        break;
+    if (label.name in EXPRESSIONS) {
+      EXPRESSIONS[label.name](state.hooks, path, body);
     }
   },
 };
