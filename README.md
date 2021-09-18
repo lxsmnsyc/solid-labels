@@ -2,7 +2,7 @@
 
 > Simple reactive labels for SolidJS
 
-[![NPM](https://img.shields.io/npm/v/babel-plugin-solid-labels.svg)](https://www.npmjs.com/package/babel-plugin-solid-labels) [![JavaScript Style Guide](https://badgen.net/badge/code%20style/airbnb/ff5a5f?icon=airbnb)](https://github.com/airbnb/javascript)[![Open in CodeSandbox](https://img.shields.io/badge/Open%20in-CodeSandbox-blue?style=flat-square&logo=codesandbox)](https://codesandbox.io/s/github/LXSMNSYC/babel-plugin-solid-labels/tree/main/examples/vite-example)
+[![NPM](https://img.shields.io/npm/v/babel-plugin-solid-labels.svg)](https://www.npmjs.com/package/babel-plugin-solid-labels) [![JavaScript Style Guide](https://badgen.net/badge/code%20style/airbnb/ff5a5f?icon=airbnb)](https://github.com/airbnb/javascript)
 
 ## Install
 
@@ -20,7 +20,9 @@ yarn add babel-plugin-solid-labels
 ## Usage
 
 - [Labels](https://github.com/LXSMNSYC/babel-plugin-solid-labels/tree/main/docs/labels.md)
+[![Open in CodeSandbox](https://img.shields.io/badge/Open%20in-CodeSandbox-blue?style=flat-square&logo=codesandbox)](https://codesandbox.io/s/github/LXSMNSYC/babel-plugin-solid-labels/tree/main/examples/vite-example-comments)
 - [Comments](https://github.com/LXSMNSYC/babel-plugin-solid-labels/tree/main/docs/comments.md)
+[![Open in CodeSandbox](https://img.shields.io/badge/Open%20in-CodeSandbox-blue?style=flat-square&logo=codesandbox)](https://codesandbox.io/s/github/LXSMNSYC/babel-plugin-solid-labels/tree/main/examples/vite-example-comments)
 
 ### Babel
 
@@ -61,6 +63,7 @@ export default defineConfig({
 
 - Add `transition` label for `startTransition`.
 - Make descriptive errors.
+- Add `ref` and `deref` to allow passing signals by reference.
 
 ## License
 
