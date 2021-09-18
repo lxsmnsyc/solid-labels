@@ -89,7 +89,28 @@ function signalSingleExpression(
           return;
         }
         // const x
-        if (t.isVariableDeclarator(p.parent) && p.parent.id === p.node) {
+        if (t.isVariableDeclarator(p.parent)) {
+          if (p.parent.id === p.node) {
+            return;
+          }
+          if (p.parent.init !== p.node) {
+            return;
+          }
+          if (
+            t.isVariableDeclaration(p.parentPath.parent)
+            && p.parentPath.parentPath
+            && t.isLabeledStatement(p.parentPath.parentPath.parent)
+            && p.parentPath.parentPath.parent.label.name === 'refSignal'
+            && t.isIdentifier(p.parent.init)
+            && p.parent.init.name === signalIdentifier.name
+          ) {
+            p.replaceWith(
+              t.arrayExpression([
+                readIdentifier,
+                writeIdentifier,
+              ]),
+            );
+          }
           return;
         }
         // const [x]

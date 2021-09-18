@@ -2,7 +2,8 @@ const babel = require('@babel/core');
 const plugin = require('../dist/cjs');
 
 const code = `
-memo: var x = 0, y = 0;
+signal: var x = 0;
+refSignal: var y = x;
 `;
 babel.transformAsync(code, {
   plugins: [
