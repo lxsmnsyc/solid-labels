@@ -81,6 +81,11 @@ function signalExpression(
       );
     }
   }
+  if (t.isVariableDeclaration(body)) {
+    path.replaceWith(
+      body,
+    );
+  }
   if (t.isVariableDeclaration(path.node)) {
     path.traverse({
       VariableDeclarator(p) {
@@ -171,6 +176,11 @@ function memoExpression(
         ),
       );
     }
+  }
+  if (t.isVariableDeclaration(body)) {
+    path.replaceWith(
+      body,
+    );
   }
   if (t.isVariableDeclaration(path.node)) {
     path.traverse({

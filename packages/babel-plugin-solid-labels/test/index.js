@@ -2,17 +2,19 @@ const babel = require('@babel/core');
 const plugin = require('../dist/cjs');
 
 const code = `
-function Component() {
-  /* @signal */
-  let x = 0;
-  
-  /* @memo */
-  const y = x + 10, z = y + 10;
-  
-  /* @effect */ {
-    console.log('X Value:', x);
-    console.log('Y Value:', y);
-  }
+function ComponentCTF() {
+  let count = $signal(0);
+  let message = $memo(\`Count: \${count}\`);
+}
+function ComponentComment() {
+  // @signal
+  let count = 0;
+  // @memo
+  let message = \`Count: \${count}\`;
+}
+function ComponentLabel() {
+  signal: var count = 0;
+  memo: message = \`Count: \${count}\`;
 }
 `;
 babel.transformAsync(code, {
