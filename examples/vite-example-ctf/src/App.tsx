@@ -1,5 +1,16 @@
+function useCounter(): [Getter<number>, Setter<number>] {
+  const count = $signal(0);
+
+  effect: {
+    console.log('Current count:', count);
+  }
+
+  return $refSignal(count);
+}
+
 export default function App(): JSX.Element {
-  let count = $signal(0);
+  let count = $derefSignal(useCounter());
+
   const message = $memo(`Count: ${count}`);
 
   effect: {
