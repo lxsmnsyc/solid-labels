@@ -293,8 +293,8 @@ function signalSingleExpression(
 function signalExpression(
   hooks: ImportHook,
   path: NodePath<t.LabeledStatement>,
-  body: t.Statement,
 ): void {
+  const { body } = path.node;
   if (t.isExpressionStatement(body)) {
     if (!t.isAssignmentExpression(body.expression)) {
       throw new Error('Expected assignment expression');
@@ -467,8 +467,8 @@ function memoSingleExpression(
 function memoExpression(
   hooks: ImportHook,
   path: NodePath<t.LabeledStatement>,
-  body: t.Statement,
 ): void {
+  const { body } = path.node;
   if (t.isExpressionStatement(body)) {
     if (t.isAssignmentExpression(body.expression)) {
       if (body.expression.operator !== '=') {
@@ -503,8 +503,8 @@ function createCallbackLabel(label: string) {
   return function expr(
     hooks: ImportHook,
     path: NodePath<t.LabeledStatement>,
-    body: t.Statement,
   ): void {
+    const { body } = path.node;
     let callback: t.Expression;
     if (t.isBlockStatement(body)) {
       callback = t.arrowFunctionExpression(
@@ -530,7 +530,6 @@ function createCallbackLabel(label: string) {
 type LabelExpression = (
   hooks: ImportHook,
   path: NodePath<t.LabeledStatement>,
-  body: t.Statement,
 ) => void;
 
 const EXPRESSIONS: Record<string, LabelExpression> = {
@@ -549,10 +548,8 @@ const EXPRESSIONS: Record<string, LabelExpression> = {
 
 const LABEL_PARSER: Visitor<State> = {
   LabeledStatement(path, state) {
-    const { label, body } = path.node;
-
-    if (label.name in EXPRESSIONS) {
-      EXPRESSIONS[label.name](state.hooks, path, body);
+    if (path.node.label.name in EXPRESSIONS) {
+      EXPRESSIONS[path.node.label.name](state.hooks, path);
     }
   },
 };
