@@ -8,5 +8,6 @@ module.exports = {
     "tsconfigRootDir": __dirname,
   },
   "rules": {
+    "no-param-reassign": "off"
   }
 };
