@@ -1,9 +1,33 @@
 import { NodePath, Visitor } from '@babel/traverse';
 import * as t from '@babel/types';
 import getHookIdentifier from './get-hook-identifier';
+import derefSignalVariableExpression from './deref-signal-variable';
+import derefMemoVariableExpression from './deref-memo-variable';
 import memoVariableExpression from './memo-variable';
 import signalVariableExpression from './signal-variable';
 import { ImportHook, State } from './types';
+
+function derefSignalExpression(
+  _: ImportHook,
+  path: NodePath<t.CallExpression>,
+): void {
+  const argument = path.node.arguments[0];
+  if (!t.isExpression(argument)) {
+    throw new Error('Expected expression');
+  }
+  if (!t.isVariableDeclarator(path.parent) || !path.parentPath) {
+    throw new Error('Expected variable declarator');
+  }
+  const leftExpr = path.parent.id;
+  if (!t.isIdentifier(leftExpr)) {
+    throw new Error('Expected identifier');
+  }
+  derefSignalVariableExpression(
+    path.parentPath as NodePath<t.VariableDeclarator>,
+    leftExpr,
+    argument,
+  );
+}
 
 function signalExpression(
   hooks: ImportHook,
@@ -22,6 +46,28 @@ function signalExpression(
   }
   signalVariableExpression(
     hooks,
+    path.parentPath as NodePath<t.VariableDeclarator>,
+    leftExpr,
+    argument,
+  );
+}
+
+function derefMemoExpression(
+  _: ImportHook,
+  path: NodePath<t.CallExpression>,
+): void {
+  const argument = path.node.arguments[0];
+  if (!t.isExpression(argument)) {
+    throw new Error('Expected expression');
+  }
+  if (!t.isVariableDeclarator(path.parent) || !path.parentPath) {
+    throw new Error('Expected variable declarator');
+  }
+  const leftExpr = path.parent.id;
+  if (!t.isIdentifier(leftExpr)) {
+    throw new Error('Expected identifier');
+  }
+  derefMemoVariableExpression(
     path.parentPath as NodePath<t.VariableDeclarator>,
     leftExpr,
     argument,
@@ -81,6 +127,8 @@ function createCompileTimeFunction(target: string) {
 }
 
 const CTF_EXPRESSIONS: Record<string, CompileTimeFunctionExpression> = {
+  $derefSignal: derefSignalExpression,
+  $derefMemo: derefMemoExpression,
   $signal: signalExpression,
   $memo: memoExpression,
   $untrack: createCompileTimeFunction('untrack'),

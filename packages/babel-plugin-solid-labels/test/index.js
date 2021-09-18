@@ -1,21 +1,24 @@
 const babel = require('@babel/core');
 const plugin = require('../dist/cjs');
 
+
+
 const code = `
-function ComponentCTF() {
-  let count = $signal(0);
-  let message = $memo(\`Count: \${count}\`);
-}
-function ComponentComment() {
-  // @signal
-  let count = 0;
-  // @memo
-  let message = \`Count: \${count}\`;
-}
-function ComponentLabel() {
-  signal: var count = 0;
-  memo: message = \`Count: \${count}\`;
-}
+let count = $signal(0);
+let a = $derefSignal([$get(count), $set(count)]);
+
+a += 1;
+
+let b = $derefSignal($refSignal(count));
+
+b += 1;
+
+let c = $derefSignal([
+  () => count,
+  (value) => {
+    count = c;
+  },
+]);
 `;
 babel.transformAsync(code, {
   plugins: [

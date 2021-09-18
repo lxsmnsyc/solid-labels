@@ -1,9 +1,41 @@
 import { NodePath, Visitor } from '@babel/traverse';
 import * as t from '@babel/types';
 import getHookIdentifier from './get-hook-identifier';
+import derefSignalVariableExpression from './deref-signal-variable';
+import derefMemoVariableExpression from './deref-memo-variable';
 import memoVariableExpression from './memo-variable';
 import signalVariableExpression from './signal-variable';
 import { ImportHook, State } from './types';
+
+function derefSignalExpression(
+  _: ImportHook,
+  path: NodePath<t.VariableDeclaration>,
+): void {
+  path.traverse({
+    VariableDeclarator(p) {
+      const leftExpr = p.node.id;
+      const rightExpr = p.node.init;
+      if (t.isIdentifier(leftExpr) && rightExpr) {
+        derefSignalVariableExpression(p, leftExpr, rightExpr);
+      }
+    },
+  });
+}
+
+function derefMemoExpression(
+  _: ImportHook,
+  path: NodePath<t.VariableDeclaration>,
+): void {
+  path.traverse({
+    VariableDeclarator(p) {
+      const leftExpr = p.node.id;
+      const rightExpr = p.node.init;
+      if (t.isIdentifier(leftExpr) && rightExpr) {
+        derefMemoVariableExpression(p, leftExpr, rightExpr);
+      }
+    },
+  });
+}
 
 function signalExpression(
   hooks: ImportHook,
@@ -74,6 +106,8 @@ type StateExpression = (
 ) => void;
 
 const STATE_EXPRESSIONS: Record<string, StateExpression> = {
+  '@derefSignal': derefSignalExpression,
+  '@derefMemo': derefMemoExpression,
   '@signal': signalExpression,
   '@memo': memoExpression,
 };

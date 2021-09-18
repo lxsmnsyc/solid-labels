@@ -1,11 +1,8 @@
 import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import derefSignalExpression from './deref-signal-expression';
-import getHookIdentifier from './get-hook-identifier';
-import { ImportHook } from './types';
 
-export default function signalVariableExpression(
-  hooks: ImportHook,
+export default function derefSignalVariableExpression(
   path: NodePath<t.VariableDeclarator>,
   signalIdentifier: t.Identifier,
   stateIdentifier: t.Expression,
@@ -17,18 +14,7 @@ export default function signalVariableExpression(
     readIdentifier,
     writeIdentifier,
   ]);
-  path.node.init = t.callExpression(
-    getHookIdentifier(hooks, path, 'createSignal'),
-    [
-      stateIdentifier,
-      t.objectExpression([
-        t.objectProperty(
-          t.identifier('name'),
-          t.stringLiteral(signalIdentifier.name),
-        ),
-      ]),
-    ],
-  );
+  path.node.init = stateIdentifier;
 
   derefSignalExpression(
     path,
