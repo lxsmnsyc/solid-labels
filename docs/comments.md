@@ -6,7 +6,8 @@ Transforms into `createSignal`:
 
 ```js
 function Counter() {
-  signal: x = 0;
+  // @signal
+  let x = 0;
 
   function increment() {
     x += 1;
@@ -32,14 +33,23 @@ function Counter() {
 }
 ```
 
+Chained variable declaration is also supported.
+
+```js
+// @signal
+let x = 0, y = 0, z = 0;
+```
+
 ## `memo`
 
 Transforms into `createMemo`:
 
 ```js
 function Counter() {
-  signal: x = 0;
-  memo: message = `Count: ${x}`;
+  // @signal
+  let x = 0;
+  // @memo
+  const message = `Count: ${x}`;
 
   return () => message;
 }
@@ -60,21 +70,29 @@ function Counter() {
 }
 ```
 
+Chained variable declaration is also supported.
+
+```js
+// @memo
+const y = x + 10, z = y / 10;
+```
+
 ## `effect`, `computed` and `renderEffect`
 
 Transforms into `createEffect`, `createComputed` and `createRenderEffect`, respectively.
 
 ```js
 function Counter() {
-  signal: x = 0;
+  // @signal
+  let x = 0;
 
-  effect: {
+  /* @effect */ {
     console.log('Count', x);
   }
-  computed: {
+  /* @computed */ {
     console.log('Count', x);
   }
-  renderEffect: {
+  /* @renderEffect */ {
     console.log('Count', x);
   }
 }
@@ -113,13 +131,13 @@ Transforms into `onMount`, `onCleanup` and `onError`.
 
 ```js
 function Counter() {
-  mount: {
+  /* @mount */ {
     console.log('Mounted!');
   }
-  cleanup: {
+  /* @cleanup */ {
     console.log('Cleaned!');
   }
-  error: {
+  /* @error */ {
     console.log('Something went wrong.');
   }
 }
@@ -155,10 +173,10 @@ Transforms into `untrack` and `batch`.
 
 ```js
 function Counter() {
-  batch: {
+  /* @batch */ {
     console.log('This is batched!');
   }
-  untrack: {
+  /* @untrack */ {
     console.log('This is untracked!');
   }
 }
@@ -186,7 +204,7 @@ function Counter() {
 Transforms into `createRoot`
 
 ```js
-root: {
+/* @root */ {
   element = renderComponent(MyComponent);
 }
 ```
@@ -205,28 +223,12 @@ You can also pass an arrow function instead of a block to receive the `dispose` 
 
 ## Tooling
 
-### TypeScript
-
-`tsconfig.json`
-
-```json
-{
-  "compilerOptions": {
-    "allowUnusedLabels": true,
-  }
-}
-```
-
 ### ESLint
 
 ```json
 {
   "rules": {
-    "no-var": "off",
-    "no-restricted-syntax": "off",
-    "no-labels": "off",
-    "vars-on-top": "off",
-    "no-unused-labels": "off"
+    "no-lone-blocks": "off"
   },
 }
 ```

@@ -32,6 +32,12 @@ function Counter() {
 }
 ```
 
+Chained variable declaration is also supported.
+
+```js
+signal: var x = 0, y = 0, z = 0;
+```
+
 ## `memo`
 
 Transforms into `createMemo`:
@@ -58,6 +64,12 @@ function Counter() {
 
   return () => _message();
 }
+```
+
+Chained variable declaration is also supported.
+
+```js
+memo: var y = x + 10, z = y / 10;
 ```
 
 ## `effect`, `computed` and `renderEffect`
