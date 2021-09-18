@@ -36,7 +36,7 @@ yarn add babel-plugin-solid-labels
 
 ### Vite
 
-`esbuild-plugin-solid`
+`vite-plugin-solid`
 
 ```js
 // vite.config.js
