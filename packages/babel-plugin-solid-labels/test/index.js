@@ -2,8 +2,11 @@ const babel = require('@babel/core');
 const plugin = require('../dist/cjs');
 
 const code = `
-signal: var x = 0;
-refSignal: var y = x, z = x;
+/* @signal */
+let x = 0;
+
+/* @memo */
+let y = x + 1;
 `;
 babel.transformAsync(code, {
   plugins: [

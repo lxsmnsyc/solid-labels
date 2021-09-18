@@ -19,7 +19,7 @@ function getHookIdentifier(
 
 function signalSingleExpression(
   hooks: ImportHook,
-  path: NodePath<t.LabeledStatement>,
+  path: NodePath<t.VariableDeclaration>,
   signalIdentifier: t.Identifier,
   stateIdentifier: t.Expression,
 ): void {
@@ -292,45 +292,26 @@ function signalSingleExpression(
 
 function signalExpression(
   hooks: ImportHook,
-  path: NodePath<t.LabeledStatement>,
-  body: t.Statement,
+  path: NodePath<t.VariableDeclaration>,
 ): void {
-  if (t.isExpressionStatement(body)) {
-    if (!t.isAssignmentExpression(body.expression)) {
-      throw new Error('Expected assignment expression');
-    }
-    if (body.expression.operator !== '=') {
-      throw new Error('Invalid assignment expression operator');
-    }
-    const leftExpr = body.expression.left;
-    const rightExpr = body.expression.right;
+  const body = path.node;
+  for (let i = body.declarations.length - 1; i >= 0; i -= 1) {
+    const declarator = body.declarations[i];
+    const leftExpr = declarator.id;
+    const rightExpr = declarator.init;
     if (!t.isIdentifier(leftExpr)) {
       throw new Error('Expected identifier');
     }
-    signalSingleExpression(hooks, path, leftExpr, rightExpr);
-    path.remove();
-  } else if (t.isVariableDeclaration(body)) {
-    for (let i = body.declarations.length - 1; i >= 0; i -= 1) {
-      const declarator = body.declarations[i];
-      const leftExpr = declarator.id;
-      const rightExpr = declarator.init;
-      if (!t.isIdentifier(leftExpr)) {
-        throw new Error('Expected identifier');
-      }
-      signalSingleExpression(hooks, path, leftExpr, rightExpr ?? t.identifier('undefined'));
-    }
-    path.remove();
-  } else {
-    throw new Error('Expected assignment expression or variable declaration');
+    signalSingleExpression(hooks, path, leftExpr, rightExpr ?? t.identifier('undefined'));
   }
+  path.remove();
 }
 
 function memoSingleExpression(
   hooks: ImportHook,
-  path: NodePath<t.LabeledStatement>,
+  path: NodePath<t.VariableDeclaration>,
   memoIdentifier: t.Identifier,
   stateIdentifier: t.Expression,
-  replace = false,
 ): void {
   const readIdentifier = path.scope.generateUidIdentifier(memoIdentifier.name);
   const expr = t.variableDeclaration(
@@ -355,11 +336,7 @@ function memoSingleExpression(
     )],
   );
 
-  if (replace) {
-    path.replaceWith(expr);
-  } else {
-    path.insertAfter(expr);
-  }
+  path.insertAfter(expr);
 
   const parent = path.scope.path;
   if (parent) {
@@ -466,45 +443,27 @@ function memoSingleExpression(
 
 function memoExpression(
   hooks: ImportHook,
-  path: NodePath<t.LabeledStatement>,
-  body: t.Statement,
+  path: NodePath<t.VariableDeclaration>,
 ): void {
-  if (t.isExpressionStatement(body)) {
-    if (t.isAssignmentExpression(body.expression)) {
-      if (body.expression.operator !== '=') {
-        throw new Error('Invalid assignment expression operator');
-      }
-      const leftExpr = body.expression.left;
-      const rightExpr = body.expression.right;
-      if (!t.isIdentifier(leftExpr)) {
-        throw new Error('Expected identifier');
-      }
-      memoSingleExpression(hooks, path, leftExpr, rightExpr, true);
-    } else {
-      throw new Error('Expected assignment expression');
+  const body = path.node;
+  for (let i = body.declarations.length - 1; i >= 0; i -= 1) {
+    const declarator = body.declarations[i];
+    const leftExpr = declarator.id;
+    const rightExpr = declarator.init;
+    if (!t.isIdentifier(leftExpr)) {
+      throw new Error('Expected identifier');
     }
-  } else if (t.isVariableDeclaration(body)) {
-    for (let i = body.declarations.length - 1; i >= 0; i -= 1) {
-      const declarator = body.declarations[i];
-      const leftExpr = declarator.id;
-      const rightExpr = declarator.init;
-      if (!t.isIdentifier(leftExpr)) {
-        throw new Error('Expected identifier');
-      }
-      memoSingleExpression(hooks, path, leftExpr, rightExpr ?? t.identifier('undefined'));
-    }
-    path.remove();
-  } else {
-    throw new Error('Expected assignment expression or variable declaration');
+    memoSingleExpression(hooks, path, leftExpr, rightExpr ?? t.identifier('undefined'));
   }
+  path.remove();
 }
 
 function createCallbackLabel(label: string) {
   return function expr(
     hooks: ImportHook,
-    path: NodePath<t.LabeledStatement>,
-    body: t.Statement,
+    path: NodePath<t.BlockStatement | t.ExpressionStatement>,
   ): void {
+    const body = path.node;
     let callback: t.Expression;
     if (t.isBlockStatement(body)) {
       callback = t.arrowFunctionExpression(
@@ -537,48 +496,64 @@ const rootExpression = createCallbackLabel('createRoot');
 const untrackExpression = createCallbackLabel('untrack');
 const batchExpression = createCallbackLabel('batch');
 
-const LABEL_PARSER: Visitor<State> = {
-  LabeledStatement(path, state) {
-    const { label, body } = path.node;
-
-    switch (label.name) {
-      case 'signal':
-        signalExpression(state.hooks, path, body);
-        break;
-      case 'effect':
-        effectExpression(state.hooks, path, body);
-        break;
-      case 'computed':
-        computedExpression(state.hooks, path, body);
-        break;
-      case 'renderEffect':
-        renderEffectExpression(state.hooks, path, body);
-        break;
-      case 'memo':
-        memoExpression(state.hooks, path, body);
-        break;
-      case 'mount':
-        mountExpression(state.hooks, path, body);
-        break;
-      case 'cleanup':
-        cleanupExpression(state.hooks, path, body);
-        break;
-      case 'error':
-        errorExpression(state.hooks, path, body);
-        break;
-      case 'untrack':
-        untrackExpression(state.hooks, path, body);
-        break;
-      case 'batch':
-        batchExpression(state.hooks, path, body);
-        break;
-      case 'root':
-        rootExpression(state.hooks, path, body);
-        break;
-      default:
-        break;
+const COMMENT_PARSER: Visitor<State> = {
+  VariableDeclaration(path, state) {
+    const comments = path.node.leadingComments;
+    if (comments) {
+      for (let i = 0, len = comments.length; i < len; i += 1) {
+        const comment = comments[i];
+        switch (comment.value.trim()) {
+          case '@signal':
+            signalExpression(state.hooks, path);
+            break;
+          case '@memo':
+            memoExpression(state.hooks, path);
+            break;
+          default:
+            break;
+        }
+      }
+    }
+  },
+  BlockStatement(path, state) {
+    const comments = path.node.leadingComments;
+    if (comments) {
+      for (let i = 0, len = comments.length; i < len; i += 1) {
+        const comment = comments[i];
+        switch (comment.value.trim()) {
+          case '@effect':
+            effectExpression(state.hooks, path);
+            break;
+          case '@computed':
+            computedExpression(state.hooks, path);
+            break;
+          case '@renderEffect':
+            renderEffectExpression(state.hooks, path);
+            break;
+          case '@mount':
+            mountExpression(state.hooks, path);
+            break;
+          case '@cleanup':
+            cleanupExpression(state.hooks, path);
+            break;
+          case '@error':
+            errorExpression(state.hooks, path);
+            break;
+          case '@root':
+            rootExpression(state.hooks, path);
+            break;
+          case '@untrack':
+            untrackExpression(state.hooks, path);
+            break;
+          case '@batch':
+            batchExpression(state.hooks, path);
+            break;
+          default:
+            break;
+        }
+      }
     }
   },
 };
 
-export default LABEL_PARSER;
+export default COMMENT_PARSER;
