@@ -19,35 +19,29 @@ function getHookIdentifier(
 
 function signalSingleExpression(
   hooks: ImportHook,
-  path: NodePath<t.VariableDeclaration>,
+  path: NodePath<t.VariableDeclarator>,
   signalIdentifier: t.Identifier,
   stateIdentifier: t.Expression,
 ): void {
   const readIdentifier = path.scope.generateUidIdentifier(signalIdentifier.name);
   const writeIdentifier = path.scope.generateUidIdentifier(`set${signalIdentifier.name}`);
-  const expr = t.variableDeclaration(
-    'const',
-    [t.variableDeclarator(
-      t.arrayPattern([
-        readIdentifier,
-        writeIdentifier,
-      ]),
-      t.callExpression(
-        getHookIdentifier(hooks, path, 'createSignal'),
-        [
-          stateIdentifier,
-          t.objectExpression([
-            t.objectProperty(
-              t.identifier('name'),
-              t.stringLiteral(signalIdentifier.name),
-            ),
-          ]),
-        ],
-      ),
-    )],
-  );
 
-  path.insertAfter(expr);
+  path.node.id = t.arrayPattern([
+    readIdentifier,
+    writeIdentifier,
+  ]);
+  path.node.init = t.callExpression(
+    getHookIdentifier(hooks, path, 'createSignal'),
+    [
+      stateIdentifier,
+      t.objectExpression([
+        t.objectProperty(
+          t.identifier('name'),
+          t.stringLiteral(signalIdentifier.name),
+        ),
+      ]),
+    ],
+  );
 
   const parent = path.scope.path;
   if (parent) {
@@ -294,49 +288,41 @@ function signalExpression(
   hooks: ImportHook,
   path: NodePath<t.VariableDeclaration>,
 ): void {
-  const body = path.node;
-  for (let i = body.declarations.length - 1; i >= 0; i -= 1) {
-    const declarator = body.declarations[i];
-    const leftExpr = declarator.id;
-    const rightExpr = declarator.init;
-    if (!t.isIdentifier(leftExpr)) {
-      throw new Error('Expected identifier');
-    }
-    signalSingleExpression(hooks, path, leftExpr, rightExpr ?? t.identifier('undefined'));
-  }
-  path.remove();
+  path.traverse({
+    VariableDeclarator(p) {
+      const leftExpr = p.node.id;
+      const rightExpr = p.node.init;
+      if (t.isIdentifier(leftExpr)) {
+        signalSingleExpression(hooks, p, leftExpr, rightExpr ?? t.identifier('undefined'));
+      }
+    },
+  });
 }
 
 function memoSingleExpression(
   hooks: ImportHook,
-  path: NodePath<t.VariableDeclaration>,
+  path: NodePath<t.VariableDeclarator>,
   memoIdentifier: t.Identifier,
   stateIdentifier: t.Expression,
 ): void {
   const readIdentifier = path.scope.generateUidIdentifier(memoIdentifier.name);
-  const expr = t.variableDeclaration(
-    'const',
-    [t.variableDeclarator(
-      readIdentifier,
-      t.callExpression(
-        getHookIdentifier(hooks, path, 'createMemo'),
-        [
-          t.arrowFunctionExpression(
-            [],
-            stateIdentifier,
-          ),
-          t.objectExpression([
-            t.objectProperty(
-              t.identifier('name'),
-              t.stringLiteral(memoIdentifier.name),
-            ),
-          ]),
-        ],
-      ),
-    )],
-  );
 
-  path.insertAfter(expr);
+  path.node.id = readIdentifier;
+  path.node.init = t.callExpression(
+    getHookIdentifier(hooks, path, 'createMemo'),
+    [
+      t.arrowFunctionExpression(
+        [],
+        stateIdentifier,
+      ),
+      t.objectExpression([
+        t.objectProperty(
+          t.identifier('name'),
+          t.stringLiteral(memoIdentifier.name),
+        ),
+      ]),
+    ],
+  );
 
   const parent = path.scope.path;
   if (parent) {
@@ -445,17 +431,15 @@ function memoExpression(
   hooks: ImportHook,
   path: NodePath<t.VariableDeclaration>,
 ): void {
-  const body = path.node;
-  for (let i = body.declarations.length - 1; i >= 0; i -= 1) {
-    const declarator = body.declarations[i];
-    const leftExpr = declarator.id;
-    const rightExpr = declarator.init;
-    if (!t.isIdentifier(leftExpr)) {
-      throw new Error('Expected identifier');
-    }
-    memoSingleExpression(hooks, path, leftExpr, rightExpr ?? t.identifier('undefined'));
-  }
-  path.remove();
+  path.traverse({
+    VariableDeclarator(p) {
+      const leftExpr = p.node.id;
+      const rightExpr = p.node.init;
+      if (t.isIdentifier(leftExpr)) {
+        memoSingleExpression(hooks, p, leftExpr, rightExpr ?? t.identifier('undefined'));
+      }
+    },
+  });
 }
 
 function createCallbackLabel(label: string) {
@@ -486,71 +470,102 @@ function createCallbackLabel(label: string) {
   };
 }
 
-const effectExpression = createCallbackLabel('createEffect');
-const computedExpression = createCallbackLabel('createComputed');
-const renderEffectExpression = createCallbackLabel('createRenderEffect');
-const mountExpression = createCallbackLabel('onMount');
-const cleanupExpression = createCallbackLabel('onCleanup');
-const errorExpression = createCallbackLabel('onError');
-const rootExpression = createCallbackLabel('createRoot');
-const untrackExpression = createCallbackLabel('untrack');
-const batchExpression = createCallbackLabel('batch');
+type CallbackLabelExpresion = (
+  hooks: ImportHook,
+  path: NodePath<t.BlockStatement | t.ExpressionStatement>,
+) => void;
+
+type StateExpression = (
+  hooks: ImportHook,
+  path: NodePath<t.VariableDeclaration>,
+) => void;
+
+const STATE_EXPRESSIONS: Record<string, StateExpression> = {
+  '@signal': signalExpression,
+  '@memo': memoExpression,
+};
+
+const CALLBACK_EXPRESSIONS: Record<string, CallbackLabelExpresion> = {
+  '@effect': createCallbackLabel('createEffect'),
+  '@computed': createCallbackLabel('createComputed'),
+  '@renderEffect': createCallbackLabel('createRenderEffect'),
+  '@mount': createCallbackLabel('onMount'),
+  '@cleanup': createCallbackLabel('onCleanup'),
+  '@error': createCallbackLabel('onError'),
+  '@root': createCallbackLabel('createRoot'),
+  '@untrack': createCallbackLabel('untrack'),
+  '@batch': createCallbackLabel('batch'),
+};
 
 const COMMENT_PARSER: Visitor<State> = {
   VariableDeclaration(path, state) {
     const comments = path.node.leadingComments;
     if (comments) {
+      let preference: string | undefined;
       for (let i = 0, len = comments.length; i < len; i += 1) {
         const comment = comments[i];
-        switch (comment.value.trim()) {
-          case '@signal':
-            signalExpression(state.hooks, path);
-            break;
-          case '@memo':
-            memoExpression(state.hooks, path);
-            break;
-          default:
-            break;
+        const value = comment.value.trim();
+        if (value in STATE_EXPRESSIONS) {
+          preference = value;
         }
+      }
+      if (preference) {
+        STATE_EXPRESSIONS[preference](state.hooks, path);
       }
     }
   },
   BlockStatement(path, state) {
+    if (
+      t.isFunctionDeclaration(path.parent)
+    ) {
+      return;
+    }
     const comments = path.node.leadingComments;
     if (comments) {
+      const leading = [];
+      let preference: string | undefined;
       for (let i = 0, len = comments.length; i < len; i += 1) {
         const comment = comments[i];
-        switch (comment.value.trim()) {
-          case '@effect':
-            effectExpression(state.hooks, path);
-            break;
-          case '@computed':
-            computedExpression(state.hooks, path);
-            break;
-          case '@renderEffect':
-            renderEffectExpression(state.hooks, path);
-            break;
-          case '@mount':
-            mountExpression(state.hooks, path);
-            break;
-          case '@cleanup':
-            cleanupExpression(state.hooks, path);
-            break;
-          case '@error':
-            errorExpression(state.hooks, path);
-            break;
-          case '@root':
-            rootExpression(state.hooks, path);
-            break;
-          case '@untrack':
-            untrackExpression(state.hooks, path);
-            break;
-          case '@batch':
-            batchExpression(state.hooks, path);
-            break;
-          default:
-            break;
+        const value = comment.value.trim();
+        if (value in CALLBACK_EXPRESSIONS) {
+          preference = value;
+        } else {
+          leading.push(comment);
         }
+      }
+      const trailing = [...(path.node.trailingComments ?? [])];
+      const inner = [...(path.node.innerComments ?? [])];
+      t.removeComments(path.node);
+      t.addComments(path.node, 'leading', leading);
+      t.addComments(path.node, 'inner', inner);
+      t.addComments(path.node, 'trailing', trailing);
+      if (preference) {
+        CALLBACK_EXPRESSIONS[preference](state.hooks, path);
+      }
+    }
+  },
+  ExpressionStatement(path, state) {
+    const comments = path.node.leadingComments;
+    if (comments) {
+      const leading = [];
+      let preference: string | undefined;
+      for (let i = 0, len = comments.length; i < len; i += 1) {
+        const comment = comments[i];
+        const value = comment.value.trim();
+        if (value in CALLBACK_EXPRESSIONS) {
+          preference = value;
+        } else {
+          leading.push(comment);
+        }
+      }
+      const trailing = [...(path.node.trailingComments ?? [])];
+      const inner = [...(path.node.innerComments ?? [])];
+      t.removeComments(path.node);
+      t.addComments(path.node, 'leading', leading);
+      t.addComments(path.node, 'inner', inner);
+      t.addComments(path.node, 'trailing', trailing);
+      if (preference) {
+        CALLBACK_EXPRESSIONS[preference](state.hooks, path);
       }
     }
   },
