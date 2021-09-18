@@ -104,12 +104,21 @@ function signalSingleExpression(
             && t.isIdentifier(p.parent.init)
             && p.parent.init.name === signalIdentifier.name
           ) {
-            p.replaceWith(
-              t.arrayExpression([
-                readIdentifier,
-                writeIdentifier,
-              ]),
+            p.parentPath.parentPath.parentPath?.insertAfter(
+              t.variableDeclaration(
+                'const',
+                [
+                  t.variableDeclarator(
+                    p.parent.id,
+                    t.arrayExpression([
+                      readIdentifier,
+                      writeIdentifier,
+                    ]),
+                  ),
+                ],
+              ),
             );
+            p.parentPath.remove();
           }
           return;
         }
