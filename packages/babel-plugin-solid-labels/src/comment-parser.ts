@@ -88,6 +88,7 @@ const CALLBACK_EXPRESSIONS: Record<string, CallbackLabelExpresion> = {
   '@root': createCallbackLabel('createRoot'),
   '@untrack': createCallbackLabel('untrack'),
   '@batch': createCallbackLabel('batch'),
+  '@transition': createCallbackLabel('startTransition'),
 };
 
 const COMMENT_PARSER: Visitor<State> = {

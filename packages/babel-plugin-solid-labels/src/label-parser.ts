@@ -289,6 +289,7 @@ const EXPRESSIONS: Record<string, LabelExpression> = {
   root: createCallbackLabel('createRoot'),
   untrack: createCallbackLabel('untrack'),
   batch: createCallbackLabel('batch'),
+  transition: createCallbackLabel('startTransition'),
 };
 
 const LABEL_PARSER: Visitor<State> = {
