@@ -2,13 +2,13 @@ const babel = require('@babel/core');
 const plugin = require('../dist/cjs');
 
 const code = `
-let value = $derefSignal([getValue, setValue]);
+function Example() {
+  let count = $signal(0);
 
-value = newValue;
-
-effect: {
-  console.log(value);
+  return $refSignal(count);
 }
+
+let count = 0;
 `;
 babel.transformAsync(code, {
   plugins: [
