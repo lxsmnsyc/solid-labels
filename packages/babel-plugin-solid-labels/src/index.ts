@@ -21,6 +21,8 @@ declare global {
   function $derefMemo<T>(value: Getter<T>): T;
   function $refMemo<T>(value: T): Getter<T>;
 
+  function $<T>(value: T): T;
+
   function $get<T>(value: T): Getter<T>;
   function $set<T>(value: T): Setter<T>;
 }

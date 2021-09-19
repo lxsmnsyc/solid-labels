@@ -97,6 +97,45 @@ function memoExpression(
   );
 }
 
+function reactiveExpression(
+  hooks: ImportHook,
+  path: NodePath<t.CallExpression>,
+): void {
+  if (!path.parentPath) {
+    throw new Error('Expected parent path');
+  }
+  const argument = path.node.arguments[0];
+  if (!t.isExpression(argument)) {
+    throw new Error('Expected expression');
+  }
+  if (t.isVariableDeclarator(path.parent)) {
+    const leftExpr = path.parent.id;
+    if (!t.isIdentifier(leftExpr)) {
+      throw new Error('Expected identifier');
+    }
+    memoVariableExpression(
+      hooks,
+      path.parentPath as NodePath<t.VariableDeclarator>,
+      leftExpr,
+      argument,
+    );
+  } else if (t.isExpressionStatement(path.parent)) {
+    path.replaceWith(
+      t.callExpression(
+        getHookIdentifier(hooks, path, 'createEffect'),
+        [
+          t.arrowFunctionExpression(
+            [],
+            argument,
+          ),
+        ],
+      ),
+    );
+  } else {
+    throw new Error('Expected expression statement or variable declarator.');
+  }
+}
+
 type CompileTimeFunctionExpression = (
   hooks: ImportHook,
   path: NodePath<t.CallExpression>,
@@ -127,6 +166,7 @@ function createCompileTimeFunction(target: string) {
 }
 
 const CTF_EXPRESSIONS: Record<string, CompileTimeFunctionExpression> = {
+  $: reactiveExpression,
   $derefSignal: derefSignalExpression,
   $derefMemo: derefMemoExpression,
   $signal: signalExpression,

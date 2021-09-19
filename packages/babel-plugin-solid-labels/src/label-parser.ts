@@ -82,6 +82,7 @@ function signalExpression(
     }
   }
   if (t.isVariableDeclaration(body)) {
+    body.kind = 'const';
     path.replaceWith(
       body,
     );
@@ -98,6 +99,50 @@ function signalExpression(
     });
   } else {
     throw new Error('Expected assignment expression or variable declaration');
+  }
+}
+
+function reactiveExpression(
+  hooks: ImportHook,
+  path: NodePath<t.LabeledStatement>,
+): void {
+  const { body } = path.node;
+  if (t.isExpressionStatement(body)) {
+    path.replaceWith(
+      t.callExpression(
+        getHookIdentifier(hooks, path, 'createEffect'),
+        [
+          t.arrowFunctionExpression(
+            [],
+            body.expression,
+          ),
+        ],
+      ),
+    );
+  } else if (t.isBlockStatement(body)) {
+    path.replaceWith(
+      t.callExpression(
+        getHookIdentifier(hooks, path, 'createEffect'),
+        [
+          t.arrowFunctionExpression(
+            [],
+            body,
+          ),
+        ],
+      ),
+    );
+  } else if (t.isVariableDeclaration(body)) {
+    body.kind = 'const';
+    path.replaceWith(body);
+    path.traverse({
+      VariableDeclarator(p) {
+        const leftExpr = p.node.id;
+        const rightExpr = p.node.init;
+        if (t.isIdentifier(leftExpr)) {
+          memoVariableExpression(hooks, p, leftExpr, rightExpr ?? t.identifier('undefined'));
+        }
+      },
+    });
   }
 }
 
@@ -178,6 +223,7 @@ function memoExpression(
     }
   }
   if (t.isVariableDeclaration(body)) {
+    body.kind = 'const';
     path.replaceWith(
       body,
     );
@@ -231,6 +277,7 @@ type LabelExpression = (
 ) => void;
 
 const EXPRESSIONS: Record<string, LabelExpression> = {
+  $: reactiveExpression,
   signal: signalExpression,
   memo: memoExpression,
   effect: createCallbackLabel('createEffect'),

@@ -3,22 +3,21 @@ const plugin = require('../dist/cjs');
 
 
 
+
+
+
+
+
 const code = `
-let count = $signal(0);
-let a = $derefSignal([$get(count), $set(count)]);
+let x = $signal(0);
 
-a += 1;
-
-let b = $derefSignal($refSignal(count));
-
-b += 1;
-
-let c = $derefSignal([
-  () => count,
-  (value) => {
-    count = c;
-  },
-]);
+$: var y = x + 10;
+$: x = compute();
+$: {
+  console.log(x);
+}
+$(x = compute());
+const z = $(x + 10);
 `;
 babel.transformAsync(code, {
   plugins: [
