@@ -9,15 +9,13 @@ const plugin = require('../dist/cjs');
 
 
 const code = `
-let x = $signal(0);
+let value = $derefSignal([getValue, setValue]);
 
-$: var y = x + 10;
-$: x = compute();
-$: {
-  console.log(x);
+value = newValue;
+
+effect: {
+  console.log(value);
 }
-$(x = compute());
-const z = $(x + 10);
 `;
 babel.transformAsync(code, {
   plugins: [
