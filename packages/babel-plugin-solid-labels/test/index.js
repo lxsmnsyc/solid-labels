@@ -1,13 +1,6 @@
 const babel = require('@babel/core');
 const plugin = require('../dist/cjs');
 
-
-
-
-
-
-
-
 const code = `
 let value = $derefSignal([getValue, setValue]);
 

@@ -16,7 +16,11 @@
   },
   "license": "MIT",
   "keywords": [
-    "pridepack"
+    "pridepack",
+    "babel",
+    "solid-js",
+    "labels",
+    "reactivity"
   ],
   "name": "babel-plugin-solid-labels",
   "devDependencies": {
