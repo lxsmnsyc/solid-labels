@@ -117,7 +117,43 @@ function Counter() {
 }
 ```
 
-You may use an arrow function instead of a block statement to accepts the previously returned value.
+You may use an arrow function instead of a block statement to accepts the previously returned value. If an expression (e.g. identifier, function call for `label: expr;`) is supplied, it compiles to `hook(expr)`.
+
+## `$`
+
+Similar to `memo` and `effect`, `$` compiles to `createMemo` for variable declaration, while `createEffect(() => expr)` for other kinds of expressions (including block statements). `$` is ideal for single-line effects.
+
+```js
+let x = $signal(0);
+
+$: var y = x + 10;
+$: x = compute();
+$: {
+  console.log(x);
+}
+```
+
+compiles into
+
+```js
+import { createEffect as _createEffect } from "solid-js";
+import { createMemo as _createMemo } from "solid-js";
+import { createSignal as _createSignal } from "solid-js";
+
+let [_x, _setx] = _createSignal(0, {
+  name: "x"
+});
+
+const _y = _createMemo(() => _x() + 10, {
+  name: "y"
+});
+
+_createEffect(() => _setx(() => compute()));
+
+_createEffect(() => {
+  console.log(_x());
+});
+```
 
 ## `mount`, `cleanup` and `error`
 
@@ -159,7 +195,7 @@ function Counter() {
 }
 ```
 
-You may also use an arrow function. For `onError`, an arrow function with a parameter may be used to receive the error object.
+You may also use an arrow function. For `onError`, an arrow function with a parameter may be used to receive the error object. If an expression (e.g. identifier, function call for `label: expr;`) is supplied, it compiles to `hook(expr)`.
 
 ## `untrack` and `batch`
 
@@ -193,6 +229,8 @@ function Counter() {
 }
 ```
 
+You may also use an arrow function. If an expression (e.g. identifier, function call for `label: expr;`) is supplied, it compiles to `hook(expr)`.
+
 ## `root`
 
 Transforms into `createRoot`
@@ -213,7 +251,7 @@ _createRoot(() => {
 });
 ```
 
-You can also pass an arrow function instead of a block to receive the `dispose` callback.
+You can also pass an arrow function instead of a block to receive the `dispose` callback. If an expression (e.g. identifier, function call for `label: expr;`) is supplied, it compiles to `hook(expr)`.
 
 ## Tooling
 
