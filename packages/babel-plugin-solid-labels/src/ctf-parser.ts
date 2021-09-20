@@ -8,6 +8,7 @@ import signalVariableExpression from './signal-variable';
 import accessorVariableExpression from './accessor-variable';
 import { ImportHook, State } from './types';
 import deferredVariableExpression from './deferred-variable';
+import destructureVariableExpression from './destructure-variable';
 
 function derefSignalExpression(
   _: ImportHook,
@@ -344,6 +345,28 @@ function createCompileTimeAutoArrow(target: string, limit: number) {
   };
 }
 
+function destructureExpression(
+  _: ImportHook,
+  path: NodePath<t.CallExpression>,
+): void {
+  const argument = path.node.arguments[0];
+  if (!t.isExpression(argument)) {
+    throw new Error('Expected expression');
+  }
+  if (!t.isVariableDeclarator(path.parent) || !path.parentPath) {
+    throw new Error('Expected variable declarator');
+  }
+  const leftExpr = path.parent.id;
+  if (!t.isObjectPattern(leftExpr)) {
+    throw new Error('Expected object pattern');
+  }
+  destructureVariableExpression(
+    path.parentPath as NodePath<t.VariableDeclarator>,
+    argument,
+    leftExpr,
+  );
+}
+
 const CTF_EXPRESSIONS: Record<string, CompileTimeFunctionExpression> = {
   $: reactiveExpression,
   $derefSignal: derefSignalExpression,
@@ -374,6 +397,8 @@ const CTF_EXPRESSIONS: Record<string, CompileTimeFunctionExpression> = {
   $effect: createCompileTimeAlias('createEffect'),
   $computed: createCompileTimeAlias('createComputed'),
   $renderEffect: createCompileTimeAlias('createRenderEffect'),
+
+  $destructure: destructureExpression,
 };
 
 const CTF_PARSER: Visitor<State> = {

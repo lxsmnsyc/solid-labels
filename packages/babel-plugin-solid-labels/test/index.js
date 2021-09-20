@@ -1,12 +1,33 @@
 const babel = require('@babel/core');
 const plugin = require('../dist/cjs');
 
-const code = `
-signal: var data;
 
-transition: {
-  data = fetchData();
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const code = `
+destructure: var { a, b: { c, d } } = props;
+$: console.log(a);
+$: console.log(c, d);
 `;
 babel.transformAsync(code, {
   plugins: [

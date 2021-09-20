@@ -6,19 +6,20 @@ import signalVariableExpression from './signal-variable';
 import accessorVariableExpression from './accessor-variable';
 import { ImportHook, State } from './types';
 import deferredVariableExpression from './deferred-variable';
+import destructureVariableExpression from './destructure-variable';
 
 type VariableLabelExpression = (
   hooks: ImportHook,
   path: NodePath<t.VariableDeclarator>,
-  memoIdentifier: t.Identifier,
-  stateIdentifier: t.Expression,
+  leftExpr: t.LVal,
+  rightExpr: t.Expression | null | undefined,
 ) => void;
 
 function createVariableLabel(variableExpression: VariableLabelExpression) {
-  return function (
+  return (
     hooks: ImportHook,
     path: NodePath<t.LabeledStatement>,
-  ): void {
+  ) => {
     const { body } = path.node;
     if (t.isExpressionStatement(body)) {
       if (t.isAssignmentExpression(body.expression)) {
@@ -102,9 +103,7 @@ function createVariableLabel(variableExpression: VariableLabelExpression) {
         VariableDeclarator(p) {
           const leftExpr = p.node.id;
           const rightExpr = p.node.init;
-          if (t.isIdentifier(leftExpr)) {
-            variableExpression(hooks, p, leftExpr, rightExpr ?? t.identifier('undefined'));
-          }
+          variableExpression(hooks, p, leftExpr, rightExpr);
         },
       });
     } else {
@@ -192,22 +191,45 @@ type LabelExpression = (
 
 const EXPRESSIONS: Record<string, LabelExpression> = {
   $: reactiveExpression,
-  signal: createVariableLabel(signalVariableExpression),
-  memo: createVariableLabel(memoVariableExpression),
-  deferred: createVariableLabel(deferredVariableExpression),
+  signal: createVariableLabel((hooks, path, leftExpr, rightExpr) => {
+    if (t.isIdentifier(leftExpr)) {
+      signalVariableExpression(hooks, path, leftExpr, rightExpr ?? t.identifier('undefined'));
+    }
+  }),
+  memo: createVariableLabel((hooks, path, leftExpr, rightExpr) => {
+    if (t.isIdentifier(leftExpr)) {
+      memoVariableExpression(hooks, path, leftExpr, rightExpr ?? t.identifier('undefined'));
+    }
+  }),
+  deferred: createVariableLabel((hooks, path, leftExpr, rightExpr) => {
+    if (t.isIdentifier(leftExpr)) {
+      deferredVariableExpression(hooks, path, leftExpr, rightExpr ?? t.identifier('undefined'));
+    }
+  }),
+  destructure: createVariableLabel((_, path, leftExpr, rightExpr) => {
+    if (t.isObjectPattern(leftExpr) && rightExpr) {
+      destructureVariableExpression(
+        path,
+        rightExpr,
+        leftExpr,
+      );
+    }
+  }),
   children: createVariableLabel((hooks, path, leftExpr, rightExpr) => {
-    accessorVariableExpression(
-      hooks,
-      path,
-      leftExpr,
-      'children',
-      [
-        t.arrowFunctionExpression(
-          [],
-          rightExpr ?? t.identifier('undefined'),
-        ),
-      ],
-    );
+    if (t.isIdentifier(leftExpr)) {
+      accessorVariableExpression(
+        hooks,
+        path,
+        leftExpr,
+        'children',
+        [
+          t.arrowFunctionExpression(
+            [],
+            rightExpr ?? t.identifier('undefined'),
+          ),
+        ],
+      );
+    }
   }),
   effect: createCallbackLabel('createEffect'),
   computed: createCallbackLabel('createComputed'),

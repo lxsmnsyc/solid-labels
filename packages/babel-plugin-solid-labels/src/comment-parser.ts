@@ -5,6 +5,7 @@ import deferredVariableExpression from './deferred-variable';
 import getHookIdentifier from './get-hook-identifier';
 import memoVariableExpression from './memo-variable';
 import signalVariableExpression from './signal-variable';
+import destructureVariableExpression from './destructure-variable';
 import { ImportHook, State } from './types';
 
 function signalExpression(
@@ -32,6 +33,25 @@ function memoExpression(
       const rightExpr = p.node.init;
       if (t.isIdentifier(leftExpr)) {
         memoVariableExpression(hooks, p, leftExpr, rightExpr ?? t.identifier('undefined'));
+      }
+    },
+  });
+}
+
+function destructureExpression(
+  _: ImportHook,
+  path: NodePath<t.VariableDeclaration>,
+): void {
+  path.traverse({
+    VariableDeclarator(p) {
+      const leftExpr = p.node.id;
+      const rightExpr = p.node.init;
+      if (t.isObjectPattern(leftExpr) && rightExpr) {
+        destructureVariableExpression(
+          p,
+          rightExpr,
+          leftExpr,
+        );
       }
     },
   });
@@ -121,6 +141,7 @@ const STATE_EXPRESSIONS: Record<string, StateExpression> = {
   '@memo': memoExpression,
   '@children': childrenExpression,
   '@deferred': deferredExpression,
+  '@destructure': destructureExpression,
 };
 
 const CALLBACK_EXPRESSIONS: Record<string, CallbackLabelExpresion> = {

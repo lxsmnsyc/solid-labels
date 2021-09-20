@@ -1,5 +1,6 @@
 import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
+import normalizeBindings from './normalize-bindings';
 
 export default function derefSignalExpression(
   path: NodePath,
@@ -55,132 +56,14 @@ export default function derefSignalExpression(
             break;
         }
       },
-      ObjectProperty(p) {
-        if (p.scope !== path.scope && p.scope.hasOwnBinding(signalIdentifier.name)) {
-          return;
-        }
-        if (
-          p.node.shorthand
-          && t.isIdentifier(p.node.key)
-          && p.node.key.name === signalIdentifier.name
-          && t.isIdentifier(p.node.value)
-          && p.node.value.name === signalIdentifier.name
-        ) {
-          p.replaceWith(
-            t.objectProperty(
-              signalIdentifier,
-              t.callExpression(
-                readIdentifier,
-                [],
-              ),
-            ),
-          );
-        }
-      },
-      Identifier(p) {
-        if (p.node.name !== signalIdentifier.name) {
-          return;
-        }
-        if (p.scope !== path.scope && p.scope.hasOwnBinding(signalIdentifier.name)) {
-          return;
-        }
-        // { x }
-        if (t.isObjectMethod(p.parent) && p.parent.key === p.node) {
-          return;
-        }
-        if (t.isObjectProperty(p.parent) && p.parent.key === p.node) {
-          return;
-        }
-        // const x
-        if (t.isVariableDeclarator(p.parent)) {
-          if (p.parent.id === p.node) {
-            return;
-          }
-          // if (p.parent.init !== p.node) {
-          //   return;
-          // }
-          // if (
-          //   t.isVariableDeclaration(p.parentPath.parent)
-          //   && p.parentPath.parentPath
-          //   && t.isLabeledStatement(p.parentPath.parentPath.parent)
-          //   && p.parentPath.parentPath.parent.label.name === 'refSignal'
-          //   && t.isIdentifier(p.parent.init)
-          //   && p.parent.init.name === signalIdentifier.name
-          // ) {
-          //   p.parentPath.parentPath.parentPath?.insertAfter(
-          //     t.variableDeclaration(
-          //       'const',
-          //       [
-          //         t.variableDeclarator(
-          //           p.parent.id,
-          //           t.arrayExpression([
-          //             readIdentifier,
-          //             writeIdentifier,
-          //           ]),
-          //         ),
-          //       ],
-          //     ),
-          //   );
-          //   p.parentPath.remove();
-          // }
-          // return;
-        }
-        // const [x]
-        if (t.isArrayPattern(p.parent) && p.parent.elements.includes(p.node)) {
-          return;
-        }
-        // (x) => {}
-        if (t.isArrowFunctionExpression(p.parent) && p.parent.params.includes(p.node)) {
-          return;
-        }
-        // function (x)
-        if (t.isFunctionExpression(p.parent) && p.parent.params.includes(p.node)) {
-          return;
-        }
-        if (t.isFunctionDeclaration(p.parent) && p.parent.params.includes(p.node)) {
-          return;
-        }
-        // x:
-        if (t.isLabeledStatement(p.parent) && p.parent.label === p.node) {
-          return;
-        }
-        // obj.x
-        if (t.isMemberExpression(p.parent) && p.parent.property === p.node) {
-          return;
-        }
-        // function x() {}
-        if (t.isFunctionDeclaration(p.parent) && p.parent.id === p.node) {
-          return;
-        }
-        // (y = x) => {}
-        // function z(y = x) {}
-        if (
-          t.isAssignmentPattern(p.parent)
-          && p.parent.left === p.node
-          && (
-            (
-              t.isArrowFunctionExpression(p.parentPath.parent)
-              && p.parentPath.parent.params.includes(p.parent)
-            )
-            || (
-              t.isFunctionDeclaration(p.parentPath.parent)
-              && p.parentPath.parent.params.includes(p.parent)
-            )
-            || (
-              t.isFunctionExpression(p.parentPath.parent)
-              && p.parentPath.parent.params.includes(p.parent)
-            )
-          )
-        ) {
-          return;
-        }
-        p.replaceWith(
-          t.callExpression(
-            readIdentifier,
-            [],
-          ),
-        );
-      },
+      ...normalizeBindings(
+        path,
+        t.callExpression(
+          readIdentifier,
+          [],
+        ),
+        signalIdentifier,
+      ),
       UpdateExpression(p) {
         if (p.scope !== path.scope && p.scope.hasOwnBinding(signalIdentifier.name)) {
           return;
