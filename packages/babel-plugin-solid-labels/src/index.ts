@@ -1,18 +1,17 @@
 import { PluginObj } from '@babel/core';
-import {
-  Accessor,
-  Setter,
-  Context,
-  Component,
-  JSX,
-  ObservableObserver,
-} from 'solid-js';
+import * as solid from 'solid-js';
 import { State } from './types';
 import LABEL_PARSER from './label-parser';
 import COMMENT_PARSER from './comment-parser';
 import CTF_PARSER from './ctf-parser';
 
 declare global {
+  type Accessor<T> = solid.Accessor<T>;
+  type Setter<T> = solid.Setter<T>;
+  type Context<T> = solid.Context<T>;
+  type ObservableObserver<T> = solid.ObservableObserver<T>;
+  type Component<T> = solid.Component<T>;
+
   function $signal<T>(): T | undefined;
   function $signal<T>(
     value: T,
@@ -88,7 +87,7 @@ declare global {
     preload: () => void;
   };
 
-  function $children(value: JSX.Element): JSX.Element;
+  function $children(value: solid.JSX.Element): solid.JSX.Element;
 
   interface Observable<T> {
     subscribe(observer: ObservableObserver<T>): { unsubscribe(): void } | (() => void);
