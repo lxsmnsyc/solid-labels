@@ -1,6 +1,7 @@
 import { NodePath, Visitor } from '@babel/traverse';
 import * as t from '@babel/types';
 import accessorVariableExpression from './accessor-variable';
+import deferredVariableExpression from './deferred-variable';
 import getHookIdentifier from './get-hook-identifier';
 import memoVariableExpression from './memo-variable';
 import signalVariableExpression from './signal-variable';
@@ -31,6 +32,21 @@ function memoExpression(
       const rightExpr = p.node.init;
       if (t.isIdentifier(leftExpr)) {
         memoVariableExpression(hooks, p, leftExpr, rightExpr ?? t.identifier('undefined'));
+      }
+    },
+  });
+}
+
+function deferredExpression(
+  hooks: ImportHook,
+  path: NodePath<t.VariableDeclaration>,
+): void {
+  path.traverse({
+    VariableDeclarator(p) {
+      const leftExpr = p.node.id;
+      const rightExpr = p.node.init;
+      if (t.isIdentifier(leftExpr)) {
+        deferredVariableExpression(hooks, p, leftExpr, rightExpr ?? t.identifier('undefined'));
       }
     },
   });
@@ -104,6 +120,7 @@ const STATE_EXPRESSIONS: Record<string, StateExpression> = {
   '@signal': signalExpression,
   '@memo': memoExpression,
   '@children': childrenExpression,
+  '@deferred': deferredExpression,
 };
 
 const CALLBACK_EXPRESSIONS: Record<string, CallbackLabelExpresion> = {
