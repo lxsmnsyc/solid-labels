@@ -5,102 +5,112 @@ import memoVariableExpression from './memo-variable';
 import signalVariableExpression from './signal-variable';
 import accessorVariableExpression from './accessor-variable';
 import { ImportHook, State } from './types';
+import deferredVariableExpression from './deferred-variable';
 
-function signalExpression(
+type VariableLabelExpression = (
   hooks: ImportHook,
-  path: NodePath<t.LabeledStatement>,
-): void {
-  const { body } = path.node;
-  if (t.isExpressionStatement(body)) {
-    if (t.isAssignmentExpression(body.expression)) {
-      if (body.expression.operator !== '=') {
-        throw new Error('Invalid assignment expression operator');
-      }
-      const leftExpr = body.expression.left;
-      const rightExpr = body.expression.right;
-      if (!t.isIdentifier(leftExpr)) {
-        throw new Error('Expected identifier');
-      }
-      path.replaceWith(
-        t.variableDeclaration(
-          'const',
-          [
-            t.variableDeclarator(
-              leftExpr,
-              rightExpr,
-            ),
-          ],
-        ),
-      );
-    } else if (t.isIdentifier(body.expression)) {
-      path.replaceWith(
-        t.variableDeclaration(
-          'const',
-          [
-            t.variableDeclarator(
-              body.expression,
-            ),
-          ],
-        ),
-      );
-    } else if (t.isSequenceExpression(body.expression)) {
-      const exprs: t.VariableDeclarator[] = [];
-      for (let i = 0, len = body.expression.expressions.length; i < len; i += 1) {
-        const expr = body.expression.expressions[i];
+  path: NodePath<t.VariableDeclarator>,
+  memoIdentifier: t.Identifier,
+  stateIdentifier: t.Expression,
+) => void;
 
-        if (t.isIdentifier(expr)) {
-          exprs.push(
-            t.variableDeclarator(
-              expr,
-            ),
-          );
-        } else if (t.isAssignmentExpression(expr)) {
-          if (expr.operator !== '=') {
-            throw new Error('Invalid assignment expression operator');
-          }
-          const leftExpr = expr.left;
-          const rightExpr = expr.right;
-          if (!t.isIdentifier(leftExpr)) {
-            throw new Error('Expected identifier');
-          }
-          path.replaceWith(
-            t.variableDeclarator(
-              leftExpr,
-              rightExpr,
-            ),
-          );
-        } else {
-          throw new Error('Expected identifier or assignment expression');
+function createVariableLabel(variableExpression: VariableLabelExpression) {
+  return function (
+    hooks: ImportHook,
+    path: NodePath<t.LabeledStatement>,
+  ): void {
+    const { body } = path.node;
+    if (t.isExpressionStatement(body)) {
+      if (t.isAssignmentExpression(body.expression)) {
+        if (body.expression.operator !== '=') {
+          throw new Error('Invalid assignment expression operator');
         }
-      }
+        const leftExpr = body.expression.left;
+        const rightExpr = body.expression.right;
+        if (!t.isIdentifier(leftExpr)) {
+          throw new Error('Expected identifier');
+        }
+        path.replaceWith(
+          t.variableDeclaration(
+            'const',
+            [
+              t.variableDeclarator(
+                leftExpr,
+                rightExpr,
+              ),
+            ],
+          ),
+        );
+      } else if (t.isIdentifier(body.expression)) {
+        path.replaceWith(
+          t.variableDeclaration(
+            'const',
+            [
+              t.variableDeclarator(
+                body.expression,
+              ),
+            ],
+          ),
+        );
+      } else if (t.isSequenceExpression(body.expression)) {
+        const exprs: t.VariableDeclarator[] = [];
+        for (let i = 0, len = body.expression.expressions.length; i < len; i += 1) {
+          const expr = body.expression.expressions[i];
 
+          if (t.isIdentifier(expr)) {
+            exprs.push(
+              t.variableDeclarator(
+                expr,
+              ),
+            );
+          } else if (t.isAssignmentExpression(expr)) {
+            if (expr.operator !== '=') {
+              throw new Error('Invalid assignment expression operator');
+            }
+            const leftExpr = expr.left;
+            const rightExpr = expr.right;
+            if (!t.isIdentifier(leftExpr)) {
+              throw new Error('Expected identifier');
+            }
+            path.replaceWith(
+              t.variableDeclarator(
+                leftExpr,
+                rightExpr,
+              ),
+            );
+          } else {
+            throw new Error('Expected identifier or assignment expression');
+          }
+        }
+
+        path.replaceWith(
+          t.variableDeclaration(
+            'const',
+            exprs,
+          ),
+        );
+      }
+    }
+    if (t.isVariableDeclaration(body)) {
+      body.kind = 'const';
       path.replaceWith(
-        t.variableDeclaration(
-          'const',
-          exprs,
-        ),
+        body,
       );
     }
-  }
-  if (t.isVariableDeclaration(body)) {
-    body.kind = 'const';
-    path.replaceWith(
-      body,
-    );
-  }
-  if (t.isVariableDeclaration(path.node)) {
-    path.traverse({
-      VariableDeclarator(p) {
-        const leftExpr = p.node.id;
-        const rightExpr = p.node.init;
-        if (t.isIdentifier(leftExpr)) {
-          signalVariableExpression(hooks, p, leftExpr, rightExpr ?? undefined);
-        }
-      },
-    });
-  } else {
-    throw new Error('Expected assignment expression or variable declaration');
-  }
+    if (t.isVariableDeclaration(path.node)) {
+      path.traverse({
+        VariableDeclarator(p) {
+          const leftExpr = p.node.id;
+          const rightExpr = p.node.init;
+          if (t.isIdentifier(leftExpr)) {
+            variableExpression(hooks, p, leftExpr, rightExpr ?? t.identifier('undefined'));
+          }
+        },
+      });
+    } else {
+      throw new Error('Expected assignment expression or variable declaration');
+    }
+  };
 }
 
 function reactiveExpression(
@@ -147,211 +157,6 @@ function reactiveExpression(
   }
 }
 
-function memoExpression(
-  hooks: ImportHook,
-  path: NodePath<t.LabeledStatement>,
-): void {
-  const { body } = path.node;
-  if (t.isExpressionStatement(body)) {
-    if (t.isAssignmentExpression(body.expression)) {
-      if (body.expression.operator !== '=') {
-        throw new Error('Invalid assignment expression operator');
-      }
-      const leftExpr = body.expression.left;
-      const rightExpr = body.expression.right;
-      if (!t.isIdentifier(leftExpr)) {
-        throw new Error('Expected identifier');
-      }
-      path.replaceWith(
-        t.variableDeclaration(
-          'const',
-          [
-            t.variableDeclarator(
-              leftExpr,
-              rightExpr,
-            ),
-          ],
-        ),
-      );
-    } else if (t.isIdentifier(body.expression)) {
-      path.replaceWith(
-        t.variableDeclaration(
-          'const',
-          [
-            t.variableDeclarator(
-              body.expression,
-            ),
-          ],
-        ),
-      );
-    } else if (t.isSequenceExpression(body.expression)) {
-      const exprs: t.VariableDeclarator[] = [];
-      for (let i = 0, len = body.expression.expressions.length; i < len; i += 1) {
-        const expr = body.expression.expressions[i];
-
-        if (t.isIdentifier(expr)) {
-          exprs.push(
-            t.variableDeclarator(
-              expr,
-            ),
-          );
-        } else if (t.isAssignmentExpression(expr)) {
-          if (expr.operator !== '=') {
-            throw new Error('Invalid assignment expression operator');
-          }
-          const leftExpr = expr.left;
-          const rightExpr = expr.right;
-          if (!t.isIdentifier(leftExpr)) {
-            throw new Error('Expected identifier');
-          }
-          path.replaceWith(
-            t.variableDeclarator(
-              leftExpr,
-              rightExpr,
-            ),
-          );
-        } else {
-          throw new Error('Expected identifier or assignment expression');
-        }
-      }
-
-      path.replaceWith(
-        t.variableDeclaration(
-          'const',
-          exprs,
-        ),
-      );
-    }
-  }
-  if (t.isVariableDeclaration(body)) {
-    body.kind = 'const';
-    path.replaceWith(
-      body,
-    );
-  }
-  if (t.isVariableDeclaration(path.node)) {
-    path.traverse({
-      VariableDeclarator(p) {
-        const leftExpr = p.node.id;
-        const rightExpr = p.node.init;
-        if (t.isIdentifier(leftExpr)) {
-          memoVariableExpression(hooks, p, leftExpr, rightExpr ?? t.identifier('undefined'));
-        }
-      },
-    });
-  } else {
-    throw new Error('Expected assignment expression or variable declaration');
-  }
-}
-
-function childrenExpression(
-  hooks: ImportHook,
-  path: NodePath<t.LabeledStatement>,
-): void {
-  const { body } = path.node;
-  if (t.isExpressionStatement(body)) {
-    if (t.isAssignmentExpression(body.expression)) {
-      if (body.expression.operator !== '=') {
-        throw new Error('Invalid assignment expression operator');
-      }
-      const leftExpr = body.expression.left;
-      const rightExpr = body.expression.right;
-      if (!t.isIdentifier(leftExpr)) {
-        throw new Error('Expected identifier');
-      }
-      path.replaceWith(
-        t.variableDeclaration(
-          'const',
-          [
-            t.variableDeclarator(
-              leftExpr,
-              rightExpr,
-            ),
-          ],
-        ),
-      );
-    } else if (t.isIdentifier(body.expression)) {
-      path.replaceWith(
-        t.variableDeclaration(
-          'const',
-          [
-            t.variableDeclarator(
-              body.expression,
-            ),
-          ],
-        ),
-      );
-    } else if (t.isSequenceExpression(body.expression)) {
-      const exprs: t.VariableDeclarator[] = [];
-      for (let i = 0, len = body.expression.expressions.length; i < len; i += 1) {
-        const expr = body.expression.expressions[i];
-
-        if (t.isIdentifier(expr)) {
-          exprs.push(
-            t.variableDeclarator(
-              expr,
-            ),
-          );
-        } else if (t.isAssignmentExpression(expr)) {
-          if (expr.operator !== '=') {
-            throw new Error('Invalid assignment expression operator');
-          }
-          const leftExpr = expr.left;
-          const rightExpr = expr.right;
-          if (!t.isIdentifier(leftExpr)) {
-            throw new Error('Expected identifier');
-          }
-          path.replaceWith(
-            t.variableDeclarator(
-              leftExpr,
-              rightExpr,
-            ),
-          );
-        } else {
-          throw new Error('Expected identifier or assignment expression');
-        }
-      }
-
-      path.replaceWith(
-        t.variableDeclaration(
-          'const',
-          exprs,
-        ),
-      );
-    }
-  }
-  if (t.isVariableDeclaration(body)) {
-    body.kind = 'const';
-    path.replaceWith(
-      body,
-    );
-  }
-  if (t.isVariableDeclaration(path.node)) {
-    path.traverse({
-      VariableDeclarator(p) {
-        const leftExpr = p.node.id;
-        const rightExpr = p.node.init;
-        if (t.isIdentifier(leftExpr)) {
-          accessorVariableExpression(
-            hooks,
-            p,
-            leftExpr,
-            'children',
-            [
-              t.arrowFunctionExpression(
-                [],
-                rightExpr ?? t.identifier('undefined'),
-              ),
-            ],
-          );
-        }
-      },
-    });
-  } else {
-    throw new Error('Expected assignment expression or variable declaration');
-  }
-}
-
 function createCallbackLabel(label: string) {
   return function expr(
     hooks: ImportHook,
@@ -387,9 +192,23 @@ type LabelExpression = (
 
 const EXPRESSIONS: Record<string, LabelExpression> = {
   $: reactiveExpression,
-  signal: signalExpression,
-  memo: memoExpression,
-  children: childrenExpression,
+  signal: createVariableLabel(signalVariableExpression),
+  memo: createVariableLabel(memoVariableExpression),
+  deferred: createVariableLabel(deferredVariableExpression),
+  children: createVariableLabel((hooks, path, leftExpr, rightExpr) => {
+    accessorVariableExpression(
+      hooks,
+      path,
+      leftExpr,
+      'children',
+      [
+        t.arrowFunctionExpression(
+          [],
+          rightExpr ?? t.identifier('undefined'),
+        ),
+      ],
+    );
+  }),
   effect: createCallbackLabel('createEffect'),
   computed: createCallbackLabel('createComputed'),
   renderEffect: createCallbackLabel('createRenderEffect'),
