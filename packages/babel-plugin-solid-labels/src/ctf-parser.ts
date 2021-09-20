@@ -171,37 +171,6 @@ function reactiveExpression(
   }
 }
 
-function effectExpression(
-  hooks: ImportHook,
-  path: NodePath<t.CallExpression>,
-): void {
-  if (!path.parentPath) {
-    throw new Error('Expected parent path');
-  }
-  const argument = path.node.arguments[0];
-  if (!t.isExpression(argument)) {
-    throw new Error('Expected expression');
-  }
-  const arrow = (
-    (t.isArrowFunctionExpression(argument) || t.isFunctionExpression(argument))
-      ? argument
-      : (
-        t.arrowFunctionExpression(
-          [],
-          argument,
-        )
-      )
-  );
-  path.replaceWith(
-    t.callExpression(
-      getHookIdentifier(hooks, path, 'createEffect'),
-      [
-        arrow,
-      ],
-    ),
-  );
-}
-
 function rootExpression(
   hooks: ImportHook,
   path: NodePath<t.CallExpression>,
@@ -341,7 +310,6 @@ const CTF_EXPRESSIONS: Record<string, CompileTimeFunctionExpression> = {
   $derefMemo: derefMemoExpression,
   $signal: signalExpression,
   $memo: memoExpression,
-  $effect: effectExpression,
   $root: rootExpression,
   $from: fromExpression,
   $children: createCompileTimeAutoAccessor('children', 1),
@@ -355,6 +323,9 @@ const CTF_EXPRESSIONS: Record<string, CompileTimeFunctionExpression> = {
   $useContext: createCompileTimeAlias('useContext'),
   $createContext: createCompileTimeAlias('createContext'),
   $uid: createCompileTimeAlias('createUniqueId'),
+  $effect: createCompileTimeAlias('createEffect'),
+  $computed: createCompileTimeAlias('createComputed'),
+  $renderEffect: createCompileTimeAlias('createRenderEffect'),
 };
 
 const CTF_PARSER: Visitor<State> = {

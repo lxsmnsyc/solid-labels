@@ -51,8 +51,14 @@ declare global {
   function $createContext<T>(defaultValue: T): Context<T>;
   function $useContext<T>(context: Context<T>): T;
 
-  function $effect<T>(value: T): void;
   function $effect<T>(fn: (v?: T) => T | undefined): void;
+  function $effect<T>(fn: (v: T) => T, value: T, options?: { name?: string }): void;
+
+  function $computed<T>(fn: (v?: T) => T | undefined): void;
+  function $computed<T>(fn: (v: T) => T, value: T, options?: { name?: string }): void;
+
+  function $renderEffect<T>(fn: (v?: T) => T | undefined): void;
+  function $renderEffect<T>(fn: (v: T) => T, value: T, options?: { name?: string }): void;
 
   function $lazy<T extends Component<any>>(fn: Promise<{ default: T }>): T & {
     preload: () => void;
