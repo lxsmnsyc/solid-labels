@@ -98,6 +98,21 @@ declare global {
     fn?: (a: U, b: T) => boolean,
     options?: { name?: string }
   ): (key: U) => boolean
+
+  function $on<T, U>(
+    deps: T,
+    fn: (input: T, prevInput: T, prevValue?: U) => U,
+    options?: { defer?: boolean }
+  ): (prevValue?: U) => U;
+
+  function $deferred<T>(
+    source: T,
+    options?: {
+      equals?: false | ((prev: T, next: T) => boolean);
+      name?: string;
+      timeoutMs?: number;
+    },
+  ): T;
 }
 
 export default function solidReactivityPlugin(): PluginObj<State> {

@@ -312,14 +312,22 @@ const CTF_EXPRESSIONS: Record<string, CompileTimeFunctionExpression> = {
   $memo: memoExpression,
   $root: rootExpression,
   $from: fromExpression,
+
+  // auto accessors + auto arrow
   $children: createCompileTimeAutoAccessor('children', 1),
   $mapArray: createCompileTimeAutoAccessor('mapArray', 3),
   $indexArray: createCompileTimeAutoAccessor('indexArray', 3),
+  $deferred: createCompileTimeAutoAccessor('createDeferred', 2),
+
+  // auto arrows
   $lazy: createCompileTimeAutoArrow('lazy', 1),
   $untrack: createCompileTimeAutoArrow('untrack', 1),
   $batch: createCompileTimeAutoArrow('batch', 1),
   $observable: createCompileTimeAutoArrow('observable', 1),
   $selector: createCompileTimeAutoArrow('createSelector', 1),
+  $on: createCompileTimeAutoArrow('on', 3),
+
+  // aliases
   $useContext: createCompileTimeAlias('useContext'),
   $createContext: createCompileTimeAlias('createContext'),
   $uid: createCompileTimeAlias('createUniqueId'),
