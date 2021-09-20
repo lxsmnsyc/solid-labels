@@ -7,6 +7,7 @@ import memoVariableExpression from './memo-variable';
 import signalVariableExpression from './signal-variable';
 import accessorVariableExpression from './accessor-variable';
 import { ImportHook, State } from './types';
+import deferredVariableExpression from './deferred-variable';
 
 function derefSignalExpression(
   _: ImportHook,
@@ -124,6 +125,45 @@ function memoExpression(
     throw new Error('Expected identifier');
   }
   memoVariableExpression(
+    hooks,
+    path.parentPath as NodePath<t.VariableDeclarator>,
+    leftExpr,
+    argument,
+    options,
+  );
+}
+
+function deferredExpression(
+  hooks: ImportHook,
+  path: NodePath<t.CallExpression>,
+): void {
+  if (path.node.arguments.length > 2) {
+    throw new Error('Expected argument length');
+  }
+  let argument: t.Expression | undefined;
+  let options: t.Expression | undefined;
+  if (path.node.arguments.length > 0) {
+    const state = path.node.arguments[0];
+    if (!t.isExpression(state)) {
+      throw new Error('Expected expression');
+    }
+    argument = state;
+    if (path.node.arguments.length > 1) {
+      const optionsValue = path.node.arguments[1];
+      if (!t.isExpression(optionsValue)) {
+        throw new Error('Expected expression');
+      }
+      options = optionsValue;
+    }
+  }
+  if (!t.isVariableDeclarator(path.parent) || !path.parentPath) {
+    throw new Error('Expected variable declarator');
+  }
+  const leftExpr = path.parent.id;
+  if (!t.isIdentifier(leftExpr)) {
+    throw new Error('Expected identifier');
+  }
+  deferredVariableExpression(
     hooks,
     path.parentPath as NodePath<t.VariableDeclarator>,
     leftExpr,
@@ -312,12 +352,12 @@ const CTF_EXPRESSIONS: Record<string, CompileTimeFunctionExpression> = {
   $memo: memoExpression,
   $root: rootExpression,
   $from: fromExpression,
+  $deferred: deferredExpression,
 
   // auto accessors + auto arrow
   $children: createCompileTimeAutoAccessor('children', 1),
   $mapArray: createCompileTimeAutoAccessor('mapArray', 3),
   $indexArray: createCompileTimeAutoAccessor('indexArray', 3),
-  $deferred: createCompileTimeAutoAccessor('createDeferred', 2),
 
   // auto arrows
   $lazy: createCompileTimeAutoArrow('lazy', 1),
