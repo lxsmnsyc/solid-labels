@@ -45,12 +45,6 @@ declare global {
   function $get<T>(value: T): Accessor<T>;
   function $set<T>(value: T): Setter<T>;
 
-  function $uid(): string;
-
-  function $createContext<T>(): Context<T | undefined>;
-  function $createContext<T>(defaultValue: T): Context<T>;
-  function $useContext<T>(context: Context<T>): T;
-
   function $effect<T>(fn: (v?: T) => T | undefined): void;
   function $effect<T>(fn: (v: T) => T, value: T, options?: { name?: string }): void;
 
@@ -60,14 +54,41 @@ declare global {
   function $renderEffect<T>(fn: (v?: T) => T | undefined): void;
   function $renderEffect<T>(fn: (v: T) => T, value: T, options?: { name?: string }): void;
 
+  function $root<T>(value: T): T;
+  function $root<T>(cb: (dispose: () => void) => T): T;
+
+  function $selector<T, U>(
+    source: T,
+    fn?: (a: U, b: T) => boolean,
+    options?: { name?: string }
+  ): (key: U) => boolean;
+
+  function $on<T, U>(
+    deps: T,
+    fn: (input: T, prevInput: T, prevValue?: U) => U,
+    options?: { defer?: boolean }
+  ): (prevValue?: U) => U;
+
+  function $deferred<T>(
+    source: T,
+    options?: {
+      equals?: false | ((prev: T, next: T) => boolean);
+      name?: string;
+      timeoutMs?: number;
+    },
+  ): T;
+
+  function $uid(): string;
+
+  function $createContext<T>(): Context<T | undefined>;
+  function $createContext<T>(defaultValue: T): Context<T>;
+  function $useContext<T>(context: Context<T>): T;
+
   function $lazy<T extends Component<any>>(fn: Promise<{ default: T }>): T & {
     preload: () => void;
   };
 
   function $children(value: JSX.Element): JSX.Element;
-
-  function $root<T>(value: T): T;
-  function $root<T>(cb: (dispose: () => void) => T): T;
 
   interface Observable<T> {
     subscribe(observer: ObservableObserver<T>): { unsubscribe(): void } | (() => void);
@@ -92,27 +113,6 @@ declare global {
       fallback?: Accessor<any>;
     },
   ): U[];
-
-  function $selector<T, U>(
-    source: T,
-    fn?: (a: U, b: T) => boolean,
-    options?: { name?: string }
-  ): (key: U) => boolean
-
-  function $on<T, U>(
-    deps: T,
-    fn: (input: T, prevInput: T, prevValue?: U) => U,
-    options?: { defer?: boolean }
-  ): (prevValue?: U) => U;
-
-  function $deferred<T>(
-    source: T,
-    options?: {
-      equals?: false | ((prev: T, next: T) => boolean);
-      name?: string;
-      timeoutMs?: number;
-    },
-  ): T;
 }
 
 export default function solidReactivityPlugin(): PluginObj<State> {
