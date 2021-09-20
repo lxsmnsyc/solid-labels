@@ -32,12 +32,14 @@
     "eslint": "^7.32.0",
     "eslint-config-lxsmnsyc": "^0.2.3",
     "pridepack": "^0.12.2",
+    "solid-js": "^1.1.4",
     "tslib": "^2.3.1",
     "typescript": "^4.4.3"
   },
   "peerDependencies": {
     "@babel/core": "^7.15.5",
-    "@types/babel__core": "^7.1.16"
+    "@types/babel__core": "^7.1.16",
+    "solid-js": "^1.1.4"
   },
   "scripts": {
     "prepublish": "pridepack clean && pridepack build",

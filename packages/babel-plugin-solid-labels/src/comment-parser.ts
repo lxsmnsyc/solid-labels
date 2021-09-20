@@ -1,5 +1,6 @@
 import { NodePath, Visitor } from '@babel/traverse';
 import * as t from '@babel/types';
+import accessorVariableExpression from './accessor-variable';
 import getHookIdentifier from './get-hook-identifier';
 import memoVariableExpression from './memo-variable';
 import signalVariableExpression from './signal-variable';
@@ -14,7 +15,7 @@ function signalExpression(
       const leftExpr = p.node.id;
       const rightExpr = p.node.init;
       if (t.isIdentifier(leftExpr)) {
-        signalVariableExpression(hooks, p, leftExpr, rightExpr ?? t.identifier('undefined'));
+        signalVariableExpression(hooks, p, leftExpr, rightExpr ?? undefined);
       }
     },
   });
@@ -30,6 +31,32 @@ function memoExpression(
       const rightExpr = p.node.init;
       if (t.isIdentifier(leftExpr)) {
         memoVariableExpression(hooks, p, leftExpr, rightExpr ?? t.identifier('undefined'));
+      }
+    },
+  });
+}
+
+function childrenExpression(
+  hooks: ImportHook,
+  path: NodePath<t.VariableDeclaration>,
+): void {
+  path.traverse({
+    VariableDeclarator(p) {
+      const leftExpr = p.node.id;
+      const rightExpr = p.node.init;
+      if (t.isIdentifier(leftExpr)) {
+        accessorVariableExpression(
+          hooks,
+          p,
+          leftExpr,
+          'children',
+          [
+            t.arrowFunctionExpression(
+              [],
+              rightExpr ?? t.identifier('undefined'),
+            ),
+          ],
+        );
       }
     },
   });
@@ -76,6 +103,7 @@ type StateExpression = (
 const STATE_EXPRESSIONS: Record<string, StateExpression> = {
   '@signal': signalExpression,
   '@memo': memoExpression,
+  '@children': childrenExpression,
 };
 
 const CALLBACK_EXPRESSIONS: Record<string, CallbackLabelExpresion> = {

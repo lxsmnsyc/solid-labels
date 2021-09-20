@@ -7263,7 +7263,7 @@ socks@^2.3.3, socks@^2.6.1:
     ip "^1.1.5"
     smart-buffer "^4.1.0"
 
-solid-js@^1.1.1:
+solid-js@^1.1.1, solid-js@^1.1.4:
   version "1.1.4"
   resolved "https://registry.yarnpkg.com/solid-js/-/solid-js-1.1.4.tgz#ceba54d6b60f66692f8a072fb7419e94cfbcdd65"
   integrity sha512-u3rvemWTQQ1ab9YrrRR+bUi7Daq5ZRVlR6gEDsHrRYC5uYFkFGGRt/ibjo+OsBxjbPRxGzy7jel3mfTZiiuNzA==

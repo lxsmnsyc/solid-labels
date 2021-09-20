@@ -8,7 +8,8 @@ export default function signalVariableExpression(
   hooks: ImportHook,
   path: NodePath<t.VariableDeclarator>,
   signalIdentifier: t.Identifier,
-  stateIdentifier: t.Expression,
+  stateIdentifier: t.Expression = t.identifier('undefined'),
+  optionsIdentifier?: t.Expression,
 ): void {
   const readIdentifier = path.scope.generateUidIdentifier(signalIdentifier.name);
   const writeIdentifier = path.scope.generateUidIdentifier(`set${signalIdentifier.name}`);
@@ -26,6 +27,7 @@ export default function signalVariableExpression(
           t.identifier('name'),
           t.stringLiteral(signalIdentifier.name),
         ),
+        ...(optionsIdentifier ? [t.spreadElement(optionsIdentifier)] : <t.SpreadElement[]>[]),
       ]),
     ],
   );
