@@ -18,5 +18,8 @@
   "private": true,
   "publishConfig": {
     "access": "restricted"
+  },
+  "dependencies": {
+    "solid-js": "^1.1.4"
   }
 }
