@@ -5,6 +5,8 @@
 
 [![NPM](https://img.shields.io/npm/v/babel-plugin-solid-labels.svg)](https://www.npmjs.com/package/babel-plugin-solid-labels) [![JavaScript Style Guide](https://badgen.net/badge/code%20style/airbnb/ff5a5f?icon=airbnb)](https://github.com/airbnb/javascript)
 
+![example](https://github.com/LXSMNSYC/babel-plugin-solid-labels/blob/main/images/example.png?raw=true)
+
 ## Install
 
 ```bash
