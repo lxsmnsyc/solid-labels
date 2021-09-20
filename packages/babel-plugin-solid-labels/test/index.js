@@ -2,10 +2,10 @@ const babel = require('@babel/core');
 const plugin = require('../dist/cjs');
 
 const code = `
-function Example(props) {
-  let list = $signal(0, {
-    name: 'example',
-  });
+signal: var data;
+
+transition: {
+  data = fetchData();
 }
 `;
 babel.transformAsync(code, {

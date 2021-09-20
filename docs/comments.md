@@ -1,6 +1,8 @@
 # Comments
 
-## `@signal`
+## Utilities
+
+### `@signal`
 
 Transforms into `createSignal`:
 
@@ -40,7 +42,7 @@ Chained variable declaration is also supported.
 let x = 0, y = 0, z = 0;
 ```
 
-## `@memo`
+### `@memo`
 
 Transforms into `createMemo`:
 
@@ -62,9 +64,15 @@ import { createMemo as _createMemo } from "solid-js";
 import { createSignal as _createSignal } from "solid-js";
 
 function Counter() {
-  const [_x, _setx] = _createSignal(0);
+  // @signal
+  let [_x, _setx] = _createSignal(0, {
+    name: "x"
+  }); // @memo
 
-  const _message = _createMemo(() => `Count: ${_x()}`);
+
+  const _message = _createMemo(() => `Count: ${_x()}`, undefined, {
+    name: "message"
+  });
 
   return () => _message();
 }
@@ -77,7 +85,7 @@ Chained variable declaration is also supported.
 const y = x + 10, z = y / 10;
 ```
 
-## `@effect`, `@computed` and `@renderEffect`
+### `@effect`, `@computed` and `@renderEffect`
 
 Transforms into `createEffect`, `createComputed` and `createRenderEffect`, respectively.
 
@@ -125,7 +133,7 @@ function Counter() {
 
 You may use an arrow function instead of a block statement to accepts the previously returned value.
 
-## `@mount`, `@cleanup` and `@error`
+### `@mount`, `@cleanup` and `@error`
 
 Transforms into `onMount`, `onCleanup` and `onError`.
 
@@ -167,7 +175,7 @@ function Counter() {
 
 You may also use an arrow function. For `onError`, an arrow function with a parameter may be used to receive the error object.
 
-## `@untrack` and `@batch`
+### `@untrack` and `@batch`
 
 Transforms into `untrack` and `batch`.
 
@@ -199,7 +207,7 @@ function Counter() {
 }
 ```
 
-## `@root`
+### `@root`
 
 Transforms into `createRoot`
 
@@ -220,6 +228,86 @@ _createRoot(() => {
 ```
 
 You can also pass an arrow function instead of a block to receive the `dispose` callback.
+
+### `@children`
+
+Compiles to `children`.
+
+```js
+// @children
+const nodes = props.children;
+```
+
+```js
+import { children as _children } from "solid-js";
+
+// @children
+const _nodes = _children(() => props.children);
+```
+
+### `@deferred`
+
+Compiles to `createDeferred`.
+
+```js
+// @signal
+let searchInput = '';
+// @deferred
+let deferredSearchInput = searchInput;
+
+effect: {
+  fetchResults(deferredSearchInput);
+}
+```
+
+```js
+import { createEffect as _createEffect } from "solid-js";
+import { createDeferred as _createDeferred } from "solid-js";
+import { createSignal as _createSignal } from "solid-js";
+
+// @signal
+let [_searchInput, _setsearchInput] = _createSignal('', {
+  name: "searchInput"
+}); // @deferred
+
+
+let _deferredSearchInput = _createDeferred(() => _searchInput(), {
+  name: "deferredSearchInput"
+});
+
+_createEffect(() => {
+  fetchResults(_deferredSearchInput());
+});
+```
+
+### `@transition`
+
+Compiles to `startTransition`. Arrow function can be provided instead of blocks.
+
+```js
+// @signal
+let data;
+
+/* @transition */ {
+  data = fetchData();
+}
+```
+
+```js
+import { startTransition as _startTransition } from "solid-js";
+import { createSignal as _createSignal } from "solid-js";
+
+// @signal
+let [_data, _setdata] = _createSignal(undefined, {
+  name: "data"
+});
+/* @transition */
+
+
+_startTransition(() => {
+  _setdata(() => fetchData());
+});
+```
 
 ## Tooling
 

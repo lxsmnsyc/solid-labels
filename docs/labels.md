@@ -1,6 +1,8 @@
 # Labels
 
-## `signal`
+## Utilities
+
+### `signal`
 
 Transforms into `createSignal`:
 
@@ -38,7 +40,7 @@ Chained variable declaration is also supported.
 signal: var x = 0, y = 0, z = 0;
 ```
 
-## `memo`
+### `memo`
 
 Transforms into `createMemo`:
 
@@ -58,9 +60,13 @@ import { createMemo as _createMemo } from "solid-js";
 import { createSignal as _createSignal } from "solid-js";
 
 function Counter() {
-  const [_x, _setx] = _createSignal(0);
+  const [_x, _setx] = _createSignal(0, {
+    name: "x"
+  });
 
-  const _message = _createMemo(() => `Count: ${_x()}`);
+  const _message = _createMemo(() => `Count: ${_x()}`, undefined, {
+    name: "message"
+  });
 
   return () => _message();
 }
@@ -72,7 +78,7 @@ Chained variable declaration is also supported.
 memo: var y = x + 10, z = y / 10;
 ```
 
-## `effect`, `computed` and `renderEffect`
+### `effect`, `computed` and `renderEffect`
 
 Transforms into `createEffect`, `createComputed` and `createRenderEffect`, respectively.
 
@@ -119,7 +125,7 @@ function Counter() {
 
 You may use an arrow function instead of a block statement to accepts the previously returned value. If an expression (e.g. identifier, function call for `label: expr;`) is supplied, it compiles to `hook(expr)`.
 
-## `$`
+### `$`
 
 Similar to `memo` and `effect`, `$` compiles to `createMemo` for variable declaration, while `createEffect(() => expr)` for other kinds of expressions (including block statements). `$` is ideal for single-line effects.
 
@@ -144,7 +150,7 @@ let [_x, _setx] = _createSignal(0, {
   name: "x"
 });
 
-const _y = _createMemo(() => _x() + 10, {
+const _y = _createMemo(() => _x() + 10, undefined, {
   name: "y"
 });
 
@@ -155,7 +161,7 @@ _createEffect(() => {
 });
 ```
 
-## `mount`, `cleanup` and `error`
+### `mount`, `cleanup` and `error`
 
 Transforms into `onMount`, `onCleanup` and `onError`.
 
@@ -197,7 +203,7 @@ function Counter() {
 
 You may also use an arrow function. For `onError`, an arrow function with a parameter may be used to receive the error object. If an expression (e.g. identifier, function call for `label: expr;`) is supplied, it compiles to `hook(expr)`.
 
-## `untrack` and `batch`
+### `untrack` and `batch`
 
 Transforms into `untrack` and `batch`.
 
@@ -231,7 +237,7 @@ function Counter() {
 
 You may also use an arrow function. If an expression (e.g. identifier, function call for `label: expr;`) is supplied, it compiles to `hook(expr)`.
 
-## `root`
+### `root`
 
 Transforms into `createRoot`
 
@@ -252,6 +258,76 @@ _createRoot(() => {
 ```
 
 You can also pass an arrow function instead of a block to receive the `dispose` callback. If an expression (e.g. identifier, function call for `label: expr;`) is supplied, it compiles to `hook(expr)`.
+
+### `@children`
+
+Compiles to `children`.
+
+```js
+children: var nodes = props.children;
+```
+
+```js
+import { children as _children } from "solid-js";
+
+const _nodes = _children(() => props.children);
+```
+
+### `@deferred`
+
+Compiles to `createDeferred`.
+
+```js
+signal: var searchInput = '';
+deferred: var deferredSearchInput = searchInput;
+
+effect: {
+  fetchResults(deferredSearchInput);
+}
+```
+
+```js
+import { createEffect as _createEffect } from "solid-js";
+import { createDeferred as _createDeferred } from "solid-js";
+import { createSignal as _createSignal } from "solid-js";
+
+const [_searchInput, _setsearchInput] = _createSignal('', {
+  name: "searchInput"
+});
+
+const _deferredSearchInput = _createDeferred(() => _searchInput(), {
+  name: "deferredSearchInput"
+});
+
+_createEffect(() => {
+  fetchResults(_deferredSearchInput());
+});
+```
+
+### `transition`
+
+Compiles to `startTransition`. Arrow function can be provided instead of blocks.
+
+```js
+signal: var data;
+
+transition: {
+  data = fetchData();
+}
+```
+
+```js
+import { startTransition as _startTransition } from "solid-js";
+import { createSignal as _createSignal } from "solid-js";
+
+const [_data, _setdata] = _createSignal(undefined, {
+  name: "data"
+});
+
+_startTransition(() => {
+  _setdata(() => fetchData());
+});
+```
 
 ## Tooling
 
