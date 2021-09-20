@@ -1,4 +1,4 @@
-function useCounter(): [Getter<number>, Setter<number>] {
+function useCounter(): [Accessor<number>, Setter<number>] {
   const count = $signal(0);
 
   effect: {
