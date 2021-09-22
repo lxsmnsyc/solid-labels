@@ -207,7 +207,7 @@ const EXPRESSIONS: Record<string, LabelExpression> = {
     }
   }),
   destructure: createVariableLabel((hooks, path, leftExpr, rightExpr) => {
-    if (t.isObjectPattern(leftExpr) && rightExpr) {
+    if ((t.isObjectPattern(leftExpr) || t.isArrayPattern(leftExpr)) && rightExpr) {
       destructureVariableExpression(
         hooks,
         path,

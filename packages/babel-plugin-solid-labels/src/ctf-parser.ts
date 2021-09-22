@@ -357,7 +357,7 @@ function destructureExpression(
     throw new Error('Expected variable declarator');
   }
   const leftExpr = path.parent.id;
-  if (!t.isObjectPattern(leftExpr)) {
+  if (!(t.isObjectPattern(leftExpr) || t.isArrayPattern(leftExpr))) {
     throw new Error('Expected object pattern');
   }
   destructureVariableExpression(

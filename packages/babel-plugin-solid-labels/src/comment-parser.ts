@@ -46,7 +46,7 @@ function destructureExpression(
     VariableDeclarator(p) {
       const leftExpr = p.node.id;
       const rightExpr = p.node.init;
-      if (t.isObjectPattern(leftExpr) && rightExpr) {
+      if ((t.isObjectPattern(leftExpr) || t.isArrayPattern(leftExpr)) && rightExpr) {
         destructureVariableExpression(
           hooks,
           p,

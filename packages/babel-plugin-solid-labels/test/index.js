@@ -36,7 +36,7 @@ const plugin = require('../dist/cjs');
 
 
 const code = `
-const { a, b: { c, d, ...e }, ...f } = $destructure(props);
+const [a, b, { c: [d, e], [read(d)]: c }, ...f] = $destructure(props);
 $: console.log(a);
 $: console.log(c, d);
 $: console.log(e, f);
