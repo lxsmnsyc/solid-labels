@@ -39,7 +39,7 @@ function memoExpression(
 }
 
 function destructureExpression(
-  _: ImportHook,
+  hooks: ImportHook,
   path: NodePath<t.VariableDeclaration>,
 ): void {
   path.traverse({
@@ -48,6 +48,7 @@ function destructureExpression(
       const rightExpr = p.node.init;
       if (t.isObjectPattern(leftExpr) && rightExpr) {
         destructureVariableExpression(
+          hooks,
           p,
           rightExpr,
           leftExpr,

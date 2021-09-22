@@ -346,7 +346,7 @@ function createCompileTimeAutoArrow(target: string, limit: number) {
 }
 
 function destructureExpression(
-  _: ImportHook,
+  hooks: ImportHook,
   path: NodePath<t.CallExpression>,
 ): void {
   const argument = path.node.arguments[0];
@@ -361,6 +361,7 @@ function destructureExpression(
     throw new Error('Expected object pattern');
   }
   destructureVariableExpression(
+    hooks,
     path.parentPath as NodePath<t.VariableDeclarator>,
     argument,
     leftExpr,

@@ -206,9 +206,10 @@ const EXPRESSIONS: Record<string, LabelExpression> = {
       deferredVariableExpression(hooks, path, leftExpr, rightExpr ?? t.identifier('undefined'));
     }
   }),
-  destructure: createVariableLabel((_, path, leftExpr, rightExpr) => {
+  destructure: createVariableLabel((hooks, path, leftExpr, rightExpr) => {
     if (t.isObjectPattern(leftExpr) && rightExpr) {
       destructureVariableExpression(
+        hooks,
         path,
         rightExpr,
         leftExpr,
