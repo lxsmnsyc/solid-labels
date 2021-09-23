@@ -90,18 +90,21 @@ function derefMemoExpression(
   path: NodePath<t.CallExpression>,
 ): void {
   if (path.node.arguments.length > 1) {
-    throw new Error('Expected argument length');
+    throw unexpectedArgumentLength(path, path.node.arguments.length, 1);
   }
   const argument = path.node.arguments[0];
   if (!t.isExpression(argument)) {
-    throw new Error('Expected expression');
+    throw unexpectedType(path, argument.type, 'Expression');
   }
-  if (!t.isVariableDeclarator(path.parent) || !path.parentPath) {
-    throw new Error('Expected variable declarator');
+  if (!path.parentPath) {
+    throw unexpectedMissingParent(path);
+  }
+  if (!t.isVariableDeclarator(path.parent)) {
+    throw unexpectedType(path.parentPath, path.parent.type, 'VariableDeclarator');
   }
   const leftExpr = path.parent.id;
   if (!t.isIdentifier(leftExpr)) {
-    throw new Error('Expected identifier');
+    throw unexpectedType(path.parentPath, leftExpr.type, 'Expression');
   }
   derefMemoVariableExpression(
     path.parentPath as NodePath<t.VariableDeclarator>,
