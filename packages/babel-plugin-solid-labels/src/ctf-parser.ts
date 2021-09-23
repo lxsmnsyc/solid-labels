@@ -197,17 +197,20 @@ function reactiveExpression(
   hooks: ImportHook,
   path: NodePath<t.CallExpression>,
 ): void {
-  if (!path.parentPath) {
-    throw new Error('Expected parent path');
+  if (path.node.arguments.length > 1) {
+    throw unexpectedArgumentLength(path, path.node.arguments.length, 1);
   }
   const argument = path.node.arguments[0];
   if (!t.isExpression(argument)) {
-    throw new Error('Expected expression');
+    throw unexpectedType(path, argument.type, 'Expression');
+  }
+  if (!path.parentPath) {
+    throw unexpectedMissingParent(path);
   }
   if (t.isVariableDeclarator(path.parent)) {
     const leftExpr = path.parent.id;
     if (!t.isIdentifier(leftExpr)) {
-      throw new Error('Expected identifier');
+      throw unexpectedType(path, leftExpr.type, 'Identifier');
     }
     memoVariableExpression(
       hooks,
@@ -228,7 +231,7 @@ function reactiveExpression(
       ),
     );
   } else {
-    throw new Error('Expected expression statement or variable declarator.');
+    throw unexpectedType(path.parentPath, path.parent.type, 'VariableDeclarator | ExpressionStatement');
   }
 }
 
