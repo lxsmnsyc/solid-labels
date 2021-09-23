@@ -77,10 +77,6 @@ export default defineConfig({
 
 - Detecting shadowed identifier for `signal` and `memo`.
 
-## TODO
-
-- Make descriptive errors.
-
 ## License
 
 MIT © [lxsmnsyc](https://github.com/lxsmnsyc)
