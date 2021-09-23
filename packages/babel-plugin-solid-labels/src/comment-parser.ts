@@ -111,10 +111,8 @@ function createCallbackLabel(label: string) {
         [],
         body,
       );
-    } else if (t.isExpressionStatement(body)) {
-      callback = body.expression;
     } else {
-      throw new Error('Expected arrow function or block expression');
+      callback = body.expression;
     }
     path.replaceWith(
       t.callExpression(
