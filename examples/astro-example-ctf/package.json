@@ -1,0 +1,21 @@
+{
+  "name": "astro-example-ctf",
+  "version": "0.6.1",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "devDependencies": {
+    "astro": "^0.20.7",
+    "astro-renderer-solid-labels": "0.6.1",
+    "eslint": "^7.32.0",
+    "eslint-config-lxsmnsyc": "^0.2.3",
+    "typescript": "^4.3.2"
+  },
+  "snowpack": {
+    "workspaceRoot": "../.."
+  }
+}
