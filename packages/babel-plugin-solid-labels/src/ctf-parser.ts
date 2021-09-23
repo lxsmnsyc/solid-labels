@@ -1,12 +1,17 @@
 import { NodePath, Visitor } from '@babel/traverse';
 import * as t from '@babel/types';
 import getHookIdentifier from './get-hook-identifier';
+import { ImportHook, State } from './types';
+import {
+  unexpectedArgumentLength,
+  unexpectedMissingParent,
+  unexpectedType,
+} from './errors';
 import derefSignalVariableExpression from './deref-signal-variable';
 import derefMemoVariableExpression from './deref-memo-variable';
 import memoVariableExpression from './memo-variable';
 import signalVariableExpression from './signal-variable';
 import accessorVariableExpression from './accessor-variable';
-import { ImportHook, State } from './types';
 import deferredVariableExpression from './deferred-variable';
 import destructureVariableExpression from './destructure-variable';
 
@@ -15,21 +20,21 @@ function derefSignalExpression(
   path: NodePath<t.CallExpression>,
 ): void {
   if (path.node.arguments.length > 1) {
-    throw path.buildCodeFrameError(`Unexpected argument length of ${path.node.arguments.length}`);
+    throw unexpectedArgumentLength(path, path.node.arguments.length, 1);
   }
   const argument = path.node.arguments[0];
   if (!t.isExpression(argument)) {
-    throw path.buildCodeFrameError(`Unexpected '${argument.type}' (Expected: Expression)`);
+    throw unexpectedType(path, argument.type, 'Expression');
   }
   if (!path.parentPath) {
-    throw path.buildCodeFrameError('Unexpected missing parent.');
+    throw unexpectedMissingParent(path);
   }
   if (!t.isVariableDeclarator(path.parent)) {
-    throw path.parentPath.buildCodeFrameError(`Unexpected '${path.parent.type}' (Expected: VariableDeclarator)`);
+    throw unexpectedType(path.parentPath, path.parent.type, 'VariableDeclarator');
   }
   const leftExpr = path.parent.id;
   if (!t.isIdentifier(leftExpr)) {
-    throw path.parentPath.buildCodeFrameError(`Unexpected '${leftExpr.type}'`);
+    throw unexpectedType(path.parentPath, leftExpr.type, 'Identifier');
   }
   derefSignalVariableExpression(
     path.parentPath as NodePath<t.VariableDeclarator>,
@@ -43,30 +48,33 @@ function signalExpression(
   path: NodePath<t.CallExpression>,
 ): void {
   if (path.node.arguments.length > 2) {
-    throw new Error('Expected argument length');
+    throw unexpectedArgumentLength(path, path.node.arguments.length, 2);
   }
   let argument: t.Expression | undefined;
   let options: t.Expression | undefined;
   if (path.node.arguments.length > 0) {
     const state = path.node.arguments[0];
     if (!t.isExpression(state)) {
-      throw new Error('Expected expression');
+      throw unexpectedType(path, state.type, 'Expression');
     }
     argument = state;
     if (path.node.arguments.length > 1) {
       const optionsValue = path.node.arguments[1];
       if (!t.isExpression(optionsValue)) {
-        throw new Error('Expected expression');
+        throw unexpectedType(path, optionsValue.type, 'Expression');
       }
       options = optionsValue;
     }
   }
-  if (!t.isVariableDeclarator(path.parent) || !path.parentPath) {
-    throw new Error('Expected variable declarator');
+  if (!path.parentPath) {
+    throw unexpectedMissingParent(path);
+  }
+  if (!t.isVariableDeclarator(path.parent)) {
+    throw unexpectedType(path.parentPath, path.parent.type, 'VariableDeclarator');
   }
   const leftExpr = path.parent.id;
   if (!t.isIdentifier(leftExpr)) {
-    throw new Error('Expected identifier');
+    throw unexpectedType(path.parentPath, leftExpr.type, 'Identifier');
   }
   signalVariableExpression(
     hooks,
