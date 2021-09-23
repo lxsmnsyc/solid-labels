@@ -73,6 +73,25 @@ export default defineConfig({
 });
 ```
 
+`solid-start`
+
+```js
+// vite.config.js
+import { defineConfig } from 'vite';
+import solidStart from 'solid-start';
+import solidLabels from 'babel-plugin-solid-labels';
+
+export default defineConfig({
+  plugins: [
+    solidStart({
+      babel: {
+        plugins: [solidLabels],
+      },
+    }),
+  ],
+});
+```
+
 ## Limitations
 
 - Detecting shadowed identifier for `signal` and `memo`.
