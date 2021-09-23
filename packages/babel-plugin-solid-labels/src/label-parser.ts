@@ -172,7 +172,7 @@ function createCallbackLabel(label: string) {
     } else if (t.isExpressionStatement(body)) {
       callback = body.expression;
     } else {
-      throw unexpectedType(path, path.node.type, 'BlockStatement | ExpressionStatement');
+      throw unexpectedType(path, body.type, 'BlockStatement | ExpressionStatement');
     }
     path.replaceWith(
       t.callExpression(
