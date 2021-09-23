@@ -1,5 +1,6 @@
 import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
+import { unexpectedType } from './errors';
 import getHookIdentifier from './get-hook-identifier';
 import normalizeBindings from './normalize-bindings';
 import { ImportHook } from './types';
@@ -62,7 +63,7 @@ export default function destructureVariableExpression(
         } else if (t.isAssignmentPattern(value)) {
           // TODO
         } else {
-          throw new Error('Expected object pattern or identifier');
+          throw unexpectedType(path, value.type, 'Identifier | ObjectPattern | ArrayPattern');
         }
       } else if (t.isIdentifier(property.argument)) {
         restIdentifier = property.argument;
