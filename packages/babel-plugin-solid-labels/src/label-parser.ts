@@ -7,6 +7,7 @@ import accessorVariableExpression from './accessor-variable';
 import { ImportHook, State } from './types';
 import deferredVariableExpression from './deferred-variable';
 import destructureVariableExpression from './destructure-variable';
+import { unexpectedAssignmentOperator, unexpectedType } from './errors';
 
 type VariableLabelExpression = (
   hooks: ImportHook,
@@ -24,12 +25,12 @@ function createVariableLabel(variableExpression: VariableLabelExpression) {
     if (t.isExpressionStatement(body)) {
       if (t.isAssignmentExpression(body.expression)) {
         if (body.expression.operator !== '=') {
-          throw new Error('Invalid assignment expression operator');
+          throw unexpectedAssignmentOperator(path, body.expression.operator, '=');
         }
         const leftExpr = body.expression.left;
         const rightExpr = body.expression.right;
         if (!t.isIdentifier(leftExpr)) {
-          throw new Error('Expected identifier');
+          throw unexpectedType(path, leftExpr.type, 'Identifier');
         }
         path.replaceWith(
           t.variableDeclaration(
@@ -71,7 +72,7 @@ function createVariableLabel(variableExpression: VariableLabelExpression) {
             const leftExpr = expr.left;
             const rightExpr = expr.right;
             if (!t.isIdentifier(leftExpr)) {
-              throw new Error('Expected identifier');
+              throw unexpectedType(path, leftExpr.type, 'Identifier');
             }
             path.replaceWith(
               t.variableDeclarator(
@@ -80,7 +81,7 @@ function createVariableLabel(variableExpression: VariableLabelExpression) {
               ),
             );
           } else {
-            throw new Error('Expected identifier or assignment expression');
+            throw unexpectedType(path, expr.type, 'Identifier | AssignmentExpression');
           }
         }
 
@@ -107,7 +108,7 @@ function createVariableLabel(variableExpression: VariableLabelExpression) {
         },
       });
     } else {
-      throw new Error('Expected assignment expression or variable declaration');
+      throw unexpectedType(path, path.node.type, 'VariableDeclaration');
     }
   };
 }
@@ -171,7 +172,7 @@ function createCallbackLabel(label: string) {
     } else if (t.isExpressionStatement(body)) {
       callback = body.expression;
     } else {
-      throw new Error('Expected arrow function or block expression');
+      throw unexpectedType(path, path.node.type, 'BlockStatement | ExpressionStatement');
     }
     path.replaceWith(
       t.callExpression(
