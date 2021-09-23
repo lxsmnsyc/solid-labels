@@ -359,11 +359,11 @@ function createCompileTimeAutoArrow(target: string, limit: number) {
     path: NodePath<t.CallExpression>,
   ) => {
     if (path.node.arguments.length > limit) {
-      throw new Error('Expected argument length');
+      throw unexpectedArgumentLength(path, path.node.arguments.length, limit);
     }
     const [argument, ...rest] = path.node.arguments;
     if (!t.isExpression(argument)) {
-      throw new Error('Expected expression');
+      throw unexpectedType(path, argument.type, 'Expression');
     }
     path.replaceWith(
       t.callExpression(
