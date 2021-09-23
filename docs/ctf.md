@@ -517,7 +517,7 @@ import { createUniqueId as _createUniqueId } from "solid-js";
 const elementID = _createUniqueId();
 ```
 
-## `$lazy`
+### `$lazy`
 
 ```ts
 function $lazy<T extends Component<any>>(fn: Promise<{ default: T }>): T & {

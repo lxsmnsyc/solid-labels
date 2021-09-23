@@ -343,6 +343,8 @@ _startTransition(() => {
 }
 ```
 
+For `signal` and `memo` sugar, you'll need to use `@ts-ignore` to suppress warnings for TS1344 when using strict mode.
+
 ### ESLint
 
 ```json
