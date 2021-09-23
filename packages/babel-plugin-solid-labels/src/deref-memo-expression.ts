@@ -1,5 +1,6 @@
 import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
+import { unexpectedType } from './errors';
 import normalizeBindings from './normalize-bindings';
 
 export default function derefMemoExpression(
@@ -20,7 +21,7 @@ export default function derefMemoExpression(
         switch (p.node.callee.name) {
           case '$refMemo':
             if (!t.isIdentifier(p.node.arguments[0])) {
-              throw new Error('Expected identifier');
+              throw unexpectedType(p, p.node.arguments[0].type, 'Identifier');
             }
             if (p.node.arguments[0].name === memoIdentifier.name) {
               p.replaceWith(
@@ -30,7 +31,7 @@ export default function derefMemoExpression(
             break;
           case '$get':
             if (!t.isIdentifier(p.node.arguments[0])) {
-              throw new Error('Expected identifier');
+              throw unexpectedType(p, p.node.arguments[0].type, 'Identifier');
             }
             if (p.node.arguments[0].name === memoIdentifier.name) {
               p.replaceWith(
