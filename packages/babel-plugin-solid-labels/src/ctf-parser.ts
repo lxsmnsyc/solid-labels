@@ -15,18 +15,21 @@ function derefSignalExpression(
   path: NodePath<t.CallExpression>,
 ): void {
   if (path.node.arguments.length > 1) {
-    throw new Error('Expected argument length');
+    throw path.buildCodeFrameError(`Unexpected argument length of ${path.node.arguments.length}`);
   }
   const argument = path.node.arguments[0];
   if (!t.isExpression(argument)) {
-    throw new Error('Expected expression');
+    throw path.buildCodeFrameError(`Unexpected '${argument.type}' (Expected: Expression)`);
   }
-  if (!t.isVariableDeclarator(path.parent) || !path.parentPath) {
-    throw new Error('Expected variable declarator');
+  if (!path.parentPath) {
+    throw path.buildCodeFrameError('Unexpected missing parent.');
+  }
+  if (!t.isVariableDeclarator(path.parent)) {
+    throw path.parentPath.buildCodeFrameError(`Unexpected '${path.parent.type}' (Expected: VariableDeclarator)`);
   }
   const leftExpr = path.parent.id;
   if (!t.isIdentifier(leftExpr)) {
-    throw new Error('Expected identifier');
+    throw path.parentPath.buildCodeFrameError(`Unexpected '${leftExpr.type}'`);
   }
   derefSignalVariableExpression(
     path.parentPath as NodePath<t.VariableDeclarator>,
