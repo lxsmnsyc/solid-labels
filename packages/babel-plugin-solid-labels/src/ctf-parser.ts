@@ -156,30 +156,33 @@ function deferredExpression(
   path: NodePath<t.CallExpression>,
 ): void {
   if (path.node.arguments.length > 2) {
-    throw new Error('Expected argument length');
+    throw unexpectedArgumentLength(path, path.node.arguments.length, 2);
   }
   let argument: t.Expression | undefined;
   let options: t.Expression | undefined;
   if (path.node.arguments.length > 0) {
     const state = path.node.arguments[0];
     if (!t.isExpression(state)) {
-      throw new Error('Expected expression');
+      throw unexpectedType(path, state.type, 'Expression');
     }
     argument = state;
     if (path.node.arguments.length > 1) {
       const optionsValue = path.node.arguments[1];
       if (!t.isExpression(optionsValue)) {
-        throw new Error('Expected expression');
+        throw unexpectedType(path, optionsValue.type, 'Expression');
       }
       options = optionsValue;
     }
   }
-  if (!t.isVariableDeclarator(path.parent) || !path.parentPath) {
-    throw new Error('Expected variable declarator');
+  if (!path.parentPath) {
+    throw unexpectedMissingParent(path);
+  }
+  if (!t.isVariableDeclarator(path.parent)) {
+    throw unexpectedType(path.parentPath, path.parent.type, 'VariableDeclarator');
   }
   const leftExpr = path.parent.id;
   if (!t.isIdentifier(leftExpr)) {
-    throw new Error('Expected identifier');
+    throw unexpectedType(path, leftExpr.type, 'Identifier');
   }
   deferredVariableExpression(
     hooks,
