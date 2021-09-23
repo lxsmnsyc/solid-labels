@@ -1,5 +1,6 @@
 import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
+import { unexpectedType } from './errors';
 import normalizeBindings from './normalize-bindings';
 
 export default function derefSignalExpression(
@@ -21,7 +22,7 @@ export default function derefSignalExpression(
         switch (p.node.callee.name) {
           case '$refSignal':
             if (!t.isIdentifier(p.node.arguments[0])) {
-              throw new Error('Expected identifier');
+              throw unexpectedType(p, p.node.arguments[0].type, 'Identifier');
             }
             if (p.node.arguments[0].name === signalIdentifier.name) {
               p.replaceWith(
@@ -34,7 +35,7 @@ export default function derefSignalExpression(
             break;
           case '$get':
             if (!t.isIdentifier(p.node.arguments[0])) {
-              throw new Error('Expected identifier');
+              throw unexpectedType(p, p.node.arguments[0].type, 'Identifier');
             }
             if (p.node.arguments[0].name === signalIdentifier.name) {
               p.replaceWith(
@@ -44,7 +45,7 @@ export default function derefSignalExpression(
             break;
           case '$set':
             if (!t.isIdentifier(p.node.arguments[0])) {
-              throw new Error('Expected identifier');
+              throw unexpectedType(p, p.node.arguments[0].type, 'Identifier');
             }
             if (p.node.arguments[0].name === signalIdentifier.name) {
               p.replaceWith(
