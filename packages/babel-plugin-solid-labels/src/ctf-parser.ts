@@ -439,6 +439,7 @@ const CTF_EXPRESSIONS: Record<string, CompileTimeFunctionExpression> = {
   $effect: createCompileTimeAlias('createEffect'),
   $computed: createCompileTimeAlias('createComputed'),
   $renderEffect: createCompileTimeAlias('createRenderEffect'),
+  $merge: createCompileTimeAlias('mergeProps'),
 
   $destructure: destructureExpression,
 };

@@ -5,6 +5,13 @@ import LABEL_PARSER from './label-parser';
 import COMMENT_PARSER from './comment-parser';
 import CTF_PARSER from './ctf-parser';
 
+type BoxedTupleTypes<T extends any[]> =
+  { [P in keyof T]: [T[P]] }[Exclude<keyof T, keyof any[]>]
+type UnionToIntersection<U> =
+  (U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never;
+type UnboxIntersection<T> = T extends { 0: infer U } ? U : never;
+type MergeProps<T extends any[]> = UnboxIntersection<UnionToIntersection<BoxedTupleTypes<T>>>;
+
 declare global {
   type Accessor<T> = solid.Accessor<T>;
   type Setter<T> = solid.Setter<T>;
@@ -112,6 +119,8 @@ declare global {
       fallback?: Accessor<any>;
     },
   ): U[];
+
+  function $merge<T extends any[]>(...args: T): MergeProps<T>;
 }
 
 export default function solidReactivityPlugin(): PluginObj<State> {
