@@ -46,7 +46,7 @@ yarn add babel-plugin-solid-labels
 
 `.babelrc`
 
-```json
+```javascript
 {
   "plugins": [
     ["babel-plugin-solid-labels", { dev: false }]
