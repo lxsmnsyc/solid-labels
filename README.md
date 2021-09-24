@@ -49,7 +49,7 @@ yarn add babel-plugin-solid-labels
 ```json
 {
   "plugins": [
-    ["babel-plugin-solid-labels", { dev: false }]
+    ["babel-plugin-solid-labels", { "dev": false }]
   ]
 }
 ```
