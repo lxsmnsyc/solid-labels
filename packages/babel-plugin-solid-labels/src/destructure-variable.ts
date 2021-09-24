@@ -89,6 +89,9 @@ export default function destructureVariableExpression(
             ),
           ),
         );
+
+        properties.push(keyExpr);
+
         if (t.isIdentifier(property)) {
           path.scope.path.traverse(normalizeBindings(
             path.scope.path,
