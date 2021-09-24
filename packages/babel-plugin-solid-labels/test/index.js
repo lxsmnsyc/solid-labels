@@ -2,14 +2,16 @@ const babel = require('@babel/core');
 const plugin = require('../dist/cjs');
 
 const code = `
-// @signal
-let count = 0;
+destructure: var { a: { b, c }, b: { d, e }, ...f } = x;
 
-// @memo
-const message = \`Count: \${count}\`;
-
-/* @effect */ {
-  console.log(message);
+effect: {
+  console.log(b, c);
+}
+effect: {
+  console.log(d, e);
+}
+effect: {
+  console.log(f);
 }
 `;
 babel.transformAsync(code, {
