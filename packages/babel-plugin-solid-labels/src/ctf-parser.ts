@@ -1,7 +1,7 @@
 import { NodePath, Visitor } from '@babel/traverse';
 import * as t from '@babel/types';
 import getHookIdentifier from './get-hook-identifier';
-import { ImportHook, State } from './types';
+import { State } from './types';
 import {
   unexpectedArgumentLength,
   unexpectedMissingParent,
@@ -16,7 +16,7 @@ import deferredVariableExpression from './deferred-variable';
 import destructureVariableExpression from './destructure-variable';
 
 function derefSignalExpression(
-  _: ImportHook,
+  _: State,
   path: NodePath<t.CallExpression>,
 ): void {
   if (path.node.arguments.length > 1) {
@@ -44,7 +44,7 @@ function derefSignalExpression(
 }
 
 function signalExpression(
-  hooks: ImportHook,
+  state: State,
   path: NodePath<t.CallExpression>,
 ): void {
   if (path.node.arguments.length > 2) {
@@ -53,11 +53,11 @@ function signalExpression(
   let argument: t.Expression | undefined;
   let options: t.Expression | undefined;
   if (path.node.arguments.length > 0) {
-    const state = path.node.arguments[0];
-    if (!t.isExpression(state)) {
-      throw unexpectedType(path, state.type, 'Expression');
+    const initialState = path.node.arguments[0];
+    if (!t.isExpression(initialState)) {
+      throw unexpectedType(path, initialState.type, 'Expression');
     }
-    argument = state;
+    argument = initialState;
     if (path.node.arguments.length > 1) {
       const optionsValue = path.node.arguments[1];
       if (!t.isExpression(optionsValue)) {
@@ -77,7 +77,7 @@ function signalExpression(
     throw unexpectedType(path.parentPath, leftExpr.type, 'Identifier');
   }
   signalVariableExpression(
-    hooks,
+    state,
     path.parentPath as NodePath<t.VariableDeclarator>,
     leftExpr,
     argument,
@@ -86,7 +86,7 @@ function signalExpression(
 }
 
 function derefMemoExpression(
-  _: ImportHook,
+  _: State,
   path: NodePath<t.CallExpression>,
 ): void {
   if (path.node.arguments.length > 1) {
@@ -114,7 +114,7 @@ function derefMemoExpression(
 }
 
 function memoExpression(
-  hooks: ImportHook,
+  state: State,
   path: NodePath<t.CallExpression>,
 ): void {
   if (path.node.arguments.length > 2) {
@@ -143,7 +143,7 @@ function memoExpression(
     throw unexpectedType(path.parentPath, leftExpr.type, 'Expression');
   }
   memoVariableExpression(
-    hooks,
+    state,
     path.parentPath as NodePath<t.VariableDeclarator>,
     leftExpr,
     argument,
@@ -152,7 +152,7 @@ function memoExpression(
 }
 
 function deferredExpression(
-  hooks: ImportHook,
+  state: State,
   path: NodePath<t.CallExpression>,
 ): void {
   if (path.node.arguments.length > 2) {
@@ -161,11 +161,11 @@ function deferredExpression(
   let argument: t.Expression | undefined;
   let options: t.Expression | undefined;
   if (path.node.arguments.length > 0) {
-    const state = path.node.arguments[0];
-    if (!t.isExpression(state)) {
-      throw unexpectedType(path, state.type, 'Expression');
+    const initialState = path.node.arguments[0];
+    if (!t.isExpression(initialState)) {
+      throw unexpectedType(path, initialState.type, 'Expression');
     }
-    argument = state;
+    argument = initialState;
     if (path.node.arguments.length > 1) {
       const optionsValue = path.node.arguments[1];
       if (!t.isExpression(optionsValue)) {
@@ -185,7 +185,7 @@ function deferredExpression(
     throw unexpectedType(path, leftExpr.type, 'Identifier');
   }
   deferredVariableExpression(
-    hooks,
+    state,
     path.parentPath as NodePath<t.VariableDeclarator>,
     leftExpr,
     argument,
@@ -194,7 +194,7 @@ function deferredExpression(
 }
 
 function reactiveExpression(
-  hooks: ImportHook,
+  state: State,
   path: NodePath<t.CallExpression>,
 ): void {
   if (path.node.arguments.length > 1) {
@@ -213,7 +213,7 @@ function reactiveExpression(
       throw unexpectedType(path, leftExpr.type, 'Identifier');
     }
     memoVariableExpression(
-      hooks,
+      state,
       path.parentPath as NodePath<t.VariableDeclarator>,
       leftExpr,
       argument,
@@ -221,7 +221,7 @@ function reactiveExpression(
   } else if (t.isExpressionStatement(path.parent)) {
     path.replaceWith(
       t.callExpression(
-        getHookIdentifier(hooks, path, 'createEffect'),
+        getHookIdentifier(state.hooks, path, 'createEffect'),
         [
           t.arrowFunctionExpression(
             [],
@@ -236,7 +236,7 @@ function reactiveExpression(
 }
 
 function rootExpression(
-  hooks: ImportHook,
+  state: State,
   path: NodePath<t.CallExpression>,
 ): void {
   if (path.node.arguments.length > 1) {
@@ -261,7 +261,7 @@ function rootExpression(
   );
   path.replaceWith(
     t.callExpression(
-      getHookIdentifier(hooks, path, 'createRoot'),
+      getHookIdentifier(state.hooks, path, 'createRoot'),
       [
         arrow,
       ],
@@ -270,7 +270,7 @@ function rootExpression(
 }
 
 function fromExpression(
-  hooks: ImportHook,
+  state: State,
   path: NodePath<t.CallExpression>,
 ): void {
   if (path.node.arguments.length > 1) {
@@ -291,7 +291,7 @@ function fromExpression(
     throw unexpectedType(path, leftExpr.type, 'Identifier');
   }
   accessorVariableExpression(
-    hooks,
+    state,
     path.parentPath as NodePath<t.VariableDeclarator>,
     leftExpr,
     'from',
@@ -303,7 +303,7 @@ function fromExpression(
 
 function createCompileTimeAutoAccessor(target: string, limit: number) {
   return (
-    hooks: ImportHook,
+    state: State,
     path: NodePath<t.CallExpression>,
   ) => {
     if (path.node.arguments.length > limit) {
@@ -324,7 +324,7 @@ function createCompileTimeAutoAccessor(target: string, limit: number) {
       throw unexpectedType(path, leftExpr.type, 'Identifier');
     }
     accessorVariableExpression(
-      hooks,
+      state,
       path.parentPath as NodePath<t.VariableDeclarator>,
       leftExpr,
       target,
@@ -340,22 +340,22 @@ function createCompileTimeAutoAccessor(target: string, limit: number) {
 }
 
 type CompileTimeFunctionExpression = (
-  hooks: ImportHook,
+  state: State,
   path: NodePath<t.CallExpression>,
 ) => void;
 
 function createCompileTimeAlias(target: string) {
   return (
-    hooks: ImportHook,
+    state: State,
     path: NodePath<t.CallExpression>,
   ) => {
-    path.node.callee = getHookIdentifier(hooks, path, target);
+    path.node.callee = getHookIdentifier(state.hooks, path, target);
   };
 }
 
 function createCompileTimeAutoArrow(target: string, limit: number) {
   return (
-    hooks: ImportHook,
+    state: State,
     path: NodePath<t.CallExpression>,
   ) => {
     if (path.node.arguments.length > limit) {
@@ -367,7 +367,7 @@ function createCompileTimeAutoArrow(target: string, limit: number) {
     }
     path.replaceWith(
       t.callExpression(
-        getHookIdentifier(hooks, path, target),
+        getHookIdentifier(state.hooks, path, target),
         [
           t.arrowFunctionExpression(
             [],
@@ -381,7 +381,7 @@ function createCompileTimeAutoArrow(target: string, limit: number) {
 }
 
 function destructureExpression(
-  hooks: ImportHook,
+  state: State,
   path: NodePath<t.CallExpression>,
 ): void {
   if (path.node.arguments.length > 1) {
@@ -402,7 +402,7 @@ function destructureExpression(
     throw unexpectedType(path, leftExpr.type, 'ArrayPattern | ObjectPattern');
   }
   destructureVariableExpression(
-    hooks,
+    state,
     path.parentPath as NodePath<t.VariableDeclarator>,
     argument,
     leftExpr,
@@ -450,7 +450,7 @@ const CTF_PARSER: Visitor<State> = {
       t.isIdentifier(path.node.callee)
       && path.node.callee.name in CTF_EXPRESSIONS
     ) {
-      CTF_EXPRESSIONS[path.node.callee.name](state.hooks, path);
+      CTF_EXPRESSIONS[path.node.callee.name](state, path);
     }
   },
 };
