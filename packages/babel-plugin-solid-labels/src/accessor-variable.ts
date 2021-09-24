@@ -2,10 +2,10 @@ import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import derefMemoExpression from './deref-memo-expression';
 import getHookIdentifier from './get-hook-identifier';
-import { ImportHook } from './types';
+import { State } from './types';
 
 export default function accessorVariableExpression(
-  hooks: ImportHook,
+  state: State,
   path: NodePath<t.VariableDeclarator>,
   accessorIdentifier: t.Identifier,
   mod: string,
@@ -15,7 +15,7 @@ export default function accessorVariableExpression(
 
   path.node.id = readIdentifier;
   path.node.init = t.callExpression(
-    getHookIdentifier(hooks, path, mod),
+    getHookIdentifier(state.hooks, path, mod),
     replacement,
   );
 
