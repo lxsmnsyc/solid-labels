@@ -3,10 +3,10 @@ import * as t from '@babel/types';
 import { unexpectedType } from './errors';
 import getHookIdentifier from './get-hook-identifier';
 import normalizeBindings from './normalize-bindings';
-import { ImportHook } from './types';
+import { State } from './types';
 
 export default function destructureVariableExpression(
-  hook: ImportHook,
+  state: State,
   path: NodePath<t.VariableDeclarator>,
   target: t.Expression,
   pattern: t.ObjectPattern | t.ArrayPattern,
@@ -48,7 +48,7 @@ export default function destructureVariableExpression(
 
         if (t.isObjectPattern(value) || t.isArrayPattern(value)) {
           destructureVariableExpression(
-            hook,
+            state,
             path,
             t.callExpression(newIdentifier, []),
             value,
@@ -97,7 +97,7 @@ export default function destructureVariableExpression(
           ));
         } else if (t.isArrayPattern(property) || t.isObjectPattern(property)) {
           destructureVariableExpression(
-            hook,
+            state,
             path,
             t.callExpression(newIdentifier, []),
             property,
@@ -121,7 +121,7 @@ export default function destructureVariableExpression(
         ? (
           t.memberExpression(
             t.callExpression(
-              getHookIdentifier(hook, path, 'splitProps'),
+              getHookIdentifier(state.hooks, path, 'splitProps'),
               [target, t.arrayExpression(properties)],
             ),
             t.numericLiteral(1),
