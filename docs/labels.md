@@ -329,6 +329,55 @@ _startTransition(() => {
 });
 ```
 
+### `destructure`
+
+Destructures an object while retaining reactivity. This partially compiles to `splitProps` if a rest expression is detected.
+
+`destructure` also supports nested destructures.
+
+Does not support default assignment.
+
+```js
+destructure: var { a: { b, c }, b: { d, e }, ...f } = x;
+
+effect: {
+  console.log(b, c);
+}
+effect: {
+  console.log(d, e);
+}
+effect: {
+  console.log(f);
+}
+```
+
+```js
+import { createEffect as _createEffect } from "solid-js";
+import { splitProps as _splitProps } from "solid-js";
+
+const _prop = () => x.a,
+      _prop2 = () => _prop().b,
+      _prop3 = () => _prop().c,
+      _prop4 = () => x.b,
+      _prop5 = () => _prop4().d,
+      _prop6 = () => _prop4().e,
+      _other = _splitProps(x, ["a", "b"])[1],
+      _other3 = _splitProps(_prop4(), ["d", "e"])[1],
+      _other2 = _splitProps(_prop(), ["b", "c"])[1];
+
+_createEffect(() => {
+  console.log(_prop2(), _prop3());
+});
+
+_createEffect(() => {
+  console.log(_prop5(), _prop6());
+});
+
+_createEffect(() => {
+  console.log(_other);
+});
+```
+
 ## Tooling
 
 ### TypeScript

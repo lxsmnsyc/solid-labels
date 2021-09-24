@@ -64,10 +64,10 @@ import { createMemo as _createMemo } from "solid-js";
 import { createSignal as _createSignal } from "solid-js";
 
 function Counter() {
-  // @signal
+  //
   let [_x, _setx] = _createSignal(0, {
     name: "x"
-  }); // @memo
+  }); //
 
 
   const _message = _createMemo(() => `Count: ${_x()}`, undefined, {
@@ -241,7 +241,7 @@ const nodes = props.children;
 ```js
 import { children as _children } from "solid-js";
 
-// @children
+//
 const _nodes = _children(() => props.children);
 ```
 
@@ -265,10 +265,10 @@ import { createEffect as _createEffect } from "solid-js";
 import { createDeferred as _createDeferred } from "solid-js";
 import { createSignal as _createSignal } from "solid-js";
 
-// @signal
+//
 let [_searchInput, _setsearchInput] = _createSignal('', {
   name: "searchInput"
-}); // @deferred
+}); //
 
 
 let _deferredSearchInput = _createDeferred(() => _searchInput(), {
@@ -297,15 +297,66 @@ let data;
 import { startTransition as _startTransition } from "solid-js";
 import { createSignal as _createSignal } from "solid-js";
 
-// @signal
+//
 let [_data, _setdata] = _createSignal(undefined, {
   name: "data"
 });
-/* @transition */
+/**/
 
 
 _startTransition(() => {
   _setdata(() => fetchData());
+});
+```
+
+### `@destructure`
+
+Destructures an object while retaining reactivity. This partially compiles to `splitProps` if a rest expression is detected.
+
+`@destructure` also supports nested destructures.
+
+Does not support default assignment.
+
+```js
+// @destructure
+let { a: { b, c }, b: { d, e }, ...f } = x;
+
+effect: {
+  console.log(b, c);
+}
+effect: {
+  console.log(d, e);
+}
+effect: {
+  console.log(f);
+}
+```
+
+```js
+import { createEffect as _createEffect } from "solid-js";
+import { splitProps as _splitProps } from "solid-js";
+
+//
+let _prop = () => x.a,
+    _prop2 = () => _prop().b,
+    _prop3 = () => _prop().c,
+    _prop4 = () => x.b,
+    _prop5 = () => _prop4().d,
+    _prop6 = () => _prop4().e,
+    _other = _splitProps(x, ["a", "b"])[1],
+    _other3 = _splitProps(_prop4(), ["d", "e"])[1],
+    _other2 = _splitProps(_prop(), ["b", "c"])[1];
+
+_createEffect(() => {
+  console.log(_prop2(), _prop3());
+});
+
+_createEffect(() => {
+  console.log(_prop5(), _prop6());
+});
+
+_createEffect(() => {
+  console.log(_other);
 });
 ```
 
