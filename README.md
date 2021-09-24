@@ -48,7 +48,9 @@ yarn add babel-plugin-solid-labels
 
 ```json
 {
-  "plugins": ["babel-plugin-solid-labels"]
+  "plugins": [
+    ["babel-plugin-solid-labels", { dev: false }]
+  ]
 }
 ```
 
@@ -66,7 +68,9 @@ export default defineConfig({
   plugins: [
     solidPlugin({
       babel: {
-        plugins: [solidLabels],
+        plugins: [
+          [solidLabels, { dev: process.env.NODE_ENV !== 'production' }]
+        ],
       },
     }),
   ],
@@ -85,7 +89,9 @@ export default defineConfig({
   plugins: [
     solidStart({
       babel: {
-        plugins: [solidLabels],
+        plugins: [
+          [solidLabels, { dev: process.env.NODE_ENV !== 'production' }]
+        ],
       },
     }),
   ],

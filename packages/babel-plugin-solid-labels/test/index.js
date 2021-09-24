@@ -2,21 +2,14 @@ const babel = require('@babel/core');
 const plugin = require('../dist/cjs');
 
 const code = `
-destructure: var { a: { b, c }, b: { d, e }, ...f } = x;
-
-effect: {
-  console.log(b, c);
-}
-effect: {
-  console.log(d, e);
-}
-effect: {
-  console.log(f);
-}
+let count = $signal(0);
+const message = $memo(\`Count: \${count}\`, {
+  equal: (a, b) => a === b,
+});
 `;
 babel.transformAsync(code, {
   plugins: [
-    [plugin, { dev: true }],
+    [plugin, { dev: false }],
   ],
 }).then((result) => {
   console.log(result.code);
