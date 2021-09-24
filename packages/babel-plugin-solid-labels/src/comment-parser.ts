@@ -6,10 +6,10 @@ import getHookIdentifier from './get-hook-identifier';
 import memoVariableExpression from './memo-variable';
 import signalVariableExpression from './signal-variable';
 import destructureVariableExpression from './destructure-variable';
-import { ImportHook, State } from './types';
+import { State } from './types';
 
 function signalExpression(
-  hooks: ImportHook,
+  state: State,
   path: NodePath<t.VariableDeclaration>,
 ): void {
   path.traverse({
@@ -17,14 +17,14 @@ function signalExpression(
       const leftExpr = p.node.id;
       const rightExpr = p.node.init;
       if (t.isIdentifier(leftExpr)) {
-        signalVariableExpression(hooks, p, leftExpr, rightExpr ?? undefined);
+        signalVariableExpression(state, p, leftExpr, rightExpr ?? undefined);
       }
     },
   });
 }
 
 function memoExpression(
-  hooks: ImportHook,
+  state: State,
   path: NodePath<t.VariableDeclaration>,
 ): void {
   path.traverse({
@@ -32,14 +32,14 @@ function memoExpression(
       const leftExpr = p.node.id;
       const rightExpr = p.node.init;
       if (t.isIdentifier(leftExpr)) {
-        memoVariableExpression(hooks, p, leftExpr, rightExpr ?? t.identifier('undefined'));
+        memoVariableExpression(state, p, leftExpr, rightExpr ?? t.identifier('undefined'));
       }
     },
   });
 }
 
 function destructureExpression(
-  hooks: ImportHook,
+  state: State,
   path: NodePath<t.VariableDeclaration>,
 ): void {
   path.traverse({
@@ -48,7 +48,7 @@ function destructureExpression(
       const rightExpr = p.node.init;
       if ((t.isObjectPattern(leftExpr) || t.isArrayPattern(leftExpr)) && rightExpr) {
         destructureVariableExpression(
-          hooks,
+          state,
           p,
           rightExpr,
           leftExpr,
@@ -59,7 +59,7 @@ function destructureExpression(
 }
 
 function deferredExpression(
-  hooks: ImportHook,
+  state: State,
   path: NodePath<t.VariableDeclaration>,
 ): void {
   path.traverse({
@@ -67,14 +67,14 @@ function deferredExpression(
       const leftExpr = p.node.id;
       const rightExpr = p.node.init;
       if (t.isIdentifier(leftExpr)) {
-        deferredVariableExpression(hooks, p, leftExpr, rightExpr ?? t.identifier('undefined'));
+        deferredVariableExpression(state, p, leftExpr, rightExpr ?? t.identifier('undefined'));
       }
     },
   });
 }
 
 function childrenExpression(
-  hooks: ImportHook,
+  state: State,
   path: NodePath<t.VariableDeclaration>,
 ): void {
   path.traverse({
@@ -83,7 +83,7 @@ function childrenExpression(
       const rightExpr = p.node.init;
       if (t.isIdentifier(leftExpr)) {
         accessorVariableExpression(
-          hooks,
+          state,
           p,
           leftExpr,
           'children',
@@ -101,7 +101,7 @@ function childrenExpression(
 
 function createCallbackLabel(label: string) {
   return function expr(
-    hooks: ImportHook,
+    state: State,
     path: NodePath<t.BlockStatement | t.ExpressionStatement>,
   ): void {
     const body = path.node;
@@ -116,7 +116,7 @@ function createCallbackLabel(label: string) {
     }
     path.replaceWith(
       t.callExpression(
-        getHookIdentifier(hooks, path, label),
+        getHookIdentifier(state.hooks, path, label),
         [
           callback,
         ],
@@ -126,12 +126,12 @@ function createCallbackLabel(label: string) {
 }
 
 type CallbackLabelExpresion = (
-  hooks: ImportHook,
+  state: State,
   path: NodePath<t.BlockStatement | t.ExpressionStatement>,
 ) => void;
 
 type StateExpression = (
-  hooks: ImportHook,
+  state: State,
   path: NodePath<t.VariableDeclaration>,
 ) => void;
 
@@ -163,13 +163,14 @@ const COMMENT_PARSER: Visitor<State> = {
       let preference: string | undefined;
       for (let i = 0, len = comments.length; i < len; i += 1) {
         const comment: t.Comment = comments[i];
-        const value = comment.value.trim();
+        const value: string = comment.value.trim();
         if (value in STATE_EXPRESSIONS) {
           preference = value;
+          comment.value = '';
         }
       }
       if (preference) {
-        STATE_EXPRESSIONS[preference](state.hooks, path);
+        STATE_EXPRESSIONS[preference](state, path);
       }
     }
   },
@@ -181,50 +182,34 @@ const COMMENT_PARSER: Visitor<State> = {
     }
     const comments = path.node.leadingComments;
     if (comments) {
-      const leading = [];
       let preference: string | undefined;
       for (let i = 0, len = comments.length; i < len; i += 1) {
-        const comment = comments[i];
-        const value = comment.value.trim();
+        const comment: t.Comment = comments[i];
+        const value: string = comment.value.trim();
         if (value in CALLBACK_EXPRESSIONS) {
           preference = value;
-        } else {
-          leading.push(comment);
+          comment.value = '';
         }
       }
-      const trailing = [...(path.node.trailingComments ?? [])];
-      const inner = [...(path.node.innerComments ?? [])];
-      t.removeComments(path.node);
-      t.addComments(path.node, 'leading', leading);
-      t.addComments(path.node, 'inner', inner);
-      t.addComments(path.node, 'trailing', trailing);
       if (preference) {
-        CALLBACK_EXPRESSIONS[preference](state.hooks, path);
+        CALLBACK_EXPRESSIONS[preference](state, path);
       }
     }
   },
   ExpressionStatement(path, state) {
     const comments = path.node.leadingComments;
     if (comments) {
-      const leading = [];
       let preference: string | undefined;
       for (let i = 0, len = comments.length; i < len; i += 1) {
-        const comment = comments[i];
-        const value = comment.value.trim();
+        const comment: t.Comment = comments[i];
+        const value: string = comment.value.trim();
         if (value in CALLBACK_EXPRESSIONS) {
           preference = value;
-        } else {
-          leading.push(comment);
+          comment.value = '';
         }
       }
-      const trailing = [...(path.node.trailingComments ?? [])];
-      const inner = [...(path.node.innerComments ?? [])];
-      t.removeComments(path.node);
-      t.addComments(path.node, 'leading', leading);
-      t.addComments(path.node, 'inner', inner);
-      t.addComments(path.node, 'trailing', trailing);
       if (preference) {
-        CALLBACK_EXPRESSIONS[preference](state.hooks, path);
+        CALLBACK_EXPRESSIONS[preference](state, path);
       }
     }
   },
