@@ -1,6 +1,6 @@
 import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
-import { unexpectedType } from './errors';
+import { unexpectedMissingParent, unexpectedType } from './errors';
 import normalizeBindings from './normalize-bindings';
 
 export default function derefMemoExpression(
@@ -36,6 +36,35 @@ export default function derefMemoExpression(
             if (p.node.arguments[0].name === memoIdentifier.name) {
               p.replaceWith(
                 readIdentifier,
+              );
+            }
+            break;
+          case '$getter':
+          case '$property':
+            if (!p.parentPath) {
+              throw unexpectedMissingParent(p);
+            }
+            if (!t.isObjectProperty(p.parent)) {
+              throw unexpectedType(p, p.parent.type, 'ObjectProperty');
+            }
+            if (!t.isIdentifier(p.node.arguments[0])) {
+              throw unexpectedType(p, p.node.arguments[0].type, 'Identifier');
+            }
+            if (p.node.arguments[0].name === memoIdentifier.name) {
+              p.parentPath.replaceWith(
+                t.objectMethod(
+                  'get',
+                  p.parent.key,
+                  [],
+                  t.blockStatement([
+                    t.returnStatement(
+                      t.callExpression(
+                        readIdentifier,
+                        [],
+                      ),
+                    ),
+                  ]),
+                ),
               );
             }
             break;
