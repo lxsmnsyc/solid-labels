@@ -122,6 +122,10 @@ declare global {
 
   function $merge<T extends any[]>(...args: T): MergeProps<T>;
   function $destructure<T>(value: T): T;
+
+  function $getter<T>(value: T): T;
+  function $setter<T>(value: T): T;
+  function $property<T>(value: T): T;
 }
 
 export default function solidReactivityPlugin(): PluginObj<State> {
