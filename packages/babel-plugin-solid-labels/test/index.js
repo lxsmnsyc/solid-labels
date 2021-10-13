@@ -3,6 +3,7 @@ const plugin = require('../dist/cjs');
 
 const code = `
 let count = $signal(0);
+const x = $memo(count);
 const message = $memo(\`Count: \${count}\`, {
   equal: (a, b) => a === b,
 });

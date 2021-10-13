@@ -1,6 +1,7 @@
 import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import accessorVariableExpression from './accessor-variable';
+import normalizeAccessor from './normalize-accessor';
 import { State } from './types';
 
 export default function deferredVariableExpression(
@@ -10,6 +11,7 @@ export default function deferredVariableExpression(
   stateIdentifier: t.Expression = t.identifier('undefined'),
   optionsIdentifier?: t.Expression,
 ): void {
+  const normalIdentifier = normalizeAccessor(stateIdentifier);
   if (state.opts.dev) {
     if (optionsIdentifier) {
       accessorVariableExpression(
@@ -18,10 +20,7 @@ export default function deferredVariableExpression(
         deferredIdentifier,
         'createDeferred',
         [
-          t.arrowFunctionExpression(
-            [],
-            stateIdentifier,
-          ),
+          normalIdentifier,
           t.callExpression(
             t.memberExpression(
               t.identifier('Object'),
@@ -46,10 +45,7 @@ export default function deferredVariableExpression(
         deferredIdentifier,
         'createDeferred',
         [
-          t.arrowFunctionExpression(
-            [],
-            stateIdentifier,
-          ),
+          normalIdentifier,
           t.objectExpression([
             t.objectProperty(
               t.identifier('name'),
@@ -66,10 +62,7 @@ export default function deferredVariableExpression(
       deferredIdentifier,
       'createDeferred',
       [
-        t.arrowFunctionExpression(
-          [],
-          stateIdentifier,
-        ),
+        normalIdentifier,
         optionsIdentifier,
       ],
     );
@@ -80,10 +73,7 @@ export default function deferredVariableExpression(
       deferredIdentifier,
       'createDeferred',
       [
-        t.arrowFunctionExpression(
-          [],
-          stateIdentifier,
-        ),
+        normalIdentifier,
       ],
     );
   }

@@ -14,6 +14,7 @@ import signalVariableExpression from './signal-variable';
 import accessorVariableExpression from './accessor-variable';
 import deferredVariableExpression from './deferred-variable';
 import destructureVariableExpression from './destructure-variable';
+import normalizeAccessor from './normalize-accessor';
 
 function derefSignalExpression(
   _: State,
@@ -329,10 +330,7 @@ function createCompileTimeAutoAccessor(target: string, limit: number) {
       leftExpr,
       target,
       [
-        t.arrowFunctionExpression(
-          [],
-          argument,
-        ),
+        normalizeAccessor(argument),
         ...rest,
       ],
     );
@@ -369,10 +367,7 @@ function createCompileTimeAutoArrow(target: string, limit: number) {
       t.callExpression(
         getHookIdentifier(state.hooks, path, target),
         [
-          t.arrowFunctionExpression(
-            [],
-            argument,
-          ),
+          normalizeAccessor(argument),
           ...rest,
         ],
       ),

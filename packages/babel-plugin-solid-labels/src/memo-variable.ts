@@ -1,6 +1,7 @@
 import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import accessorVariableExpression from './accessor-variable';
+import normalizeAccessor from './normalize-accessor';
 import { State } from './types';
 
 export default function memoVariableExpression(
@@ -10,6 +11,8 @@ export default function memoVariableExpression(
   stateIdentifier: t.Expression,
   optionsIdentifier?: t.Expression,
 ): void {
+  const normalIdentifier = normalizeAccessor(stateIdentifier);
+
   if (state.opts.dev) {
     if (optionsIdentifier) {
       accessorVariableExpression(
@@ -18,10 +21,7 @@ export default function memoVariableExpression(
         memoIdentifier,
         'createMemo',
         [
-          t.arrowFunctionExpression(
-            [],
-            stateIdentifier,
-          ),
+          normalIdentifier,
           t.identifier('undefined'),
           t.callExpression(
             t.memberExpression(
@@ -47,10 +47,7 @@ export default function memoVariableExpression(
         memoIdentifier,
         'createMemo',
         [
-          t.arrowFunctionExpression(
-            [],
-            stateIdentifier,
-          ),
+          normalIdentifier,
           t.identifier('undefined'),
           t.objectExpression([
             t.objectProperty(
@@ -68,10 +65,7 @@ export default function memoVariableExpression(
       memoIdentifier,
       'createMemo',
       [
-        t.arrowFunctionExpression(
-          [],
-          stateIdentifier,
-        ),
+        normalIdentifier,
         t.identifier('undefined'),
         optionsIdentifier,
       ],
@@ -83,10 +77,7 @@ export default function memoVariableExpression(
       memoIdentifier,
       'createMemo',
       [
-        t.arrowFunctionExpression(
-          [],
-          stateIdentifier,
-        ),
+        normalIdentifier,
       ],
     );
   }
