@@ -22,9 +22,20 @@ const plugin = require('../dist/cjs');
 
 
 
+
 const code = `
-/* @root test */ {
-  someEffect();
+function Counter() {
+  signal: x = 0;
+
+  effect: effectLog: {
+    console.log('Count', x);
+  }
+  computed: computedLog: {
+    console.log('Count', x);
+  }
+  renderEffect: renderEffectLog: {
+    console.log('Count', x);
+  }
 }
 `;
 babel.transformAsync(code, {
