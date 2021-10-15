@@ -14,7 +14,15 @@
 ## Install
 
 ```bash
+npm install babel-plugin-solid-labels
+```
+
+```bash
 yarn add babel-plugin-solid-labels
+```
+
+```bash
+pnpm add babel-plugin-solid-labels
 ```
 
 ## Features
