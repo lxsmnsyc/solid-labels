@@ -1,12 +1,31 @@
 const babel = require('@babel/core');
 const plugin = require('../dist/cjs');
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const code = `
-let count = $signal(0);
-const x = $memo(count);
-const message = $memo(\`Count: \${count}\`, {
-  equal: (a, b) => a === b,
-});
+/* @root test */ {
+  someEffect();
+}
 `;
 babel.transformAsync(code, {
   plugins: [

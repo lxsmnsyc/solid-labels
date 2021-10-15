@@ -103,6 +103,7 @@ function createCallbackLabel(label: string) {
   return function expr(
     state: State,
     path: NodePath<t.BlockStatement | t.ExpressionStatement>,
+    name?: string,
   ): void {
     const body = path.node;
     let callback: t.Expression;
@@ -114,20 +115,39 @@ function createCallbackLabel(label: string) {
     } else {
       callback = body.expression;
     }
-    path.replaceWith(
-      t.callExpression(
-        getHookIdentifier(state.hooks, path, label),
-        [
-          callback,
-        ],
-      ),
-    );
+    if (name) {
+      path.replaceWith(
+        t.callExpression(
+          getHookIdentifier(state.hooks, path, label),
+          [
+            callback,
+            t.identifier('undefined'),
+            t.objectExpression([
+              t.objectProperty(
+                t.identifier('name'),
+                t.stringLiteral(name),
+              ),
+            ]),
+          ],
+        ),
+      );
+    } else {
+      path.replaceWith(
+        t.callExpression(
+          getHookIdentifier(state.hooks, path, label),
+          [
+            callback,
+          ],
+        ),
+      );
+    }
   };
 }
 
 type CallbackLabelExpresion = (
   state: State,
   path: NodePath<t.BlockStatement | t.ExpressionStatement>,
+  name: string | undefined,
 ) => void;
 
 type StateExpression = (
@@ -142,6 +162,12 @@ const STATE_EXPRESSIONS: Record<string, StateExpression> = {
   '@deferred': deferredExpression,
   '@destructure': destructureExpression,
 };
+
+const WITH_NAMED_OPTION = new Set([
+  'effect',
+  'computed',
+  'renderEffect',
+]);
 
 const CALLBACK_EXPRESSIONS: Record<string, CallbackLabelExpresion> = {
   '@effect': createCallbackLabel('createEffect'),
@@ -183,16 +209,23 @@ const COMMENT_PARSER: Visitor<State> = {
     const comments = path.node.leadingComments;
     if (comments) {
       let preference: string | undefined;
+      let name: string | undefined;
       for (let i = 0, len = comments.length; i < len; i += 1) {
         const comment: t.Comment = comments[i];
         const value: string = comment.value.trim();
-        if (value in CALLBACK_EXPRESSIONS) {
-          preference = value;
-          comment.value = '';
+        if (/^@\w+( .*)?$/.test(value)) {
+          const [tag, ...debugName] = value.split(' ');
+          if (tag in CALLBACK_EXPRESSIONS) {
+            preference = tag;
+            if (WITH_NAMED_OPTION.has(tag)) {
+              name = debugName.join('');
+            }
+            comment.value = '';
+          }
         }
       }
       if (preference) {
-        CALLBACK_EXPRESSIONS[preference](state, path);
+        CALLBACK_EXPRESSIONS[preference](state, path, name);
       }
     }
   },
@@ -200,16 +233,23 @@ const COMMENT_PARSER: Visitor<State> = {
     const comments = path.node.leadingComments;
     if (comments) {
       let preference: string | undefined;
+      let name: string | undefined;
       for (let i = 0, len = comments.length; i < len; i += 1) {
         const comment: t.Comment = comments[i];
         const value: string = comment.value.trim();
-        if (value in CALLBACK_EXPRESSIONS) {
-          preference = value;
-          comment.value = '';
+        if (/^@\w+( .*)?$/.test(value)) {
+          const [tag, ...debugName] = value.split(' ');
+          if (tag in CALLBACK_EXPRESSIONS) {
+            preference = tag;
+            if (WITH_NAMED_OPTION.has(tag)) {
+              name = debugName.join('');
+            }
+            comment.value = '';
+          }
         }
       }
       if (preference) {
-        CALLBACK_EXPRESSIONS[preference](state, path);
+        CALLBACK_EXPRESSIONS[preference](state, path, name);
       }
     }
   },
