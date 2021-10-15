@@ -850,6 +850,96 @@ _createEffect(() => {
 });
 ```
 
+## Reactive properties
+
+### `$getter`
+
+Assigns the given memo or signal ref to the property, transforming it into a getter property. Reading the property allows the assigned ref to be tracked.
+
+```js
+let count = $signal(0);
+
+const obj = {
+  count: $getter(count),
+};
+```
+
+```js
+import { createSignal as _createSignal } from "solid-js";
+
+let [_count, _setcount] = _createSignal(0);
+
+const obj = {
+  get count() {
+    return _count();
+  }
+
+};
+```
+
+### `$setter`
+
+Assigns the given signal ref to the property, transforming it into a setter property. Setting the property allows the assigned ref to be reactively updated.
+
+```js
+let count = $signal(0);
+
+const obj = {
+  count: $setter(count),
+};
+```
+
+```js
+import { createSignal as _createSignal } from "solid-js";
+
+let [_count, _setcount] = _createSignal(0);
+
+const obj = {
+  set count(_value) {
+    return _setcount(() => _value);
+  }
+
+};
+```
+
+### `$property`
+
+A combination of `$getter` and `$setter`. For memo refs, this only outputs the getter property.
+
+```js
+let count = $signal(0);
+const message = $memo(`Count: ${count}`);
+
+const obj = {
+  count: $property(count),
+  message: $property(message),
+};
+```
+
+```js
+import { createMemo as _createMemo } from "solid-js";
+import { createSignal as _createSignal } from "solid-js";
+
+let [_count, _setcount] = _createSignal(0);
+
+const _message = _createMemo(() => `Count: ${_count()}`);
+
+const obj = {
+  get count() {
+    return _count();
+  },
+
+  set count(_value) {
+    return _setcount(() => _value);
+  },
+
+  get message() {
+    return _message();
+  }
+
+};
+```
+
 ## Tooling
 
 On any `d.ts` file, add a reference markup
