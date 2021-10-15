@@ -133,6 +133,57 @@ function Counter() {
 
 You may use an arrow function instead of a block statement to accepts the previously returned value.
 
+`@effect`, `@computed` and `@renderEffect` can also be named:
+
+```js
+// @signal
+let x = 0;
+
+/* @effect Effect Log */ {
+  console.log('Count', x);
+}
+/* @computed Computed Log */ {
+  console.log('Count', x);
+}
+/* @renderEffect Render Effect Log */ {
+  console.log('Count', x);
+}
+```
+
+```js
+import { createRenderEffect as _createRenderEffect } from "solid-js";
+import { createComputed as _createComputed } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
+import { createSignal as _createSignal } from "solid-js";
+
+//
+let [_x, _setx] = _createSignal(0);
+/**/
+
+
+_createEffect(() => {
+  console.log('Count', _x());
+}, undefined, {
+  name: "Effect Log"
+});
+/**/
+
+
+_createComputed(() => {
+  console.log('Count', _x());
+}, undefined, {
+  name: "Computed Log"
+});
+/**/
+
+
+_createRenderEffect(() => {
+  console.log('Count', _x());
+}, undefined, {
+  name: "Render Effect Log"
+});
+```
+
 ### `@mount`, `@cleanup` and `@error`
 
 Transforms into `onMount`, `onCleanup` and `onError`.
