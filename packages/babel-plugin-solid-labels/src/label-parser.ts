@@ -157,13 +157,18 @@ function reactiveExpression(
   }
 }
 
-function createCallbackLabel(label: string) {
+function createCallbackLabel(label: string, named = false) {
   return function expr(
     state: State,
     path: NodePath<t.LabeledStatement>,
   ): void {
-    const { body } = path.node;
+    let { body } = path.node;
+    let name: string | undefined;
     let callback: t.Expression;
+    if (named && t.isLabeledStatement(body)) {
+      name = body.label.name;
+      body = body.body;
+    }
     if (t.isBlockStatement(body)) {
       callback = t.arrowFunctionExpression(
         [],
@@ -174,14 +179,32 @@ function createCallbackLabel(label: string) {
     } else {
       throw unexpectedType(path, body.type, 'BlockStatement | ExpressionStatement');
     }
-    path.replaceWith(
-      t.callExpression(
-        getHookIdentifier(state.hooks, path, label),
-        [
-          callback,
-        ],
-      ),
-    );
+    if (name) {
+      path.replaceWith(
+        t.callExpression(
+          getHookIdentifier(state.hooks, path, label),
+          [
+            callback,
+            t.identifier('undefined'),
+            t.objectExpression([
+              t.objectProperty(
+                t.identifier('name'),
+                t.stringLiteral(name),
+              ),
+            ]),
+          ],
+        ),
+      );
+    } else {
+      path.replaceWith(
+        t.callExpression(
+          getHookIdentifier(state.hooks, path, label),
+          [
+            callback,
+          ],
+        ),
+      );
+    }
   };
 }
 
@@ -233,9 +256,9 @@ const EXPRESSIONS: Record<string, LabelExpression> = {
       );
     }
   }),
-  effect: createCallbackLabel('createEffect'),
-  computed: createCallbackLabel('createComputed'),
-  renderEffect: createCallbackLabel('createRenderEffect'),
+  effect: createCallbackLabel('createEffect', true),
+  computed: createCallbackLabel('createComputed', true),
+  renderEffect: createCallbackLabel('createRenderEffect', true),
   mount: createCallbackLabel('onMount'),
   cleanup: createCallbackLabel('onCleanup'),
   error: createCallbackLabel('onError'),
