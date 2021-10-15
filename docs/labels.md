@@ -125,6 +125,53 @@ function Counter() {
 
 You may use an arrow function instead of a block statement to accepts the previously returned value. If an expression (e.g. identifier, function call for `label: expr;`) is supplied, it compiles to `hook(expr)`.
 
+They can also be named by adding another labeled statement:
+
+```js
+function Counter() {
+  signal: x = 0;
+
+  effect: effectLog: {
+    console.log('Count', x);
+  }
+  computed: computedLog: {
+    console.log('Count', x);
+  }
+  renderEffect: renderEffectLog: {
+    console.log('Count', x);
+  }
+}
+```
+
+```js
+import { createRenderEffect as _createRenderEffect } from "solid-js";
+import { createComputed as _createComputed } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
+import { createSignal as _createSignal } from "solid-js";
+
+function Counter() {
+  const [_x, _setx] = _createSignal(0);
+
+  _createEffect(() => {
+    console.log('Count', _x());
+  }, undefined, {
+    name: "effectLog"
+  });
+
+  _createComputed(() => {
+    console.log('Count', _x());
+  }, undefined, {
+    name: "computedLog"
+  });
+
+  _createRenderEffect(() => {
+    console.log('Count', _x());
+  }, undefined, {
+    name: "renderEffectLog"
+  });
+}
+```
+
 ### `$`
 
 Similar to `memo` and `effect`, `$` compiles to `createMemo` for variable declaration, while `createEffect(() => expr)` for other kinds of expressions (including block statements). `$` is ideal for single-line effects.
