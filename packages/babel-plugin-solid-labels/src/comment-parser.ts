@@ -99,7 +99,7 @@ function childrenExpression(
   });
 }
 
-function createCallbackLabel(label: string) {
+function createCallbackLabel(label: string, named = false) {
   return function expr(
     state: State,
     path: NodePath<t.BlockStatement | t.ExpressionStatement>,
@@ -115,7 +115,7 @@ function createCallbackLabel(label: string) {
     } else {
       callback = body.expression;
     }
-    if (name) {
+    if (named && name) {
       path.replaceWith(
         t.callExpression(
           getHookIdentifier(state.hooks, path, label),
@@ -163,16 +163,10 @@ const STATE_EXPRESSIONS: Record<string, StateExpression> = {
   '@destructure': destructureExpression,
 };
 
-const WITH_NAMED_OPTION = new Set([
-  'effect',
-  'computed',
-  'renderEffect',
-]);
-
 const CALLBACK_EXPRESSIONS: Record<string, CallbackLabelExpresion> = {
-  '@effect': createCallbackLabel('createEffect'),
-  '@computed': createCallbackLabel('createComputed'),
-  '@renderEffect': createCallbackLabel('createRenderEffect'),
+  '@effect': createCallbackLabel('createEffect', true),
+  '@computed': createCallbackLabel('createComputed', true),
+  '@renderEffect': createCallbackLabel('createRenderEffect', true),
   '@mount': createCallbackLabel('onMount'),
   '@cleanup': createCallbackLabel('onCleanup'),
   '@error': createCallbackLabel('onError'),
@@ -217,9 +211,7 @@ const COMMENT_PARSER: Visitor<State> = {
           const [tag, ...debugName] = value.split(' ');
           if (tag in CALLBACK_EXPRESSIONS) {
             preference = tag;
-            if (WITH_NAMED_OPTION.has(tag)) {
-              name = debugName.join('');
-            }
+            name = debugName.join(' ');
             comment.value = '';
           }
         }
@@ -241,9 +233,7 @@ const COMMENT_PARSER: Visitor<State> = {
           const [tag, ...debugName] = value.split(' ');
           if (tag in CALLBACK_EXPRESSIONS) {
             preference = tag;
-            if (WITH_NAMED_OPTION.has(tag)) {
-              name = debugName.join('');
-            }
+            name = debugName.join(' ');
             comment.value = '';
           }
         }
