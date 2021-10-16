@@ -1,13 +1,13 @@
 {
   "name": "vite-example-comments",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "serve": "vite preview"
   },
   "devDependencies": {
-    "babel-plugin-solid-labels": "0.7.1",
+    "babel-plugin-solid-labels": "0.8.0",
     "babel-preset-solid": "^1.1.5",
     "eslint": "^7.32.0",
     "eslint-config-lxsmnsyc": "^0.3.0",
