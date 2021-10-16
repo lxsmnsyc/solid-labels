@@ -1,11 +1,39 @@
 {
   "version": "0.8.0",
   "types": "dist/types/index.d.ts",
-  "main": "dist/cjs/index.js",
-  "module": "dist/esm/index.mjs",
+  "main": "dist/cjs/production/index.js",
+  "module": "dist/esm/production/index.js",
   "exports": {
-    "require": "./dist/cjs/index.js",
-    "import": "./dist/esm/index.mjs"
+    ".": {
+      "development": {
+        "require": "./dist/cjs/development/index.js",
+        "import": "./dist/esm/development/index.js"
+      },
+      "require": "./dist/cjs/production/index.js",
+      "import": "./dist/esm/production/index.js",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./dev": {
+      "production": {
+        "require": "./dist/cjs/production/index.js",
+        "import": "./dist/esm/production/index.js"
+      },
+      "require": "./dist/cjs/development/index.js",
+      "import": "./dist/esm/development/index.js",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./esm": {
+      "development": "./dist/esm/development/index.js",
+      "production": "./dist/esm/production/index.js",
+      "default": "./dist/esm/production/index.js",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./cjs": {
+      "development": "./dist/cjs/development/index.js",
+      "production": "./dist/cjs/production/index.js",
+      "default": "./dist/cjs/production/index.js",
+      "types": "./dist/types/index.d.ts"
+    }
   },
   "files": [
     "dist",
@@ -31,7 +59,7 @@
     "@types/node": "^16.9.1",
     "eslint": "^7.32.0",
     "eslint-config-lxsmnsyc": "^0.3.0",
-    "pridepack": "^0.12.2",
+    "pridepack": "^1.0.2",
     "solid-js": "^1.1.6",
     "tslib": "^2.3.1",
     "typescript": "^4.4.3"
