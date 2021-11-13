@@ -450,6 +450,7 @@ const CTF_PARSER: Visitor<State> = {
     if (
       t.isIdentifier(path.node.callee)
       && path.node.callee.name in CTF_EXPRESSIONS
+      && !path.scope.hasBinding(path.node.callee.name)
     ) {
       CTF_EXPRESSIONS[path.node.callee.name](state, path);
     }
