@@ -345,6 +345,10 @@ _createEffect(() => {
 });
 ```
 
+### `$resource`
+
+This compile as an auto-import alias for `createResource`.
+
 ## Observables
 
 ### `$observable`
@@ -939,6 +943,33 @@ const obj = {
 
 };
 ```
+
+## Store
+
+These CTFs are based from `solid-js/store` exports.
+
+- `$store` -> `createStore`
+- `$mutable` -> `createMutable`
+- `$reconcile` -> `reconcile`
+- `$produce` -> `produce`
+
+## Components
+
+These CTFs are auto-imported components from `solid-js` and `solid-js/web`. You can still use their original identifiers since those are already supported by `babel-preset-solid`.
+
+- `<$for>` -> `<For>`
+- `<$show>` -> `<Show>`
+- `<$switch>` -> `<Switch>`
+- `<$match>` -> `<Match>`
+- `<$index>` -> `<Index>`
+- `<$errorBoundary>` -> `<ErrorBoundary>`
+- `<$suspense>` -> `<Suspense>`
+- `<$suspenseList>` -> `<SuspenseList>`
+- `<$dynamic>` -> `<Dynamic>`
+- `<$portal>` -> `<Portal>`
+- `<$assets>` -> `<Assets>`
+- `<$hydrationScript>` -> `<HydrationScript>`
+- `<$noHydration>` -> `<NoHydration>`
 
 ## Tooling
 
