@@ -7,12 +7,13 @@ export default function getHookIdentifier(
   hooks: ImportHook,
   path: NodePath,
   name: string,
+  source = 'solid-js',
 ): t.Identifier {
   const current = hooks.get(name);
   if (current) {
     return current;
   }
-  const newID = addNamed(path, name, 'solid-js');
+  const newID = addNamed(path, name, source);
   hooks.set(name, newID);
   return newID;
 }

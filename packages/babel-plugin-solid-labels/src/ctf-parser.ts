@@ -342,12 +342,12 @@ type CompileTimeFunctionExpression = (
   path: NodePath<t.CallExpression>,
 ) => void;
 
-function createCompileTimeAlias(target: string) {
+function createCompileTimeAlias(target: string, source?: string) {
   return (
     state: State,
     path: NodePath<t.CallExpression>,
   ) => {
-    path.node.callee = getHookIdentifier(state.hooks, path, target);
+    path.node.callee = getHookIdentifier(state.hooks, path, target, source);
   };
 }
 
@@ -435,6 +435,12 @@ const CTF_EXPRESSIONS: Record<string, CompileTimeFunctionExpression> = {
   $computed: createCompileTimeAlias('createComputed'),
   $renderEffect: createCompileTimeAlias('createRenderEffect'),
   $merge: createCompileTimeAlias('mergeProps'),
+  $resource: createCompileTimeAlias('createResource'),
+
+  $store: createCompileTimeAlias('createStore', 'solid-js/store'),
+  $mutable: createCompileTimeAlias('createMutable', 'solid-js/store'),
+  $produce: createCompileTimeAlias('produce', 'solid-js/store'),
+  $reconcile: createCompileTimeAlias('reconcile', 'solid-js/store'),
 
   $destructure: destructureExpression,
 };

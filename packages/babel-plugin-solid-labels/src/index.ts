@@ -1,9 +1,12 @@
 import { PluginObj } from '@babel/core';
 import * as solid from 'solid-js';
+import * as solidWeb from 'solid-js/web';
+import * as solidStore from 'solid-js/store';
 import { State } from './types';
 import LABEL_PARSER from './label-parser';
 import COMMENT_PARSER from './comment-parser';
 import CTF_PARSER from './ctf-parser';
+import AUTO_IMPORT_EXPR from './auto-import';
 
 type BoxedTupleTypes<T extends any[]> =
   { [P in keyof T]: [T[P]] }[Exclude<keyof T, keyof any[]>]
@@ -126,6 +129,29 @@ declare global {
   function $getter<T>(value: T): T;
   function $setter<T>(value: T): T;
   function $property<T>(value: T): T;
+
+  const $resource: typeof solid.createResource;
+
+  // store
+  const $store: typeof solidStore.createStore;
+  const $mutable: typeof solidStore.createMutable;
+  const $produce: typeof solidStore.produce;
+  const $reconcile: typeof solidStore.reconcile;
+
+  // components
+  const $for: typeof solid.For;
+  const $show: typeof solid.Show;
+  const $switch: typeof solid.Switch;
+  const $match: typeof solid.Match;
+  const $index: typeof solid.Index;
+  const $errorBoundary: typeof solid.ErrorBoundary;
+  const $suspense: typeof solid.Suspense;
+  const $suspenseList: typeof solid.SuspenseList;
+  const $dynamic: typeof solidWeb.Dynamic;
+  const $portal: typeof solidWeb.Portal;
+  const $assets: typeof solidWeb.Assets;
+  const $hydrationScript: typeof solidWeb.HydrationScript;
+  const $noHydration: typeof solidWeb.NoHydration;
 }
 
 export default function solidReactivityPlugin(): PluginObj<State> {
@@ -137,6 +163,7 @@ export default function solidReactivityPlugin(): PluginObj<State> {
       ...LABEL_PARSER,
       ...COMMENT_PARSER,
       ...CTF_PARSER,
+      ...AUTO_IMPORT_EXPR,
     },
   };
 }
