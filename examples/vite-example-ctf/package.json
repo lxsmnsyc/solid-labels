@@ -1,13 +1,13 @@
 {
   "name": "vite-example-ctf",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "serve": "vite preview"
   },
   "devDependencies": {
-    "babel-plugin-solid-labels": "0.9.1",
+    "babel-plugin-solid-labels": "0.9.2",
     "babel-preset-solid": "^1.1.5",
     "eslint": "^7.32.0",
     "eslint-config-lxsmnsyc": "^0.3.0",
