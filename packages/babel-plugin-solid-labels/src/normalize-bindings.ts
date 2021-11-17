@@ -66,7 +66,7 @@ export default function normalizeBindings(
         return;
       }
       // obj.x
-      if (t.isMemberExpression(p.parent) && p.parent.property === p.node) {
+      if (t.isMemberExpression(p.parent) && !p.parent.computed && p.parent.property === p.node) {
         return;
       }
       // function x() {}
