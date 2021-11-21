@@ -14,10 +14,12 @@ function signalExpression(
 ): void {
   path.traverse({
     VariableDeclarator(p) {
-      const leftExpr = p.node.id;
-      const rightExpr = p.node.init;
-      if (t.isIdentifier(leftExpr)) {
-        signalVariableExpression(state, p, leftExpr, rightExpr ?? undefined);
+      if (p.parentPath === path) {
+        const leftExpr = p.node.id;
+        const rightExpr = p.node.init;
+        if (t.isIdentifier(leftExpr)) {
+          signalVariableExpression(state, p, leftExpr, rightExpr ?? undefined);
+        }
       }
     },
   });
@@ -29,10 +31,12 @@ function memoExpression(
 ): void {
   path.traverse({
     VariableDeclarator(p) {
-      const leftExpr = p.node.id;
-      const rightExpr = p.node.init;
-      if (t.isIdentifier(leftExpr)) {
-        memoVariableExpression(state, p, leftExpr, rightExpr ?? t.identifier('undefined'));
+      if (p.parentPath === path) {
+        const leftExpr = p.node.id;
+        const rightExpr = p.node.init;
+        if (t.isIdentifier(leftExpr)) {
+          memoVariableExpression(state, p, leftExpr, rightExpr ?? t.identifier('undefined'));
+        }
       }
     },
   });
@@ -44,15 +48,17 @@ function destructureExpression(
 ): void {
   path.traverse({
     VariableDeclarator(p) {
-      const leftExpr = p.node.id;
-      const rightExpr = p.node.init;
-      if ((t.isObjectPattern(leftExpr) || t.isArrayPattern(leftExpr)) && rightExpr) {
-        destructureVariableExpression(
-          state,
-          p,
-          rightExpr,
-          leftExpr,
-        );
+      if (p.parentPath === path) {
+        const leftExpr = p.node.id;
+        const rightExpr = p.node.init;
+        if ((t.isObjectPattern(leftExpr) || t.isArrayPattern(leftExpr)) && rightExpr) {
+          destructureVariableExpression(
+            state,
+            p,
+            rightExpr,
+            leftExpr,
+          );
+        }
       }
     },
   });
@@ -64,10 +70,12 @@ function deferredExpression(
 ): void {
   path.traverse({
     VariableDeclarator(p) {
-      const leftExpr = p.node.id;
-      const rightExpr = p.node.init;
-      if (t.isIdentifier(leftExpr)) {
-        deferredVariableExpression(state, p, leftExpr, rightExpr ?? t.identifier('undefined'));
+      if (p.parentPath === path) {
+        const leftExpr = p.node.id;
+        const rightExpr = p.node.init;
+        if (t.isIdentifier(leftExpr)) {
+          deferredVariableExpression(state, p, leftExpr, rightExpr ?? t.identifier('undefined'));
+        }
       }
     },
   });
@@ -79,21 +87,23 @@ function childrenExpression(
 ): void {
   path.traverse({
     VariableDeclarator(p) {
-      const leftExpr = p.node.id;
-      const rightExpr = p.node.init;
-      if (t.isIdentifier(leftExpr)) {
-        accessorVariableExpression(
-          state,
-          p,
-          leftExpr,
-          'children',
-          [
-            t.arrowFunctionExpression(
-              [],
-              rightExpr ?? t.identifier('undefined'),
-            ),
-          ],
-        );
+      if (p.parentPath === path) {
+        const leftExpr = p.node.id;
+        const rightExpr = p.node.init;
+        if (t.isIdentifier(leftExpr)) {
+          accessorVariableExpression(
+            state,
+            p,
+            leftExpr,
+            'children',
+            [
+              t.arrowFunctionExpression(
+                [],
+                rightExpr ?? t.identifier('undefined'),
+              ),
+            ],
+          );
+        }
       }
     },
   });

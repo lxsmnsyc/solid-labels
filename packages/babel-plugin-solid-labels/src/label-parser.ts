@@ -102,9 +102,11 @@ function createVariableLabel(variableExpression: VariableLabelExpression) {
     if (t.isVariableDeclaration(path.node)) {
       path.traverse({
         VariableDeclarator(p) {
-          const leftExpr = p.node.id;
-          const rightExpr = p.node.init;
-          variableExpression(state, p, leftExpr, rightExpr);
+          if (p.parentPath === path) {
+            const leftExpr = p.node.id;
+            const rightExpr = p.node.init;
+            variableExpression(state, p, leftExpr, rightExpr);
+          }
         },
       });
     } else {

@@ -24,19 +24,17 @@ const plugin = require('../dist/cjs');
 
 
 const code = `
-function Counter() {
-  signal: x = 0;
+// @memo
+const distanceFromMouseX = (() => {
+  if (mouseX) {
+    const width = child.getBoundingClientRect().width;
+    const offset = child.offsetLeft - child.parentNode.offsetLeft;
 
-  effect: effectLog: {
-    console.log('Count', x);
+    return Math.abs(offset + width / 2 - mouseX);
+  } else {
+    return null;
   }
-  computed: computedLog: {
-    console.log('Count', x);
-  }
-  renderEffect: renderEffectLog: {
-    console.log('Count', x);
-  }
-}
+})();
 `;
 babel.transformAsync(code, {
   plugins: [
