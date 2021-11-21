@@ -32,6 +32,7 @@ function createVariableLabel(variableExpression: VariableLabelExpression) {
         if (!t.isIdentifier(leftExpr)) {
           throw unexpectedType(path, leftExpr.type, 'Identifier');
         }
+
         path.replaceWith(
           t.variableDeclaration(
             'const',
