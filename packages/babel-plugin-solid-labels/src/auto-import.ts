@@ -3,12 +3,12 @@ import * as t from '@babel/types';
 import { State } from './types';
 import getHookIdentifier from './get-hook-identifier';
 
-type AutoImportExpression = (state: State, path: NodePath<t.Identifier>) => void;
+type AutoImportExpression = (state: State, path: NodePath<t.Expression>) => void;
 
 function createAutoImport(target: string, source?: string) {
   return (
     state: State,
-    path: NodePath<t.Identifier>,
+    path: NodePath<t.Expression>,
   ) => {
     path.replaceWith(getHookIdentifier(state.hooks, path, target, source));
   };
@@ -31,70 +31,12 @@ const AUTO_IMPORT_EXPR: Record<string, AutoImportExpression> = {
 };
 
 const AUTO_IMPORT: Visitor<State> = {
-  Identifier(p, state) {
-    // { x }
-    if (t.isObjectMethod(p.parent) && p.parent.key === p.node) {
-      return;
-    }
-    if (t.isObjectProperty(p.parent) && p.parent.key === p.node) {
-      return;
-    }
-    // const x
-    if (t.isVariableDeclarator(p.parent)) {
-      if (p.parent.id === p.node) {
-        return;
-      }
-    }
-    // const [x]
-    if (t.isArrayPattern(p.parent) && p.parent.elements.includes(p.node)) {
-      return;
-    }
-    // (x) => {}
-    if (t.isArrowFunctionExpression(p.parent) && p.parent.params.includes(p.node)) {
-      return;
-    }
-    // function (x)
-    if (t.isFunctionExpression(p.parent) && p.parent.params.includes(p.node)) {
-      return;
-    }
-    if (t.isFunctionDeclaration(p.parent) && p.parent.params.includes(p.node)) {
-      return;
-    }
-    // x:
-    if (t.isLabeledStatement(p.parent) && p.parent.label === p.node) {
-      return;
-    }
-    // obj.x
-    if (t.isMemberExpression(p.parent) && p.parent.property === p.node) {
-      return;
-    }
-    // function x() {}
-    if (t.isFunctionDeclaration(p.parent) && p.parent.id === p.node) {
-      return;
-    }
-    // (y = x) => {}
-    // function z(y = x) {}
+  Expression(p, state) {
     if (
-      t.isAssignmentPattern(p.parent)
-      && p.parent.left === p.node
-      && (
-        (
-          t.isArrowFunctionExpression(p.parentPath.parent)
-          && p.parentPath.parent.params.includes(p.parent)
-        )
-        || (
-          t.isFunctionDeclaration(p.parentPath.parent)
-          && p.parentPath.parent.params.includes(p.parent)
-        )
-        || (
-          t.isFunctionExpression(p.parentPath.parent)
-          && p.parentPath.parent.params.includes(p.parent)
-        )
-      )
+      t.isIdentifier(p.node)
+      && !p.scope.hasBinding(p.node.name)
+      && p.node.name in AUTO_IMPORT_EXPR
     ) {
-      return;
-    }
-    if (p.node.name in AUTO_IMPORT_EXPR) {
       AUTO_IMPORT_EXPR[p.node.name](state, p);
     }
   },

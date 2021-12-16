@@ -52,22 +52,22 @@
   ],
   "name": "babel-plugin-solid-labels",
   "devDependencies": {
-    "@babel/core": "^7.15.8",
-    "@types/babel__core": "^7.1.16",
+    "@babel/core": "^7.16.5",
+    "@types/babel__core": "^7.1.17",
     "@types/babel__traverse": "^7.14.2",
     "@types/jest": "^27.0.1",
-    "@types/node": "^16.9.1",
+    "@types/node": "^17.0.0",
     "eslint": "^7.32.0",
     "eslint-config-lxsmnsyc": "^0.3.0",
     "pridepack": "^1.0.3",
-    "solid-js": "^1.1.6",
+    "solid-js": "^1.2.6",
     "tslib": "^2.3.1",
-    "typescript": "^4.4.3"
+    "typescript": "^4.5.4"
   },
   "peerDependencies": {
-    "@babel/core": "^7.15.8",
-    "@types/babel__core": "^7.1.16",
-    "solid-js": "^1.1.6"
+    "@babel/core": "^7.16.5",
+    "@types/babel__core": "^7.1.17",
+    "solid-js": "^1.2.6"
   },
   "scripts": {
     "prepublish": "pridepack clean && pridepack build",
@@ -79,9 +79,9 @@
     "watch": "pridepack watch"
   },
   "dependencies": {
-    "@babel/helper-module-imports": "^7.15.4",
-    "@babel/traverse": "^7.15.4",
-    "@babel/types": "^7.15.6"
+    "@babel/helper-module-imports": "^7.16.0",
+    "@babel/traverse": "^7.16.5",
+    "@babel/types": "^7.16.0"
   },
   "description": "Simple, reactive labels for SolidJS",
   "repository": {

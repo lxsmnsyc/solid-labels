@@ -24,17 +24,11 @@ const plugin = require('../dist/cjs');
 
 
 const code = `
-// @memo
-const distanceFromMouseX = (() => {
-  if (mouseX) {
-    const width = child.getBoundingClientRect().width;
-    const offset = child.offsetLeft - child.parentNode.offsetLeft;
+let x = $signal(0);
 
-    return Math.abs(offset + width / 2 - mouseX);
-  } else {
-    return null;
-  }
-})();
+effect: {
+  console.log(x);
+}
 `;
 babel.transformAsync(code, {
   plugins: [
