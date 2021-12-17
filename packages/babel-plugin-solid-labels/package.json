@@ -65,9 +65,8 @@
     "typescript": "^4.5.4"
   },
   "peerDependencies": {
-    "@babel/core": "^7.16.5",
-    "@types/babel__core": "^7.1.17",
-    "solid-js": "^1.2.6"
+    "@babel/core": "^7.16",
+    "solid-js": "^1.2"
   },
   "scripts": {
     "prepublish": "pridepack clean && pridepack build",
