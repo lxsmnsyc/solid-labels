@@ -24,10 +24,16 @@ const plugin = require('../dist/cjs');
 
 
 const code = `
-let x = $signal(0);
+let { a: { b, c }, b: { d, e }, ...f } = $destructure(x);
 
 effect: {
-  console.log(x);
+  console.log(b, c, g);
+}
+effect: {
+  console.log(d, e);
+}
+effect: {
+  console.log(f);
 }
 `;
 babel.transformAsync(code, {
