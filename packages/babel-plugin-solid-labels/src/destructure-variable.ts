@@ -32,16 +32,46 @@ export default function destructureVariableExpression(
         }
 
         const newIdentifier = path.scope.generateUidIdentifier('prop');
+        let access: t.Expression | t.BlockStatement = (
+          t.memberExpression(
+            target,
+            key,
+            property.computed,
+          )
+        );
+        if (t.isAssignmentPattern(value)) {
+          const valueIdentifier = path.scope.generateUidIdentifier('value');
+          access = (
+            t.blockStatement([
+              t.variableDeclaration(
+                'const',
+                [
+                  t.variableDeclarator(
+                    valueIdentifier,
+                    access,
+                  ),
+                ],
+              ),
+              t.returnStatement(
+                t.conditionalExpression(
+                  t.binaryExpression(
+                    '==',
+                    valueIdentifier,
+                    t.nullLiteral(),
+                  ),
+                  value.right,
+                  valueIdentifier,
+                ),
+              ),
+            ])
+          );
+        }
         path.insertBefore(
           t.variableDeclarator(
             newIdentifier,
             t.arrowFunctionExpression(
               [],
-              t.memberExpression(
-                target,
-                key,
-                property.computed,
-              ),
+              access,
             ),
           ),
         );
@@ -61,7 +91,23 @@ export default function destructureVariableExpression(
             value,
           ));
         } else if (t.isAssignmentPattern(value)) {
-          // TODO
+          if (t.isIdentifier(value.left)) {
+            path.scope.path.traverse(normalizeBindings(
+              path.scope.path,
+              t.callExpression(newIdentifier, []),
+              value.left,
+            ));
+          } else if (t.isArrayPattern(value.left) || t.isObjectPattern(value.left)) {
+            destructureVariableExpression(
+              state,
+              path,
+              t.callExpression(newIdentifier, []),
+              value.left,
+              false,
+            );
+          } else {
+            // TODO Member Expression
+          }
         } else {
           throw unexpectedType(path, value.type, 'Identifier | ObjectPattern | ArrayPattern');
         }
@@ -76,16 +122,46 @@ export default function destructureVariableExpression(
         const keyExpr = t.numericLiteral(i);
 
         const newIdentifier = path.scope.generateUidIdentifier('prop');
+        let access: t.Expression | t.BlockStatement = (
+          t.memberExpression(
+            target,
+            keyExpr,
+            true,
+          )
+        );
+        if (t.isAssignmentPattern(property)) {
+          const valueIdentifier = path.scope.generateUidIdentifier('value');
+          access = (
+            t.blockStatement([
+              t.variableDeclaration(
+                'const',
+                [
+                  t.variableDeclarator(
+                    valueIdentifier,
+                    access,
+                  ),
+                ],
+              ),
+              t.returnStatement(
+                t.conditionalExpression(
+                  t.binaryExpression(
+                    '==',
+                    valueIdentifier,
+                    t.nullLiteral(),
+                  ),
+                  property.right,
+                  valueIdentifier,
+                ),
+              ),
+            ])
+          );
+        }
         path.insertBefore(
           t.variableDeclarator(
             newIdentifier,
             t.arrowFunctionExpression(
               [],
-              t.memberExpression(
-                target,
-                keyExpr,
-                true,
-              ),
+              access,
             ),
           ),
         );
@@ -98,6 +174,24 @@ export default function destructureVariableExpression(
             t.callExpression(newIdentifier, []),
             property,
           ));
+        } else if (t.isAssignmentPattern(property)) {
+          if (t.isIdentifier(property.left)) {
+            path.scope.path.traverse(normalizeBindings(
+              path.scope.path,
+              t.callExpression(newIdentifier, []),
+              property.left,
+            ));
+          } else if (t.isArrayPattern(property.left) || t.isObjectPattern(property.left)) {
+            destructureVariableExpression(
+              state,
+              path,
+              t.callExpression(newIdentifier, []),
+              property.left,
+              false,
+            );
+          } else {
+            // TODO Member Expression
+          }
         } else if (t.isArrayPattern(property) || t.isObjectPattern(property)) {
           destructureVariableExpression(
             state,
@@ -110,8 +204,6 @@ export default function destructureVariableExpression(
           if (t.isIdentifier(property.argument)) {
             restIdentifier = property.argument;
           }
-        } else {
-          // TODO AssignmentExpresison
         }
       }
     }

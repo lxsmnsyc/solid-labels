@@ -23,18 +23,21 @@ const plugin = require('../dist/cjs');
 
 
 
-const code = `
-let { a: { b, c }, b: { d, e }, ...f } = $destructure(x);
 
-effect: {
-  console.log(b, c, g);
-}
-effect: {
-  console.log(d, e);
-}
-effect: {
-  console.log(f);
-}
+
+
+
+
+
+
+
+
+
+
+const code = `
+let { [x]: { y } = { y: 10 } } = $destructure(x);
+
+console.log(y);
 `;
 babel.transformAsync(code, {
   plugins: [
