@@ -404,6 +404,49 @@ function destructureExpression(
   );
 }
 
+function componentExpression(
+  state: State,
+  path: NodePath<t.CallExpression>,
+): void {
+  if (path.node.arguments.length > 1) {
+    throw unexpectedArgumentLength(path, path.node.arguments.length, 1);
+  }
+  const argument = path.node.arguments[0];
+  if (!t.isFunctionExpression(argument) && !t.isArrowFunctionExpression(argument)) {
+    throw unexpectedType(path, argument.type, 'FunctionExpression | ArrowFunctionExpression');
+  }
+  if (argument.params.length > 0) {
+    const params = argument.params[0];
+    if (t.isObjectPattern(params)) {
+      // Generate uid for props
+      const props = path.scope.generateUidIdentifier('props');
+      // Replace params with props
+      argument.params[0] = props;
+      const declaration = t.variableDeclaration(
+        'const',
+        [
+          t.variableDeclarator(
+            params,
+            t.callExpression(
+              t.identifier('$destructure'),
+              [props],
+            ),
+          ),
+        ],
+      );
+      if (t.isExpression(argument.body)) {
+        argument.body = t.blockStatement([
+          declaration,
+          t.returnStatement(argument.body),
+        ]);
+      } else {
+        argument.body.body.unshift(declaration);
+      }
+    }
+  }
+  path.replaceWith(argument);
+}
+
 const CTF_EXPRESSIONS: Record<string, CompileTimeFunctionExpression> = {
   $: reactiveExpression,
   $derefSignal: derefSignalExpression,
@@ -443,6 +486,7 @@ const CTF_EXPRESSIONS: Record<string, CompileTimeFunctionExpression> = {
   $reconcile: createCompileTimeAlias('reconcile', 'solid-js/store'),
 
   $destructure: destructureExpression,
+  $component: componentExpression,
 };
 
 const CTF_PARSER: Visitor<State> = {

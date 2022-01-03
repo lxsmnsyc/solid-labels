@@ -35,9 +35,9 @@ const plugin = require('../dist/cjs');
 
 
 const code = `
-let { [x]: { y } = { y: 10 } } = $destructure(x);
-
-console.log(y);
+$component(({ [x]: { y, ...z } = { y: 10 } }) => {
+  console.log(y, z);
+})
 `;
 babel.transformAsync(code, {
   plugins: [

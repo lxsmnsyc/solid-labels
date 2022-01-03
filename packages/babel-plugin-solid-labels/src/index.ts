@@ -152,6 +152,8 @@ declare global {
   const $assets: typeof solidWeb.Assets;
   const $hydrationScript: typeof solidWeb.HydrationScript;
   const $noHydration: typeof solidWeb.NoHydration;
+
+  function $component<P>(Comp: (props: P) => solid.JSX.Element): (props: P) => solid.JSX.Element;
 }
 
 export default function solidReactivityPlugin(): PluginObj<State> {
