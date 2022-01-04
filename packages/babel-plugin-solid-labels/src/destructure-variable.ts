@@ -11,6 +11,7 @@ export default function destructureVariableExpression(
   target: t.Expression,
   pattern: t.ObjectPattern | t.ArrayPattern,
   replace = true,
+  defaultValue?: t.Expression,
 ): void {
   const otherIdentifier = path.scope.generateUidIdentifier('other');
 
@@ -39,7 +40,15 @@ export default function destructureVariableExpression(
             property.computed,
           )
         );
+        let defaultIdentifier: t.Identifier | undefined;
         if (t.isAssignmentPattern(value)) {
+          defaultIdentifier = path.scope.generateUidIdentifier('def');
+          path.insertBefore(
+            t.variableDeclarator(
+              defaultIdentifier,
+              t.arrowFunctionExpression([], value.right),
+            ),
+          );
           const valueIdentifier = path.scope.generateUidIdentifier('value');
           access = (
             t.blockStatement([
@@ -59,7 +68,7 @@ export default function destructureVariableExpression(
                     valueIdentifier,
                     t.nullLiteral(),
                   ),
-                  value.right,
+                  t.callExpression(defaultIdentifier, []),
                   valueIdentifier,
                 ),
               ),
@@ -104,6 +113,7 @@ export default function destructureVariableExpression(
               t.callExpression(newIdentifier, []),
               value.left,
               false,
+              defaultIdentifier,
             );
           } else {
             // TODO Member Expression
@@ -129,7 +139,15 @@ export default function destructureVariableExpression(
             true,
           )
         );
+        let defaultIdentifier: t.Identifier | undefined;
         if (t.isAssignmentPattern(property)) {
+          defaultIdentifier = path.scope.generateUidIdentifier('def');
+          path.insertBefore(
+            t.variableDeclarator(
+              defaultIdentifier,
+              t.arrowFunctionExpression([], property.right),
+            ),
+          );
           const valueIdentifier = path.scope.generateUidIdentifier('value');
           access = (
             t.blockStatement([
@@ -149,7 +167,7 @@ export default function destructureVariableExpression(
                     valueIdentifier,
                     t.nullLiteral(),
                   ),
-                  property.right,
+                  t.callExpression(defaultIdentifier, []),
                   valueIdentifier,
                 ),
               ),
@@ -188,6 +206,7 @@ export default function destructureVariableExpression(
               t.callExpression(newIdentifier, []),
               property.left,
               false,
+              defaultIdentifier,
             );
           } else {
             // TODO Member Expression
@@ -217,7 +236,15 @@ export default function destructureVariableExpression(
           t.memberExpression(
             t.callExpression(
               getHookIdentifier(state.hooks, path, 'splitProps'),
-              [target, t.arrayExpression(properties)],
+              [
+                defaultValue != null
+                  ? t.callExpression(
+                    getHookIdentifier(state.hooks, path, 'mergeProps'),
+                    [target, defaultValue],
+                  )
+                  : target,
+                t.arrayExpression(properties),
+              ],
             ),
             t.numericLiteral(1),
             true,
