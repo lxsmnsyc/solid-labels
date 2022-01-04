@@ -46,7 +46,10 @@ export default function destructureVariableExpression(
           path.insertBefore(
             t.variableDeclarator(
               defaultIdentifier,
-              t.arrowFunctionExpression([], value.right),
+              t.callExpression(
+                getHookIdentifier(state.hooks, path, 'createMemo'),
+                [t.arrowFunctionExpression([], value.right)],
+              ),
             ),
           );
           const valueIdentifier = path.scope.generateUidIdentifier('value');
@@ -145,7 +148,10 @@ export default function destructureVariableExpression(
           path.insertBefore(
             t.variableDeclarator(
               defaultIdentifier,
-              t.arrowFunctionExpression([], property.right),
+              t.callExpression(
+                getHookIdentifier(state.hooks, path, 'createMemo'),
+                [t.arrowFunctionExpression([], property.right)],
+              ),
             ),
           );
           const valueIdentifier = path.scope.generateUidIdentifier('value');
