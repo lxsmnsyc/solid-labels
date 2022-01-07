@@ -20,6 +20,7 @@ export default function accessorVariableExpression(
   );
 
   derefMemoExpression(
+    state,
     path,
     accessorIdentifier,
     readIdentifier,

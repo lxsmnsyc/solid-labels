@@ -17,7 +17,7 @@ import destructureVariableExpression from './destructure-variable';
 import normalizeAccessor from './normalize-accessor';
 
 function derefSignalExpression(
-  _: State,
+  state: State,
   path: NodePath<t.CallExpression>,
 ): void {
   if (path.node.arguments.length > 1) {
@@ -38,6 +38,7 @@ function derefSignalExpression(
     throw unexpectedType(path.parentPath, leftExpr.type, 'Identifier');
   }
   derefSignalVariableExpression(
+    state,
     path.parentPath as NodePath<t.VariableDeclarator>,
     leftExpr,
     argument,
@@ -87,7 +88,7 @@ function signalExpression(
 }
 
 function derefMemoExpression(
-  _: State,
+  state: State,
   path: NodePath<t.CallExpression>,
 ): void {
   if (path.node.arguments.length > 1) {
@@ -108,6 +109,7 @@ function derefMemoExpression(
     throw unexpectedType(path.parentPath, leftExpr.type, 'Expression');
   }
   derefMemoVariableExpression(
+    state,
     path.parentPath as NodePath<t.VariableDeclarator>,
     leftExpr,
     argument,
@@ -495,6 +497,7 @@ const CTF_PARSER: Visitor<State> = {
       t.isIdentifier(path.node.callee)
       && path.node.callee.name in CTF_EXPRESSIONS
       && !path.scope.hasBinding(path.node.callee.name)
+      && !state.opts.disabled?.ctf?.[path.node.callee.name]
     ) {
       CTF_EXPRESSIONS[path.node.callee.name](state, path);
     }

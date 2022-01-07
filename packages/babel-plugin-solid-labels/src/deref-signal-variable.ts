@@ -1,8 +1,10 @@
 import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import derefSignalExpression from './deref-signal-expression';
+import { State } from './types';
 
 export default function derefSignalVariableExpression(
+  state: State,
   path: NodePath<t.VariableDeclarator>,
   signalIdentifier: t.Identifier,
   stateIdentifier: t.Expression,
@@ -17,6 +19,7 @@ export default function derefSignalVariableExpression(
   path.node.init = stateIdentifier;
 
   derefSignalExpression(
+    state,
     path,
     signalIdentifier,
     readIdentifier,

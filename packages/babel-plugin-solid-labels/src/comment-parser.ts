@@ -194,7 +194,7 @@ const COMMENT_PARSER: Visitor<State> = {
       for (let i = 0, len = comments.length; i < len; i += 1) {
         const comment: t.Comment = comments[i];
         const value: string = comment.value.trim();
-        if (value in STATE_EXPRESSIONS) {
+        if (value in STATE_EXPRESSIONS && !state.opts.disabled?.pragma?.[value]) {
           preference = value;
           comment.value = '';
         }
@@ -219,7 +219,7 @@ const COMMENT_PARSER: Visitor<State> = {
         const value: string = comment.value.trim();
         if (/^@\w+( .*)?$/.test(value)) {
           const [tag, ...debugName] = value.split(' ');
-          if (tag in CALLBACK_EXPRESSIONS) {
+          if (tag in CALLBACK_EXPRESSIONS && !state.opts.disabled?.pragma?.[value]) {
             preference = tag;
             name = debugName.join(' ');
             comment.value = '';
@@ -241,7 +241,7 @@ const COMMENT_PARSER: Visitor<State> = {
         const value: string = comment.value.trim();
         if (/^@\w+( .*)?$/.test(value)) {
           const [tag, ...debugName] = value.split(' ');
-          if (tag in CALLBACK_EXPRESSIONS) {
+          if (tag in CALLBACK_EXPRESSIONS && !state.opts.disabled?.pragma?.[value]) {
             preference = tag;
             name = debugName.join(' ');
             comment.value = '';

@@ -2,8 +2,10 @@ import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { unexpectedMissingParent, unexpectedType } from './errors';
 import normalizeBindings from './normalize-bindings';
+import { State } from './types';
 
 export default function derefMemoExpression(
+  state: State,
   path: NodePath,
   memoIdentifier: t.Identifier,
   readIdentifier: t.Identifier,
@@ -12,10 +14,11 @@ export default function derefMemoExpression(
   if (parent) {
     parent.traverse({
       CallExpression(p) {
-        if (p.scope !== path.scope && p.scope.hasOwnBinding(memoIdentifier.name)) {
-          return;
-        }
-        if (!t.isIdentifier(p.node.callee)) {
+        if (
+          (p.scope !== path.scope && p.scope.hasOwnBinding(memoIdentifier.name))
+          || !t.isIdentifier(p.node.callee)
+          || state.opts.disabled?.ctf?.[p.node.callee.name]
+        ) {
           return;
         }
         switch (p.node.callee.name) {

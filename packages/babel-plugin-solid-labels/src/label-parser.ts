@@ -273,7 +273,10 @@ const EXPRESSIONS: Record<string, LabelExpression> = {
 
 const LABEL_PARSER: Visitor<State> = {
   LabeledStatement(path, state) {
-    if (path.node.label.name in EXPRESSIONS) {
+    if (
+      path.node.label.name in EXPRESSIONS
+      && !state.opts.disabled?.labels?.[path.node.label.name]
+    ) {
       EXPRESSIONS[path.node.label.name](state, path);
     }
   },

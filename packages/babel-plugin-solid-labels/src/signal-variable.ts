@@ -73,6 +73,7 @@ export default function signalVariableExpression(
   }
 
   derefSignalExpression(
+    state,
     path,
     signalIdentifier,
     readIdentifier,
