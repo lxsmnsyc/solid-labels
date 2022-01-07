@@ -106,6 +106,26 @@ export default defineConfig({
 });
 ```
 
+### Disabling features
+
+You can disable some features by passing `disabled` option to the plugin options.
+
+```js
+{
+  disabled: {
+    labels: {
+      signal: true,
+    },
+    pragma: {
+      '@signal': true,
+    },
+    ctf: {
+      $signal: true,
+    },
+  }
+}
+```
+
 ## Limitations
 
 - Detecting shadowed identifier for `signal` and `memo`.
