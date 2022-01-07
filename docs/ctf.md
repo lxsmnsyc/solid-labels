@@ -486,6 +486,45 @@ import { mergeProps as _mergeProps } from "solid-js";
 const mergedObject = _mergeProps(a, b, c, d);
 ```
 
+### `$component`
+
+A compile-time function used to wrap components and implicitly allow prop destructuring, much like `$destructure`.
+
+```js
+$component(({ [x]: { y, ...z } = { y: 10 }, ...a }) => (
+  <>
+    {y}
+    {z}
+    {a}
+  </>
+))
+```
+
+```js
+import { mergeProps as _mergeProps } from "solid-js";
+import { splitProps as _splitProps } from "solid-js";
+import { createMemo as _createMemo } from "solid-js";
+
+_props => {
+  const _def = _createMemo(() => ({
+    y: 10
+  })),
+        _prop = () => {
+    const _value = _props[x];
+    return _value == null ? _def() : _value;
+  },
+        _prop2 = () => _prop().y,
+        _other = _splitProps(_props, [x])[1],
+        _other2 = _splitProps(_mergeProps(_prop(), _def), ["y"])[1];
+
+  return <>
+    {_prop2()}
+    {_other2}
+    {_other}
+  </>;
+};
+```
+
 ## Arrays
 
 ### `$mapArray`
