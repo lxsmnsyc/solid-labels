@@ -20,6 +20,6 @@
     "access": "restricted"
   },
   "dependencies": {
-    "solid-js": "^1.2.6"
+    "solid-js": "^1.3.3"
   }
 }
