@@ -12,13 +12,11 @@ export default function derefSignalVariableExpression(
   const readIdentifier = path.scope.generateUidIdentifier(signalIdentifier.name);
   const writeIdentifier = path.scope.generateUidIdentifier(`set${signalIdentifier.name}`);
 
-  path.replaceWith(t.variableDeclarator(
-    t.arrayPattern([
-      readIdentifier,
-      writeIdentifier,
-    ]),
-    stateIdentifier,
-  ));
+  path.node.id = t.arrayPattern([
+    readIdentifier,
+    writeIdentifier,
+  ]);
+  path.node.init = stateIdentifier;
 
   derefSignalExpression(
     state,

@@ -11,10 +11,8 @@ export default function derefMemoVariableExpression(
 ): void {
   const readIdentifier = path.scope.generateUidIdentifier(memoIdentifier.name);
 
-  path.replaceWith(t.variableDeclarator(
-    readIdentifier,
-    stateIdentifier,
-  ));
+  path.node.id = readIdentifier;
+  path.node.init = stateIdentifier;
 
   derefMemoExpression(
     state,
