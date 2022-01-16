@@ -85,6 +85,4 @@ export default function signalVariableExpression(
     readIdentifier,
     writeIdentifier,
   );
-
-  path.scope.crawl();
 }

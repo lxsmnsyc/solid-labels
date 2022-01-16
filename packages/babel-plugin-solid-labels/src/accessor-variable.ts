@@ -27,6 +27,4 @@ export default function accessorVariableExpression(
     accessorIdentifier,
     readIdentifier,
   );
-
-  path.scope.crawl();
 }

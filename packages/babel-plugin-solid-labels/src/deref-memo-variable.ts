@@ -22,6 +22,4 @@ export default function derefMemoVariableExpression(
     memoIdentifier,
     readIdentifier,
   );
-
-  path.scope.crawl();
 }

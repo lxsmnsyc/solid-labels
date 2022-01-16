@@ -27,6 +27,4 @@ export default function derefSignalVariableExpression(
     readIdentifier,
     writeIdentifier,
   );
-
-  path.scope.crawl();
 }

@@ -173,6 +173,7 @@ export default function solidReactivityPlugin(): PluginObj<State> {
         // We do this so that we can be ahead of solid-refresh
         // and possibly, Solid, but who knows.
         path.traverse(VISITOR, state);
+        path.scope.crawl();
       },
     },
   };
