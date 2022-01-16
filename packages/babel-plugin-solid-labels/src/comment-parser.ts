@@ -18,7 +18,7 @@ function signalExpression(
         const leftExpr = p.node.id;
         const rightExpr = p.node.init;
         if (t.isIdentifier(leftExpr)) {
-          signalVariableExpression(state, p, leftExpr, rightExpr ?? undefined);
+          signalVariableExpression(state, p, leftExpr, rightExpr ?? t.identifier('undefined'));
         }
       }
     },

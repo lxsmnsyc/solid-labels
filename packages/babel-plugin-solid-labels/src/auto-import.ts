@@ -3,15 +3,13 @@ import * as t from '@babel/types';
 import { State } from './types';
 import getHookIdentifier from './get-hook-identifier';
 
-type AutoImportExpression = (state: State, path: NodePath<t.Expression>) => void;
+type AutoImportExpression = (state: State, path: NodePath<t.Expression>) => t.Identifier;
 
 function createAutoImport(target: string, source?: string) {
   return (
     state: State,
     path: NodePath<t.Expression>,
-  ) => {
-    path.replaceWith(getHookIdentifier(state.hooks, path, target, source));
-  };
+  ) => getHookIdentifier(state.hooks, path, target, source);
 }
 
 const AUTO_IMPORT_EXPR: Record<string, AutoImportExpression> = {
@@ -37,7 +35,27 @@ const AUTO_IMPORT: Visitor<State> = {
       && !p.scope.hasBinding(p.node.name)
       && p.node.name in AUTO_IMPORT_EXPR
     ) {
-      AUTO_IMPORT_EXPR[p.node.name](state, p);
+      p.replaceWith(AUTO_IMPORT_EXPR[p.node.name](state, p));
+    }
+  },
+  JSXElement(p, state) {
+    const opening = p.node.openingElement;
+    const closing = p.node.closingElement;
+
+    if (
+      t.isJSXIdentifier(opening.name)
+      && !p.scope.hasBinding(opening.name.name)
+      && opening.name.name in AUTO_IMPORT_EXPR
+    ) {
+      opening.name = t.jsxIdentifier(AUTO_IMPORT_EXPR[opening.name.name](state, p).name);
+    }
+    if (
+      closing
+      && t.isJSXIdentifier(closing.name)
+      && !p.scope.hasBinding(closing.name.name)
+      && closing.name.name in AUTO_IMPORT_EXPR
+    ) {
+      closing.name = t.jsxIdentifier(AUTO_IMPORT_EXPR[closing.name.name](state, p).name);
     }
   },
 };

@@ -13,11 +13,13 @@ export default function accessorVariableExpression(
 ): void {
   const readIdentifier = path.scope.generateUidIdentifier(accessorIdentifier.name);
 
-  path.node.id = readIdentifier;
-  path.node.init = t.callExpression(
-    getHookIdentifier(state.hooks, path, mod),
-    replacement,
-  );
+  path.replaceWith(t.variableDeclarator(
+    readIdentifier,
+    t.callExpression(
+      getHookIdentifier(state.hooks, path, mod),
+      replacement,
+    ),
+  ));
 
   derefMemoExpression(
     state,
@@ -25,4 +27,6 @@ export default function accessorVariableExpression(
     accessorIdentifier,
     readIdentifier,
   );
+
+  path.scope.crawl();
 }

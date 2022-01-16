@@ -8,19 +8,20 @@ export default function signalVariableExpression(
   state: State,
   path: NodePath<t.VariableDeclarator>,
   signalIdentifier: t.Identifier,
-  stateIdentifier: t.Expression = t.identifier('undefined'),
+  stateIdentifier: t.Expression,
   optionsIdentifier?: t.Expression,
 ): void {
   const readIdentifier = path.scope.generateUidIdentifier(signalIdentifier.name);
   const writeIdentifier = path.scope.generateUidIdentifier(`set${signalIdentifier.name}`);
 
-  path.node.id = t.arrayPattern([
+  const id: t.ArrayPattern = t.arrayPattern([
     readIdentifier,
     writeIdentifier,
   ]);
+  let init: t.CallExpression;
   if (state.opts.dev) {
     if (optionsIdentifier) {
-      path.node.init = t.callExpression(
+      init = t.callExpression(
         getHookIdentifier(state.hooks, path, 'createSignal'),
         [
           stateIdentifier,
@@ -42,7 +43,7 @@ export default function signalVariableExpression(
         ],
       );
     } else {
-      path.node.init = t.callExpression(
+      init = t.callExpression(
         getHookIdentifier(state.hooks, path, 'createSignal'),
         [
           stateIdentifier,
@@ -56,7 +57,7 @@ export default function signalVariableExpression(
       );
     }
   } else if (optionsIdentifier) {
-    path.node.init = t.callExpression(
+    init = t.callExpression(
       getHookIdentifier(state.hooks, path, 'createSignal'),
       [
         stateIdentifier,
@@ -64,13 +65,18 @@ export default function signalVariableExpression(
       ],
     );
   } else {
-    path.node.init = t.callExpression(
+    init = t.callExpression(
       getHookIdentifier(state.hooks, path, 'createSignal'),
       [
         stateIdentifier,
       ],
     );
   }
+
+  path.replaceWith(t.variableDeclarator(
+    id,
+    init,
+  ));
 
   derefSignalExpression(
     state,
@@ -79,4 +85,6 @@ export default function signalVariableExpression(
     readIdentifier,
     writeIdentifier,
   );
+
+  path.scope.crawl();
 }
