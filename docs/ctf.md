@@ -349,6 +349,18 @@ _createEffect(() => {
 
 This compile as an auto-import alias for `createResource`.
 
+### `$reaction`
+
+This CTF is a compile-time alias for the `createReaction` utility that was added in 1.3.
+
+## Lifecycles
+
+The following CTFs are compile-time aliases:
+
+- `$cleanup` -> `onCleanup`
+- `$mount` -> `onMount`
+- `$error` -> `onError`
+
 ## Observables
 
 ### `$observable`
@@ -991,6 +1003,7 @@ These CTFs are based from `solid-js/store` exports.
 - `$mutable` -> `createMutable`
 - `$reconcile` -> `reconcile`
 - `$produce` -> `produce`
+- `$unwrap` -> `unwrap`
 
 ## Components
 

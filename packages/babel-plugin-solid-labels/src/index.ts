@@ -8,8 +8,10 @@ import COMMENT_PARSER from './comment-parser';
 import CTF_PARSER from './ctf-parser';
 import AUTO_IMPORT_EXPR from './auto-import';
 
-type BoxedTupleTypes<T extends any[]> =
-  { [P in keyof T]: [T[P]] }[Exclude<keyof T, keyof any[]>]
+type UnboxLazy<T> = T extends () => infer U ? U : T;
+type BoxedTupleTypes<T extends any[]> = {
+  [P in keyof T]: [UnboxLazy<T[P]>];
+}[Exclude<keyof T, keyof any[]>];
 type UnionToIntersection<U> =
   (U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never;
 type UnboxIntersection<T> = T extends { 0: infer U } ? U : never;
@@ -137,6 +139,7 @@ declare global {
   const $mutable: typeof solidStore.createMutable;
   const $produce: typeof solidStore.produce;
   const $reconcile: typeof solidStore.reconcile;
+  const $unwrap: typeof solidStore.unwrap;
 
   // components
   const $for: typeof solid.For;
@@ -152,6 +155,11 @@ declare global {
   const $assets: typeof solidWeb.Assets;
   const $hydrationScript: typeof solidWeb.HydrationScript;
   const $noHydration: typeof solidWeb.NoHydration;
+
+  const $reaction: typeof solid.createReaction;
+  const $mount: typeof solid.onMount;
+  const $error: typeof solid.onError;
+  const $cleanup: typeof solid.onCleanup;
 
   function $component<P>(Comp: (props: P) => solid.JSX.Element): (props: P) => solid.JSX.Element;
 }

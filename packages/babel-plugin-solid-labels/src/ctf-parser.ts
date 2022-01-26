@@ -481,11 +481,17 @@ const CTF_EXPRESSIONS: Record<string, CompileTimeFunctionExpression> = {
   $renderEffect: createCompileTimeAlias('createRenderEffect'),
   $merge: createCompileTimeAlias('mergeProps'),
   $resource: createCompileTimeAlias('createResource'),
+  $cleanup: createCompileTimeAlias('onCleanup'),
+  $mount: createCompileTimeAlias('onMount'),
+  $error: createCompileTimeAlias('onError'),
+
+  $reaction: createCompileTimeAlias('createReaction'),
 
   $store: createCompileTimeAlias('createStore', 'solid-js/store'),
   $mutable: createCompileTimeAlias('createMutable', 'solid-js/store'),
   $produce: createCompileTimeAlias('produce', 'solid-js/store'),
   $reconcile: createCompileTimeAlias('reconcile', 'solid-js/store'),
+  $unwrap: createCompileTimeAlias('unwrap', 'solid-js/store'),
 
   $destructure: destructureExpression,
   $component: componentExpression,
