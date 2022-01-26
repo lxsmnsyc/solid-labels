@@ -164,16 +164,25 @@ declare global {
   function $component<P>(Comp: (props: P) => solid.JSX.Element): (props: P) => solid.JSX.Element;
 }
 
+const VISITOR = {
+  ...LABEL_PARSER,
+  ...COMMENT_PARSER,
+  ...CTF_PARSER,
+  ...AUTO_IMPORT_EXPR,
+};
+
 export default function solidReactivityPlugin(): PluginObj<State> {
   return {
     pre() {
       this.hooks = new Map();
     },
     visitor: {
-      ...LABEL_PARSER,
-      ...COMMENT_PARSER,
-      ...CTF_PARSER,
-      ...AUTO_IMPORT_EXPR,
+      Program(path, state) {
+        // We do this so that we can be ahead of solid-refresh
+        // and possibly, Solid, but who knows.
+        path.traverse(VISITOR, state);
+        path.scope.crawl();
+      },
     },
   };
 }

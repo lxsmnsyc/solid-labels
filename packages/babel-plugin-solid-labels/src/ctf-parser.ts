@@ -82,7 +82,7 @@ function signalExpression(
     state,
     path.parentPath as NodePath<t.VariableDeclarator>,
     leftExpr,
-    argument,
+    argument ?? t.identifier('undefined'),
     options,
   );
 }

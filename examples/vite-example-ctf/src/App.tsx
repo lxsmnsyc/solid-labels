@@ -1,3 +1,4 @@
+// @refresh granular
 function useCounter(): [Accessor<number>, Setter<number>] {
   const count = $signal(0);
 

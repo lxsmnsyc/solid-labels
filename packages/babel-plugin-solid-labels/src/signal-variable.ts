@@ -8,7 +8,7 @@ export default function signalVariableExpression(
   state: State,
   path: NodePath<t.VariableDeclarator>,
   signalIdentifier: t.Identifier,
-  stateIdentifier: t.Expression = t.identifier('undefined'),
+  stateIdentifier: t.Expression,
   optionsIdentifier?: t.Expression,
 ): void {
   const readIdentifier = path.scope.generateUidIdentifier(signalIdentifier.name);
