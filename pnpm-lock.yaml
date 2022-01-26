@@ -16,7 +16,7 @@ importers:
 
   examples/vite-example-comments:
     specifiers:
-      babel-plugin-solid-labels: 0.10.0
+      babel-plugin-solid-labels: 0.10.1
       babel-preset-solid: ^1.3.2
       eslint: ^8.6.0
       eslint-config-lxsmnsyc: ^0.4.0
@@ -37,7 +37,7 @@ importers:
 
   examples/vite-example-ctf:
     specifiers:
-      babel-plugin-solid-labels: 0.10.0
+      babel-plugin-solid-labels: 0.10.1
       babel-preset-solid: ^1.3.2
       eslint: ^8.6.0
       eslint-config-lxsmnsyc: ^0.4.0
@@ -58,7 +58,7 @@ importers:
 
   examples/vite-example-labels:
     specifiers:
-      babel-plugin-solid-labels: 0.10.0
+      babel-plugin-solid-labels: 0.10.1
       babel-preset-solid: ^1.3.2
       eslint: ^8.6.0
       eslint-config-lxsmnsyc: ^0.4.0
