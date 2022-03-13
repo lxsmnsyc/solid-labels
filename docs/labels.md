@@ -123,7 +123,7 @@ function Counter() {
 }
 ```
 
-You may use an arrow function instead of a block statement to accepts the previously returned value. If an expression (e.g. identifier, function call for `label: expr;`) is supplied, it compiles to `hook(expr)`.
+You may use an arrow function instead of a block statement to accept the previously returned value. If an expression (e.g. identifier, function call for `label: expr;`) is supplied, it compiles to `hook(expr)`.
 
 They can also be named by adding another labeled statement:
 
@@ -306,7 +306,7 @@ _createRoot(() => {
 
 You can also pass an arrow function instead of a block to receive the `dispose` callback. If an expression (e.g. identifier, function call for `label: expr;`) is supplied, it compiles to `hook(expr)`.
 
-### `@children`
+### `children`
 
 Compiles to `children`.
 
@@ -320,7 +320,7 @@ import { children as _children } from "solid-js";
 const _nodes = _children(() => props.children);
 ```
 
-### `@deferred`
+### `deferred`
 
 Compiles to `createDeferred`.
 
