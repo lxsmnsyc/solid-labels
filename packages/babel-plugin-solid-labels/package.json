@@ -82,12 +82,12 @@
   },
   "description": "Simple, reactive labels for SolidJS",
   "repository": {
-    "url": "https://github.com/lxsmnsyc/babel-plugin-solid-labels.git",
+    "url": "https://github.com/lxsmnsyc/solid-labels.git",
     "type": "git"
   },
-  "homepage": "https://github.com/lxsmnsyc/babel-plugin-solid-labels/tree/main/packages/babel-plugin-solid-labels",
+  "homepage": "https://github.com/lxsmnsyc/solid-labels/tree/main/packages/babel-plugin-solid-labels",
   "bugs": {
-    "url": "https://github.com/lxsmnsyc/babel-plugin-solid-labels/issues"
+    "url": "https://github.com/lxsmnsyc/solid-labels/issues"
   },
   "publishConfig": {
     "access": "public"
