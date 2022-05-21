@@ -66,6 +66,10 @@ export default function derefSignalExpression(
             if (!t.isIdentifier(p.node.arguments[0])) {
               throw unexpectedType(p, p.node.arguments[0].type, 'Identifier');
             }
+            if (t.isPrivateName(p.parent.key)) {
+              throw unexpectedType(p, 'PrivateName', 'Expression');
+            }
+
             if (p.node.arguments[0].name === signalIdentifier.name) {
               p.parentPath.replaceWith(
                 t.objectMethod(
@@ -93,6 +97,9 @@ export default function derefSignalExpression(
             }
             if (!t.isIdentifier(p.node.arguments[0])) {
               throw unexpectedType(p, p.node.arguments[0].type, 'Identifier');
+            }
+            if (t.isPrivateName(p.parent.key)) {
+              throw unexpectedType(p, 'PrivateName', 'Expression');
             }
             const param = p.scope.generateUidIdentifier('value');
             if (p.node.arguments[0].name === signalIdentifier.name) {
@@ -128,6 +135,9 @@ export default function derefSignalExpression(
             }
             if (!t.isIdentifier(p.node.arguments[0])) {
               throw unexpectedType(p, p.node.arguments[0].type, 'Identifier');
+            }
+            if (t.isPrivateName(p.parent.key)) {
+              throw unexpectedType(p, 'PrivateName', 'Expression');
             }
             const param = p.scope.generateUidIdentifier('value');
             if (p.node.arguments[0].name === signalIdentifier.name) {

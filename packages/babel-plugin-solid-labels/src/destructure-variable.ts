@@ -28,6 +28,8 @@ export default function destructureVariableExpression(
           if (t.isIdentifier(key)) {
             properties.push(t.stringLiteral(key.name));
           }
+        } else if (t.isPrivateName(key)) {
+          throw unexpectedType(path, 'PrivateName', 'Expression');
         } else {
           properties.push(key);
         }

@@ -407,7 +407,7 @@ function destructureExpression(
 }
 
 function componentExpression(
-  state: State,
+  _: State,
   path: NodePath<t.CallExpression>,
 ): void {
   if (path.node.arguments.length > 1) {

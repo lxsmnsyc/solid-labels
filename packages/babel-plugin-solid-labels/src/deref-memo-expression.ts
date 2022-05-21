@@ -53,6 +53,9 @@ export default function derefMemoExpression(
             if (!t.isIdentifier(p.node.arguments[0])) {
               throw unexpectedType(p, p.node.arguments[0].type, 'Identifier');
             }
+            if (t.isPrivateName(p.parent.key)) {
+              throw unexpectedType(p, 'PrivateName', 'Expression');
+            }
             if (p.node.arguments[0].name === memoIdentifier.name) {
               p.parentPath.replaceWith(
                 t.objectMethod(
