@@ -27,9 +27,9 @@ export default function App(): JSX.Element {
       <button type="button" onClick={increment}>
         {message}
       </button>
-      <$show when={count % 2 === 0} fallback={<h1>Odd</h1>}>
+      <solid:show when={count % 2 === 0} fallback={<h1>Odd</h1>}>
         <h1>Even</h1>
-      </$show>
+      </solid:show>
     </>
   );
 }
