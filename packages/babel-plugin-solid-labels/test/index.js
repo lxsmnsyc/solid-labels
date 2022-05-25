@@ -35,13 +35,9 @@ const plugin = require('../dist/cjs');
 
 
 const code = `
-$component(({ [x]: { y, ...z } = { y: 10 }, ...a }) => (
-  <>
-    {y}
-    {z}
-    {a}
-  </>
-))
+<solid:assets>
+  <link rel="stylesheet" href="/styles.css" />
+</solid:assets>
 `;
 babel.transformAsync(code, {
   plugins: [

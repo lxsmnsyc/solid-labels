@@ -143,17 +143,29 @@ declare global {
 
   // components
   const $for: typeof solid.For;
+  // @deprecated use solid:for
   const $show: typeof solid.Show;
+  // @deprecated use solid:show
   const $switch: typeof solid.Switch;
+  // @deprecated use solid:switch
   const $match: typeof solid.Match;
+  // @deprecated use solid:match
   const $index: typeof solid.Index;
+  // @deprecated use solid:index
   const $errorBoundary: typeof solid.ErrorBoundary;
+  // @deprecated use solid:error-boundary
   const $suspense: typeof solid.Suspense;
+  // @deprecated use solid:suspense
   const $suspenseList: typeof solid.SuspenseList;
+  // @deprecated use solid:suspense-list
   const $dynamic: typeof solidWeb.Dynamic;
+  // @deprecated use solid:portal
   const $portal: typeof solidWeb.Portal;
+  // @deprecated use solid:assets
   const $assets: typeof solidWeb.Assets;
+  // @deprecated use solid:hydration-script
   const $hydrationScript: typeof solidWeb.HydrationScript;
+  // @deprecated use solid:no-hydration
   const $noHydration: typeof solidWeb.NoHydration;
 
   const $reaction: typeof solid.createReaction;
@@ -163,6 +175,32 @@ declare global {
 
   function $component<P>(Comp: (props: P) => solid.JSX.Element): (props: P) => solid.JSX.Element;
 }
+
+type Props<T> = T extends (props: infer P) => solid.JSX.Element
+  ? P
+  : never;
+
+declare module 'solid-js' {
+  namespace JSX {
+    interface IntrinsicElements {
+      'solid:for': Props<typeof solid.For>;
+      'solid:switch': Props<typeof solid.Switch>;
+      'solid:match': Props<typeof solid.Match>;
+      'solid:show': Props<typeof solid.Show>;
+      'solid:index': Props<typeof solid.Index>;
+      'solid:error-boundary': Props<typeof solid.ErrorBoundary>;
+      'solid:suspense': Props<typeof solid.Suspense>;
+      'solid:suspense-list': Props<typeof solid.SuspenseList>;
+
+      'solid:dynamic': Props<typeof solidWeb.Dynamic>;
+      'solid:portal': Props<typeof solidWeb.Portal>;
+      'solid:assets': Props<typeof solidWeb.Assets>;
+      'solid:hydration-script': Props<typeof solidWeb.HydrationScript>;
+      'solid:no-hydration': Props<typeof solidWeb.NoHydration>;
+    }
+  }
+}
+
 
 const VISITOR = {
   ...LABEL_PARSER,

@@ -28,6 +28,25 @@ const AUTO_IMPORT_EXPR: Record<string, AutoImportExpression> = {
   $noHydration: createAutoImport('NoHydration', 'solid-js/web'),
 };
 
+
+const NAMESPACE = 'solid';
+
+const REPLACEMENTS: Record<string, AutoImportExpression> = {
+  for: createAutoImport('For'),
+  switch: createAutoImport('Switch'),
+  match: createAutoImport('Match'),
+  show: createAutoImport('Show'),
+  index: createAutoImport('Index'),
+  'error-boundary': createAutoImport('ErrorBoundary'),
+  suspense: createAutoImport('Suspense'),
+  'suspense-list': createAutoImport('SuspenseList'),
+  dynamic: createAutoImport('Dynamic', 'solid-js/web'),
+  portal: createAutoImport('Portal', 'solid-js/web'),
+  assets: createAutoImport('Assets', 'solid-js/web'),
+  'hydration-script': createAutoImport('HydrationScript', 'solid-js/web'),
+  'no-hydration': createAutoImport('NoHydration', 'solid-js/web'),
+};
+
 const AUTO_IMPORT: Visitor<State> = {
   Expression(p, state) {
     if (
@@ -39,23 +58,21 @@ const AUTO_IMPORT: Visitor<State> = {
     }
   },
   JSXElement(p, state) {
-    const opening = p.node.openingElement;
-    const closing = p.node.closingElement;
-
-    if (
-      t.isJSXIdentifier(opening.name)
-      && !p.scope.hasBinding(opening.name.name)
-      && opening.name.name in AUTO_IMPORT_EXPR
-    ) {
-      opening.name = t.jsxIdentifier(AUTO_IMPORT_EXPR[opening.name.name](state, p).name);
+    const { openingElement, closingElement } = p.node;
+    const id = openingElement.name;
+    let replacement: t.JSXIdentifier | undefined;
+    if (t.isJSXNamespacedName(id) && id.namespace.name === NAMESPACE && id.name.name in REPLACEMENTS) {
+      replacement = t.jsxIdentifier(REPLACEMENTS[id.name.name](state, p).name);
     }
-    if (
-      closing
-      && t.isJSXIdentifier(closing.name)
-      && !p.scope.hasBinding(closing.name.name)
-      && closing.name.name in AUTO_IMPORT_EXPR
-    ) {
-      closing.name = t.jsxIdentifier(AUTO_IMPORT_EXPR[closing.name.name](state, p).name);
+    if (t.isJSXIdentifier(id) && !p.scope.hasBinding(id.name) && id.name in AUTO_IMPORT_EXPR) {
+      replacement = t.jsxIdentifier(AUTO_IMPORT_EXPR[id.name](state, p).name);
+    }
+
+    if (replacement) {
+      openingElement.name = replacement;
+      if (closingElement) {
+        closingElement.name = replacement;
+      }
     }
   },
 };
