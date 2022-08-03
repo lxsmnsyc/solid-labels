@@ -1,13 +1,13 @@
 {
   "name": "vite-example-labels",
-  "version": "0.12.0",
+  "version": "0.12.1",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "serve": "vite preview"
   },
   "devDependencies": {
-    "babel-plugin-solid-labels": "0.12.0",
+    "babel-plugin-solid-labels": "0.12.1",
     "eslint": "^8.21.0",
     "eslint-config-lxsmnsyc": "^0.4.8",
     "typescript": "^4.7.4",
