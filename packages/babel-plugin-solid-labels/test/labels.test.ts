@@ -1,6 +1,6 @@
 import * as babel from '@babel/core';
-import plugin from '../src';
 import { describe, expect, it } from 'vitest';
+import plugin from '../src';
 
 async function compile(code: string, dev?: boolean) {
   const result = await babel.transformAsync(code, {

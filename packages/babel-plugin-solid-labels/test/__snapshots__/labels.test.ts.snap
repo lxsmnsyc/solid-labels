@@ -2,7 +2,6 @@
 
 exports[`labels > $ > should transform labels with block expressions 1`] = `
 "import { createEffect as _createEffect } from \\"solid-js\\";
-
 _createEffect(() => {
   console.log(x);
 });"
@@ -10,19 +9,16 @@ _createEffect(() => {
 
 exports[`labels > $ > should transform labels with expressions 1`] = `
 "import { createEffect as _createEffect } from \\"solid-js\\";
-
 _createEffect(() => console.log(x));"
 `;
 
 exports[`labels > $ > should transform labels with variable declarations 1`] = `
 "import { createMemo as _createMemo } from \\"solid-js\\";
-
 const _x = _createMemo(() => 0);"
 `;
 
 exports[`labels > cleanup > should transform labels 1`] = `
 "import { onCleanup as _onCleanup } from \\"solid-js\\";
-
 _onCleanup(() => {
   console.log(count);
 });"
@@ -30,13 +26,11 @@ _onCleanup(() => {
 
 exports[`labels > cleanup > should transform labels with expressions 1`] = `
 "import { onCleanup as _onCleanup } from \\"solid-js\\";
-
 _onCleanup(myFunction);"
 `;
 
 exports[`labels > computed > should transform labels 1`] = `
 "import { createComputed as _createComputed } from \\"solid-js\\";
-
 _createComputed(() => {
   console.log(count);
 });"
@@ -44,13 +38,11 @@ _createComputed(() => {
 
 exports[`labels > computed > should transform labels with expressions 1`] = `
 "import { createComputed as _createComputed } from \\"solid-js\\";
-
 _createComputed(myFunction);"
 `;
 
 exports[`labels > computed > should transform labels with names 1`] = `
 "import { createComputed as _createComputed } from \\"solid-js\\";
-
 _createComputed(() => {
   console.log(count);
 }, undefined, {
@@ -60,7 +52,6 @@ _createComputed(() => {
 
 exports[`labels > effect > should transform labels 1`] = `
 "import { createEffect as _createEffect } from \\"solid-js\\";
-
 _createEffect(() => {
   console.log(count);
 });"
@@ -68,13 +59,11 @@ _createEffect(() => {
 
 exports[`labels > effect > should transform labels with expressions 1`] = `
 "import { createEffect as _createEffect } from \\"solid-js\\";
-
 _createEffect(myFunction);"
 `;
 
 exports[`labels > effect > should transform labels with names 1`] = `
 "import { createEffect as _createEffect } from \\"solid-js\\";
-
 _createEffect(() => {
   console.log(count);
 }, undefined, {
@@ -84,7 +73,6 @@ _createEffect(() => {
 
 exports[`labels > error > should transform labels 1`] = `
 "import { onError as _onError } from \\"solid-js\\";
-
 _onError(() => {
   console.log(count);
 });"
@@ -92,19 +80,16 @@ _onError(() => {
 
 exports[`labels > error > should transform labels with expressions 1`] = `
 "import { onError as _onError } from \\"solid-js\\";
-
 _onError(myFunction);"
 `;
 
 exports[`labels > memo > should transform labelled variables 1`] = `
 "import { createMemo as _createMemo } from \\"solid-js\\";
-
 const _count = _createMemo(() => 0);"
 `;
 
 exports[`labels > memo > should transform labelled variables and add name 1`] = `
 "import { createMemo as _createMemo } from \\"solid-js\\";
-
 const _count = _createMemo(() => 0, undefined, {
   name: \\"count\\"
 });"
@@ -112,15 +97,12 @@ const _count = _createMemo(() => 0, undefined, {
 
 exports[`labels > memo > should variable read 1`] = `
 "import { createMemo as _createMemo } from \\"solid-js\\";
-
 const _count = _createMemo(() => 0);
-
 console.log(_count());"
 `;
 
 exports[`labels > mount > should transform labels 1`] = `
 "import { onMount as _onMount } from \\"solid-js\\";
-
 _onMount(() => {
   console.log(count);
 });"
@@ -128,13 +110,11 @@ _onMount(() => {
 
 exports[`labels > mount > should transform labels with expressions 1`] = `
 "import { onMount as _onMount } from \\"solid-js\\";
-
 _onMount(myFunction);"
 `;
 
 exports[`labels > renderEffect > should transform labels 1`] = `
 "import { createRenderEffect as _createRenderEffect } from \\"solid-js\\";
-
 _createRenderEffect(() => {
   console.log(count);
 });"
@@ -142,13 +122,11 @@ _createRenderEffect(() => {
 
 exports[`labels > renderEffect > should transform labels with expressions 1`] = `
 "import { createRenderEffect as _createRenderEffect } from \\"solid-js\\";
-
 _createRenderEffect(myFunction);"
 `;
 
 exports[`labels > renderEffect > should transform labels with names 1`] = `
 "import { createRenderEffect as _createRenderEffect } from \\"solid-js\\";
-
 _createRenderEffect(() => {
   console.log(count);
 }, undefined, {
@@ -158,13 +136,11 @@ _createRenderEffect(() => {
 
 exports[`labels > signal > should transform labelled variables 1`] = `
 "import { createSignal as _createSignal } from \\"solid-js\\";
-
 const [_count, _setcount] = _createSignal(0);"
 `;
 
 exports[`labels > signal > should transform labelled variables and add name 1`] = `
 "import { createSignal as _createSignal } from \\"solid-js\\";
-
 const [_count, _setcount] = _createSignal(0, {
   name: \\"count\\"
 });"
@@ -172,16 +148,12 @@ const [_count, _setcount] = _createSignal(0, {
 
 exports[`labels > signal > should variable read 1`] = `
 "import { createSignal as _createSignal } from \\"solid-js\\";
-
 const [_count, _setcount] = _createSignal(0);
-
 console.log(_count());"
 `;
 
 exports[`labels > signal > should variable write 1`] = `
 "import { createSignal as _createSignal } from \\"solid-js\\";
-
 const [_count, _setcount] = _createSignal(0);
-
 _setcount(() => 1);"
 `;
