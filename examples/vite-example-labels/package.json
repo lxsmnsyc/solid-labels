@@ -8,17 +8,17 @@
   },
   "devDependencies": {
     "babel-plugin-solid-labels": "0.12.1",
-    "eslint": "^8.21.0",
+    "eslint": "^8.29.0",
     "eslint-config-lxsmnsyc": "^0.4.8",
-    "typescript": "^4.7.4",
-    "vite": "^2.9.9",
-    "vite-plugin-solid": "^2.2.6"
+    "typescript": "^4.9.3",
+    "vite": "^3.2.4",
+    "vite-plugin-solid": "^2.4.0"
   },
   "private": true,
   "publishConfig": {
     "access": "restricted"
   },
   "dependencies": {
-    "solid-js": "^1.4.8"
+    "solid-js": "^1.6.2"
   }
 }
