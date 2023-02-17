@@ -209,7 +209,7 @@ const VISITOR = {
   ...AUTO_IMPORT_EXPR,
 };
 
-export default function solidReactivityPlugin(): PluginObj<State> {
+export default function solidLabelsPlugin(): PluginObj<State> {
   return {
     pre() {
       this.hooks = new Map();
