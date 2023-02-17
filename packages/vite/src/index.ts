@@ -12,9 +12,9 @@ export interface SolidLabelsPluginFilter {
 
 export interface SolidLabelsPluginOptions {
   disabled?: {
-      labels?: Record<string, boolean>;
-      pragma?: Record<string, boolean>;
-      ctf?: Record<string, boolean>;
+    labels?: Record<string, boolean>;
+    pragma?: Record<string, boolean>;
+    ctf?: Record<string, boolean>;
   };
   filter?: SolidLabelsPluginFilter;
   babel?: babel.TransformOptions;
@@ -25,23 +25,23 @@ function repushPlugin(plugins: Plugin[], plugin: Plugin, pluginNames: string[]) 
   const namesSet = new Set(pluginNames);
 
   let baseIndex = -1;
-  let solidStyledIndex = -1;
+  let solidLabelsIndex = -1;
   for (let i = 0, len = plugins.length; i < len; i += 1) {
     const current = plugins[i];
     if (namesSet.has(current.name) && baseIndex === -1) {
       baseIndex = i;
     }
-    if (current.name === 'solid-styled') {
-      solidStyledIndex = i;
+    if (current.name === 'solid-labels') {
+      solidLabelsIndex = i;
     }
   }
-  if (baseIndex !== -1 && solidStyledIndex !== -1) {
-    plugins.splice(solidStyledIndex, 1);
+  if (baseIndex !== -1 && solidLabelsIndex !== -1) {
+    plugins.splice(solidLabelsIndex, 1);
     plugins.splice(baseIndex, 0, plugin);
   }
 }
 
-export default function solidStyledPlugin(
+export default function solidLabelsPlugin(
   options: SolidLabelsPluginOptions = {},
 ): Plugin {
   const filter = createFilter(
