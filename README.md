@@ -63,49 +63,12 @@ pnpm add babel-plugin-solid-labels
 }
 ```
 
-### Vite
+**NOTE**: You don't have to use this if you're using Vite or Rollup plugins
 
-`vite-plugin-solid`
+## Integrations
 
-```js
-// vite.config.js
-import { defineConfig } from 'vite';
-import solidPlugin from 'vite-plugin-solid';
-import solidLabels from 'babel-plugin-solid-labels';
-
-export default defineConfig({
-  plugins: [
-    solidPlugin({
-      babel: {
-        plugins: [
-          [solidLabels, { dev: process.env.NODE_ENV !== 'production' }]
-        ],
-      },
-    }),
-  ],
-});
-```
-
-`solid-start`
-
-```js
-// vite.config.js
-import { defineConfig } from 'vite';
-import solidStart from 'solid-start';
-import solidLabels from 'babel-plugin-solid-labels';
-
-export default defineConfig({
-  plugins: [
-    solidStart({
-      babel: {
-        plugins: [
-          [solidLabels, { dev: process.env.NODE_ENV !== 'production' }]
-        ],
-      },
-    }),
-  ],
-});
-```
+- [Vite](https://github.com/lxsmnsyc/solid-labels/tree/main/packages/vite)
+- [Rollup](https://github.com/lxsmnsyc/solid-labels/tree/main/packages/Rollup)
 
 ### Disabling features
 

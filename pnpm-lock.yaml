@@ -111,7 +111,7 @@ importers:
       '@rollup/pluginutils': ^5.0.2
       '@types/babel__core': ^7.20.0
       '@types/node': ^18.13.0
-      babel-plugin-solid-labels: 0.13.0
+      babel-plugin-solid-labels: ^0.13.0
       eslint: ^8.33.0
       eslint-config-lxsmnsyc: ^0.4.8
       pridepack: 2.4.1
@@ -122,10 +122,10 @@ importers:
       '@babel/core': 7.20.12
       '@babel/preset-typescript': 7.18.6_@babel+core@7.20.12
       '@rollup/pluginutils': 5.0.2_rollup@3.15.0
+      babel-plugin-solid-labels: link:../babel
     devDependencies:
       '@types/babel__core': 7.20.0
       '@types/node': 18.13.0
-      babel-plugin-solid-labels: link:../babel
       eslint: 8.34.0
       eslint-config-lxsmnsyc: 0.4.8_7kw3g6rralp5ps6mg3uyzz6azm
       pridepack: 2.4.1_64oh6xetmihmk3s5lpnh2fqrua
@@ -140,7 +140,7 @@ importers:
       '@rollup/pluginutils': ^5.0.2
       '@types/babel__core': ^7.20.0
       '@types/node': ^18.13.0
-      babel-plugin-solid-labels: 0.13.0
+      babel-plugin-solid-labels: ^0.13.0
       eslint: ^8.33.0
       eslint-config-lxsmnsyc: ^0.4.8
       pridepack: 2.4.1
@@ -151,10 +151,10 @@ importers:
       '@babel/core': 7.20.12
       '@babel/preset-typescript': 7.18.6_@babel+core@7.20.12
       '@rollup/pluginutils': 5.0.2
+      babel-plugin-solid-labels: link:../babel
     devDependencies:
       '@types/babel__core': 7.20.0
       '@types/node': 18.13.0
-      babel-plugin-solid-labels: link:../babel
       eslint: 8.34.0
       eslint-config-lxsmnsyc: 0.4.8_7kw3g6rralp5ps6mg3uyzz6azm
       pridepack: 2.4.1_64oh6xetmihmk3s5lpnh2fqrua
