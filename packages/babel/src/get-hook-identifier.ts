@@ -9,11 +9,12 @@ export default function getHookIdentifier(
   name: string,
   source = 'solid-js',
 ): t.Identifier {
-  const current = hooks.get(name);
+  const id = `${source}[${name}]`;
+  const current = hooks.get(id);
   if (current) {
     return current;
   }
   const newID = addNamed(path, name, source);
-  hooks.set(name, newID);
+  hooks.set(id, newID);
   return newID;
 }
