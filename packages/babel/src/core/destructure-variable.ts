@@ -1,8 +1,10 @@
 import * as babel from '@babel/core';
 import * as t from '@babel/types';
+import { forEach } from './arrays';
 import derefMemo from './deref-memo';
 import { unexpectedType } from './errors';
 import getImportIdentifier from './get-import-identifier';
+import isStatic from './is-static';
 import { State } from './types';
 import unwrapNode from './unwrap-node';
 
@@ -20,8 +22,7 @@ export default function destructureVariable(
 
   // Destructuring for object patterns
   if (t.isObjectPattern(pattern)) {
-    for (let i = 0, len = pattern.properties.length; i < len; i += 1) {
-      const property = pattern.properties[i];
+    forEach(pattern.properties, (property) => {
       // Check if this is an object property
       if (t.isObjectProperty(property)) {
         const { value, key } = property;
@@ -48,13 +49,16 @@ export default function destructureVariable(
         let defaultIdentifier: t.Identifier | undefined;
         if (t.isAssignmentPattern(value)) {
           defaultIdentifier = path.scope.generateUidIdentifier('def');
+          const defValue = isStatic(value.right)
+            ? value.right
+            : t.callExpression(
+              getImportIdentifier(state, path, 'createMemo', 'solid-js'),
+              [t.arrowFunctionExpression([], value.right)],
+            );
           declarators.push(
             t.variableDeclarator(
               defaultIdentifier,
-              t.callExpression(
-                getImportIdentifier(state, path, 'createMemo', 'solid-js'),
-                [t.arrowFunctionExpression([], value.right)],
-              ),
+              defValue,
             ),
           );
           const valueIdentifier = path.scope.generateUidIdentifier('value');
@@ -141,11 +145,10 @@ export default function destructureVariable(
           restIdentifier = trueIdentifier;
         }
       }
-    }
+    });
   } else {
     // Destructure for arrays
-    for (let i = 0, len = pattern.elements.length; i < len; i += 1) {
-      const property = pattern.elements[i];
+    forEach(pattern.elements, (property, i) => {
       if (property) {
         const keyExpr = t.numericLiteral(i);
 
@@ -160,13 +163,16 @@ export default function destructureVariable(
         let defaultIdentifier: t.Identifier | undefined;
         if (t.isAssignmentPattern(property)) {
           defaultIdentifier = path.scope.generateUidIdentifier('def');
+          const defValue = isStatic(property.right)
+            ? property.right
+            : t.callExpression(
+              getImportIdentifier(state, path, 'createMemo', 'solid-js'),
+              [t.arrowFunctionExpression([], property.right)],
+            );
           declarators.push(
             t.variableDeclarator(
               defaultIdentifier,
-              t.callExpression(
-                getImportIdentifier(state, path, 'createMemo', 'solid-js'),
-                [t.arrowFunctionExpression([], property.right)],
-              ),
+              defValue,
             ),
           );
           const valueIdentifier = path.scope.generateUidIdentifier('value');
@@ -245,7 +251,7 @@ export default function destructureVariable(
           }
         }
       }
-    }
+    });
   }
 
   const expr = t.variableDeclarator(
