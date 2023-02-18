@@ -1,6 +1,7 @@
 import * as babel from '@babel/core';
 import * as t from '@babel/types';
 import accessorVariable from './core/accessor-variable';
+import { forEach } from './core/arrays';
 import deferredVariable from './core/deferred-variable';
 import destructureVariable from './core/destructure-variable';
 import getImportIdentifier from './core/get-import-identifier';
@@ -37,19 +38,17 @@ export default function transformComments(state: State, path: babel.NodePath) {
       const comments = p.node.leadingComments;
       if (comments) {
         let preference: string | undefined;
-        for (let i = 0, len = comments.length; i < len; i += 1) {
-          const comment: t.Comment = comments[i];
+        forEach(comments, (comment) => {
           const value: string = comment.value.trim();
           if (value in VARIABLE_LABEL && !state.opts.disabled?.pragma?.[value]) {
             preference = value;
             comment.value = '';
           }
-        }
+        });
         if (preference) {
           const { declarations } = p.node;
           let declarators: t.VariableDeclarator[] = [];
-          for (let i = 0, len = declarations.length; i < len; i += 1) {
-            const declarator = declarations[i];
+          forEach(declarations, (declarator) => {
             switch (preference as keyof typeof VARIABLE_LABEL) {
               case '@signal':
                 if (t.isIdentifier(declarator.id)) {
@@ -120,7 +119,7 @@ export default function transformComments(state: State, path: babel.NodePath) {
               default:
                 break;
             }
-          }
+          });
 
           p.replaceWith(
             t.variableDeclaration(
@@ -143,8 +142,7 @@ export default function transformComments(state: State, path: babel.NodePath) {
       if (comments) {
         let preference: string | undefined;
         let nameOption: string | undefined;
-        for (let i = 0, len = comments.length; i < len; i += 1) {
-          const comment: t.Comment = comments[i];
+        forEach(comments, (comment) => {
           const value: string = comment.value.trim();
           if (/^@\w+( .*)?$/.test(value)) {
             const [tag, ...debugName] = value.split(' ');
@@ -154,7 +152,7 @@ export default function transformComments(state: State, path: babel.NodePath) {
               comment.value = '';
             }
           }
-        }
+        });
         if (preference) {
           const [name, source, named] = CALLBACK_LABEL[preference];
           const callback = t.arrowFunctionExpression(
@@ -187,8 +185,7 @@ export default function transformComments(state: State, path: babel.NodePath) {
       if (comments) {
         let preference: string | undefined;
         let nameOption: string | undefined;
-        for (let i = 0, len = comments.length; i < len; i += 1) {
-          const comment: t.Comment = comments[i];
+        forEach(comments, (comment) => {
           const value: string = comment.value.trim();
           if (/^@\w+( .*)?$/.test(value)) {
             const [tag, ...debugName] = value.split(' ');
@@ -198,7 +195,7 @@ export default function transformComments(state: State, path: babel.NodePath) {
               comment.value = '';
             }
           }
-        }
+        });
         if (preference) {
           const [name, source, named] = CALLBACK_LABEL[preference];
           const callback = t.arrowFunctionExpression(

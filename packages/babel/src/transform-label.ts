@@ -1,6 +1,7 @@
 import * as babel from '@babel/core';
 import * as t from '@babel/types';
 import accessorVariable from './core/accessor-variable';
+import { forEach } from './core/arrays';
 import deferredVariable from './core/deferred-variable';
 import destructureVariable from './core/destructure-variable';
 import { unexpectedType } from './core/errors';
@@ -76,8 +77,7 @@ export default function transformLabels(state: State, path: babel.NodePath) {
           if (t.isVariableDeclaration(body)) {
             let declarators: t.VariableDeclarator[] = [];
 
-            for (let i = 0, len = body.declarations.length; i < len; i += 1) {
-              const declarator = body.declarations[i];
+            forEach(body.declarations, (declarator) => {
               switch (labelName as keyof typeof VARIABLE_LABEL) {
                 case 'signal':
                   if (t.isIdentifier(declarator.id)) {
@@ -148,7 +148,7 @@ export default function transformLabels(state: State, path: babel.NodePath) {
                 default:
                   break;
               }
-            }
+            });
 
             p.replaceWith(
               t.variableDeclaration(
