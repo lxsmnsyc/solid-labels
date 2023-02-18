@@ -237,13 +237,13 @@ describe('ctf', () => {
   describe('$destructure', () => {
     it('should transform $destructure', async () => {
       const code = `
-      let { a: { b, c }, b: { d, e }, ...f } = $destructure(x);
+      let { a: { b, c }, b: { d = defaultD, e = defaultE }, ...f } = $destructure(x);
       `;
       expect(await compile(code)).toMatchSnapshot();
     });
     it('should transform $destructure bindings', async () => {
       let code = `
-      let { a: { b, c }, b: { d, e }, ...f } = $destructure(x);
+      let { a: { b, c }, b: { d = defaultD, e = defaultE }, ...f } = $destructure(x);
 
       effect: {
         console.log(b, c);
@@ -257,7 +257,7 @@ describe('ctf', () => {
       `;
       expect(await compile(code)).toMatchSnapshot();
       code = `
-      let { a: { b, c }, b: { d, e }, ...f } = $destructure(x);
+      let { a: { b, c }, b: { d = defaultD, e = defaultE }, ...f } = $destructure(x);
 
       effect: {
         console.log({ b }, { c });
@@ -273,7 +273,7 @@ describe('ctf', () => {
     });
     it('should transform $destructure bindings on $get', async () => {
       const code = `
-      let { a: { b, c }, b: { d, e }, ...f } = $destructure(x);
+      let { a: { b, c }, b: { d = defaultD, e = defaultE }, ...f } = $destructure(x);
 
       effect: {
         console.log($get(b), $get(c));
@@ -289,7 +289,7 @@ describe('ctf', () => {
     });
     it('should transform $destructure bindings on $refMemo', async () => {
       const code = `
-      let { a: { b, c }, b: { d, e }, ...f } = $destructure(x);
+      let { a: { b, c }, b: { d = defaultD, e = defaultE }, ...f } = $destructure(x);
 
       effect: {
         console.log($refMemo(b), $refMemo(c));
@@ -305,7 +305,7 @@ describe('ctf', () => {
     });
     it('should transform $destructure bindings on $getter', async () => {
       const code = `
-      let { a: { b, c }, b: { d, e }, ...f } = $destructure(x);
+      let { a: { b, c }, b: { d = defaultD, e = defaultE }, ...f } = $destructure(x);
 
       effect: {
         console.log({ b: $getter(b) }, { c: $getter(c) });
@@ -321,7 +321,7 @@ describe('ctf', () => {
     });
     it('should transform $destructure bindings on $property', async () => {
       const code = `
-      let { a: { b, c }, b: { d, e }, ...f } = $destructure(x);
+      let { a: { b, c }, b: { d = defaultD, e = defaultE }, ...f } = $destructure(x);
 
       effect: {
         console.log({ b: $property(b) }, { c: $property(c) });
@@ -332,6 +332,127 @@ describe('ctf', () => {
       effect: {
         console.log(f);
       }
+      `;
+      expect(await compile(code)).toMatchSnapshot();
+    });
+  });
+  describe('$component', () => {
+    it('should transform $component', async () => {
+      const code = `
+      $component(({ a: { b, c }, b: { d = defaultD, e = defaultE }, ...f }) => {
+      });
+      `;
+      expect(await compile(code)).toMatchSnapshot();
+    });
+    it('should transform $component bindings', async () => {
+      let code = `
+      $component(({ a: { b, c }, b: { d = defaultD, e = defaultE }, ...f }) => {
+        effect: {
+          console.log(b, c);
+        }
+        effect: {
+          console.log(d, e);
+        }
+        effect: {
+          console.log(f);
+        }
+      });
+      `;
+      expect(await compile(code)).toMatchSnapshot();
+      code = `
+      $component(({ a: { b, c }, b: { d = defaultD, e = defaultE }, ...f }) => {
+        effect: {
+          console.log({ b }, { c });
+        }
+        effect: {
+          console.log({ d }, { e });
+        }
+        effect: {
+          console.log(f);
+        }
+      });
+      `;
+      expect(await compile(code)).toMatchSnapshot();
+    });
+    it('should transform $component bindings on $get', async () => {
+      const code = `
+        $component(({ a: { b, c }, b: { d = defaultD, e = defaultE }, ...f }) => {
+          effect: {
+            console.log($get(b), $get(c));
+          }
+          effect: {
+            console.log($get(d), $get(e));
+          }
+          effect: {
+            console.log(f);
+          }
+        });
+      `;
+      expect(await compile(code)).toMatchSnapshot();
+    });
+    it('should transform $component bindings on $refMemo', async () => {
+      const code = `
+      $component(({ a: { b, c }, b: { d = defaultD, e = defaultE }, ...f }) => {
+        effect: {
+          console.log($refMemo(b), $refMemo(c));
+        }
+        effect: {
+          console.log($refMemo(d), $refMemo(e));
+        }
+        effect: {
+          console.log(f);
+        }
+      });
+      `;
+      expect(await compile(code)).toMatchSnapshot();
+    });
+    it('should transform $component bindings on $getter', async () => {
+      const code = `
+      $component(({ a: { b, c }, b: { d = defaultD, e = defaultE }, ...f }) => {
+        effect: {
+          console.log({ b: $getter(b) }, { c: $getter(c) });
+        }
+        effect: {
+          console.log({ d: $getter(d) }, { e: $getter(e) });
+        }
+        effect: {
+          console.log(f);
+        }
+      });
+      `;
+      expect(await compile(code)).toMatchSnapshot();
+    });
+    it('should transform $component bindings on $property', async () => {
+      const code = `
+      $component(({ a: { b, c }, b: { d = defaultD, e = defaultE }, ...f }) => {
+        effect: {
+          console.log({ b: $property(b) }, { c: $property(c) });
+        }
+        effect: {
+          console.log({ d: $property(d) }, { e: $property(e) });
+        }
+        effect: {
+          console.log(f);
+        }
+      });
+      `;
+      expect(await compile(code)).toMatchSnapshot();
+    });
+  });
+  describe('$effect, $renderEffect, $computed', () => {
+    it('should transform $effect, $renderEffect, $computed', async () => {
+      const code = `
+      let x = $signal(0);
+
+      $effect(() => {
+        console.log('Count', x);
+      });
+      $computed(() => {
+        console.log('Count', x);
+      });
+      $renderEffect(() => {
+        console.log('Count', x);
+      });
       `;
       expect(await compile(code)).toMatchSnapshot();
     });

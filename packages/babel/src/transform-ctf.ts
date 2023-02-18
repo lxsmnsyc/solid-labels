@@ -84,7 +84,7 @@ const SPECIAL_CTF = new Set([
 export default function transformCTF(state: State, path: babel.NodePath) {
   path.traverse({
     CallExpression(p) {
-      const trueIdentifier = unwrapNode(p.node, t.isIdentifier);
+      const trueIdentifier = unwrapNode(p.node.callee, t.isIdentifier);
       if (
         trueIdentifier
         && !p.scope.hasBinding(trueIdentifier.name)
@@ -352,7 +352,7 @@ export default function transformCTF(state: State, path: babel.NodePath) {
       }
     },
     ExpressionStatement(p) {
-      const trueCallExpr = unwrapNode(p.node, t.isCallExpression);
+      const trueCallExpr = unwrapNode(p.node.expression, t.isCallExpression);
       if (trueCallExpr) {
         const trueCallee = unwrapNode(trueCallExpr.callee, t.isIdentifier);
         if (
