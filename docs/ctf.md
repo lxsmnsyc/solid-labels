@@ -708,6 +708,22 @@ const CounterContext = _createContext(0);
 const value = _useContext(CounterContext);
 ```
 
+### Transition
+
+```ts
+function $startTransition(fn: () => unknown): Promise<void>
+function $useTransition(): Transition
+```
+
+### Owner
+
+```ts
+function $owner(): Owner | null
+function $runWithOwner<T>(o: Owner, fn: () => T): T
+```
+
+Compiles to `useTransition` and `startTransition`.
+
 ## Refs and Derefs
 
 Ref and Deref allows opting in and out of the labels syntax. This is useful for scenarios where we want to return the actual signal tuple instead of the signal value or when we have a third-party utility that we want to opt-into
@@ -1008,20 +1024,6 @@ These CTFs are based from `solid-js/store` exports.
 ## Components
 
 These CTFs are auto-imported components from `solid-js` and `solid-js/web`. You can still use their original identifiers since those are already supported by `babel-preset-solid`.
-
-- `<$for>` -> `<For>`
-- `<$show>` -> `<Show>`
-- `<$switch>` -> `<Switch>`
-- `<$match>` -> `<Match>`
-- `<$index>` -> `<Index>`
-- `<$errorBoundary>` -> `<ErrorBoundary>`
-- `<$suspense>` -> `<Suspense>`
-- `<$suspenseList>` -> `<SuspenseList>`
-- `<$dynamic>` -> `<Dynamic>`
-- `<$portal>` -> `<Portal>`
-- `<$assets>` -> `<Assets>`
-- `<$hydrationScript>` -> `<HydrationScript>`
-- `<$noHydration>` -> `<NoHydration>`
 
 ## Tooling
 

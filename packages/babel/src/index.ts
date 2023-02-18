@@ -37,15 +37,20 @@ declare global {
   function $untrack<T>(value: T): T;
   function $batch<T>(value: T): T;
 
+  function $<T>(value: T): T;
+
   function $derefSignal<T>(value: [Accessor<T>, Setter<T>]): T;
   function $refSignal<T>(value: T): [Accessor<T>, Setter<T>];
   function $derefMemo<T>(value: Accessor<T>): T;
   function $refMemo<T>(value: T): Accessor<T>;
 
-  function $<T>(value: T): T;
-
   function $get<T>(value: T): Accessor<T>;
   function $set<T>(value: T): Setter<T>;
+
+  // Object property transforms
+  function $getter<T>(value: T): T;
+  function $setter<T>(value: T): T;
+  function $property<T>(value: T): T;
 
   function $selector<T, U>(
     source: T,
@@ -98,11 +103,6 @@ declare global {
   ): U[];
 
   function $destructure<T>(value: T): T;
-
-  // Object property transforms
-  function $getter<T>(value: T): T;
-  function $setter<T>(value: T): T;
-  function $property<T>(value: T): T;
 
   // Auto imports
 
