@@ -9,26 +9,26 @@ import signalVariable from './core/signal-variable';
 import { State } from './core/types';
 
 const VARIABLE_LABEL = {
-  signal: true,
-  memo: true,
-  deferred: true,
-  destructure: true,
-  children: true,
+  '@signal': true,
+  '@memo': true,
+  '@deferred': true,
+  '@destructure': true,
+  '@children': true,
 };
 
 type CallbackLabel = [name: string, source: string, named: boolean];
 
 const CALLBACK_LABEL: Record<string, CallbackLabel> = {
-  effect: ['createEffect', 'solid-js', true],
-  computed: ['createComputed', 'solid-js', true],
-  renderEffect: ['createRenderEffect', 'solid-js', true],
-  mount: ['onMount', 'solid-js', false],
-  cleanup: ['onCleanup', 'solid-js', false],
-  error: ['onError', 'solid-js', false],
-  root: ['createRoot', 'solid-js', false],
-  untrack: ['untrack', 'solid-js', false],
-  batch: ['untrack', 'solid-js', false],
-  transition: ['startTransition', 'solid-js', false],
+  '@effect': ['createEffect', 'solid-js', true],
+  '@computed': ['createComputed', 'solid-js', true],
+  '@renderEffect': ['createRenderEffect', 'solid-js', true],
+  '@mount': ['onMount', 'solid-js', false],
+  '@cleanup': ['onCleanup', 'solid-js', false],
+  '@error': ['onError', 'solid-js', false],
+  '@root': ['createRoot', 'solid-js', false],
+  '@untrack': ['untrack', 'solid-js', false],
+  '@batch': ['untrack', 'solid-js', false],
+  '@transition': ['startTransition', 'solid-js', false],
 };
 
 export default function transformComments(state: State, path: babel.NodePath) {
@@ -51,7 +51,7 @@ export default function transformComments(state: State, path: babel.NodePath) {
           for (let i = 0, len = declarations.length; i < len; i += 1) {
             const declarator = declarations[i];
             switch (preference as keyof typeof VARIABLE_LABEL) {
-              case 'signal':
+              case '@signal':
                 if (t.isIdentifier(declarator.id)) {
                   declarators.push(
                     signalVariable(
@@ -63,7 +63,7 @@ export default function transformComments(state: State, path: babel.NodePath) {
                   );
                 }
                 break;
-              case 'memo':
+              case '@memo':
                 if (t.isIdentifier(declarator.id)) {
                   declarators.push(
                     memoVariable(
@@ -75,7 +75,7 @@ export default function transformComments(state: State, path: babel.NodePath) {
                   );
                 }
                 break;
-              case 'deferred':
+              case '@deferred':
                 if (t.isIdentifier(declarator.id)) {
                   declarators.push(
                     deferredVariable(
@@ -87,7 +87,7 @@ export default function transformComments(state: State, path: babel.NodePath) {
                   );
                 }
                 break;
-              case 'destructure':
+              case '@destructure':
                 if (
                   (t.isObjectPattern(declarator.id) || t.isArrayPattern(declarator.id))
                   && declarator.init
@@ -100,7 +100,7 @@ export default function transformComments(state: State, path: babel.NodePath) {
                   )];
                 }
                 break;
-              case 'children':
+              case '@children':
                 if (t.isIdentifier(declarator.id)) {
                   declarators.push(
                     accessorVariable(
