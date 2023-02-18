@@ -76,9 +76,9 @@ export default function destructureVariable(
               t.returnStatement(
                 t.conditionalExpression(
                   t.binaryExpression(
-                    '==',
+                    '===',
                     valueIdentifier,
-                    t.nullLiteral(),
+                    t.identifier('undefined'),
                   ),
                   t.callExpression(defaultIdentifier, []),
                   valueIdentifier,
@@ -190,9 +190,9 @@ export default function destructureVariable(
               t.returnStatement(
                 t.conditionalExpression(
                   t.binaryExpression(
-                    '==',
+                    '===',
                     valueIdentifier,
-                    t.nullLiteral(),
+                    t.identifier('undefined'),
                   ),
                   t.callExpression(defaultIdentifier, []),
                   valueIdentifier,
