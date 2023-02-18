@@ -46,11 +46,10 @@ export default function transformComponents(state: State, path: babel.NodePath) 
       if (
         t.isIdentifier(p.node)
         && !p.scope.hasBinding(p.node.name)
+        && p.node.name in COMPONENTS
       ) {
-        if (p.node.name in COMPONENTS) {
-          const [name, source] = COMPONENTS[p.node.name];
-          p.replaceWith(getImportIdentifier(state, p, name, source));
-        }
+        const [name, source] = COMPONENTS[p.node.name];
+        p.replaceWith(getImportIdentifier(state, p, name, source));
       }
     },
     JSXElement(p) {
