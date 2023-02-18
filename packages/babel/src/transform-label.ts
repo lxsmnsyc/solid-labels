@@ -44,7 +44,11 @@ export default function transformLabels(state: State, path: babel.NodePath) {
       const labelName = p.node.label.name;
       let { body } = p.node;
       if (
-        labelName in SPECIAL_LABELS
+        (
+          SPECIAL_LABELS.has(labelName)
+          || labelName in VARIABLE_LABEL
+          || labelName in CALLBACK_LABEL
+        )
         && !state.opts.disabled?.label?.[labelName]
       ) {
         if (labelName === REACTIVE_LABEL) {
