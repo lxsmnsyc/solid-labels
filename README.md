@@ -68,7 +68,7 @@ pnpm add babel-plugin-solid-labels
 ## Integrations
 
 - [Vite](https://github.com/lxsmnsyc/solid-labels/tree/main/packages/vite)
-- [Rollup](https://github.com/lxsmnsyc/solid-labels/tree/main/packages/Rollup)
+- [Rollup](https://github.com/lxsmnsyc/solid-labels/tree/main/packages/rollup)
 
 ### Disabling features
 
