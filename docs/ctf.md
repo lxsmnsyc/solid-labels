@@ -51,7 +51,7 @@ Compiles into `createMemo`.
 
 ```js
 let count = $signal(0);
-const message = $memo(\`Count: \${count}\`);
+const message = $memo(`Count: ${count}`);
 ```
 
 becomes

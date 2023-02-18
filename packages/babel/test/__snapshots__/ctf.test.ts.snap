@@ -1,0 +1,223 @@
+// Vitest Snapshot v1
+
+exports[`ctf > $derefMemo > should transform $derefMemo 1`] = `"const _message = () => \`Count: \${count}\`;"`;
+
+exports[`ctf > $derefMemo > should transform $derefMemo bindings 1`] = `
+"const _message = () => \`Count: \${count}\`;
+const value = _message();"
+`;
+
+exports[`ctf > $derefMemo > should transform $derefMemo bindings 2`] = `
+"const _message = () => \`Count: \${count}\`;
+const value = {
+  message: _message()
+};"
+`;
+
+exports[`ctf > $derefMemo > should transform $derefMemo on $get 1`] = `
+"const _message = () => \`Count: \${count}\`;
+const value = _message;"
+`;
+
+exports[`ctf > $derefMemo > should transform $derefMemo on $getter 1`] = `
+"const _message = () => \`Count: \${count}\`;
+const value = {
+  get message() {
+    return _message();
+  }
+};"
+`;
+
+exports[`ctf > $derefMemo > should transform $derefMemo on $property 1`] = `
+"const _message = () => \`Count: \${count}\`;
+const value = {
+  get message() {
+    return _message();
+  }
+};"
+`;
+
+exports[`ctf > $derefMemo > should transform $derefMemo on $refMemo 1`] = `
+"const _message = () => \`Count: \${count}\`;
+const value = _message;"
+`;
+
+exports[`ctf > $derefSignal > should transform $derefSignal 1`] = `"const [_count, _setcount] = createSignal(0);"`;
+
+exports[`ctf > $derefSignal > should transform $derefSignal bindings 1`] = `
+"const [_count, _setcount] = createSignal(0);
+const value = _count();"
+`;
+
+exports[`ctf > $derefSignal > should transform $derefSignal bindings 2`] = `
+"const [_count, _setcount] = createSignal(0);
+const value = {
+  count: _count()
+};"
+`;
+
+exports[`ctf > $derefSignal > should transform $derefSignal bindings for $get 1`] = `
+"const [_count, _setcount] = createSignal(0);
+const value = _count;"
+`;
+
+exports[`ctf > $derefSignal > should transform $derefSignal bindings for $getter 1`] = `
+"const [_count, _setcount] = createSignal(0);
+const value = {
+  get count() {
+    return _count();
+  }
+};"
+`;
+
+exports[`ctf > $derefSignal > should transform $derefSignal bindings for $property 1`] = `
+"const [_count, _setcount] = createSignal(0);
+const value = {
+  get count() {
+    return _count();
+  },
+  set count(_value) {
+    return _setcount(() => _value);
+  }
+};"
+`;
+
+exports[`ctf > $derefSignal > should transform $derefSignal bindings for $refSignal 1`] = `
+"const [_count, _setcount] = createSignal(0);
+const value = [_count, _setcount];"
+`;
+
+exports[`ctf > $derefSignal > should transform $derefSignal bindings for $set 1`] = `
+"const [_count, _setcount] = createSignal(0);
+const value = _setcount;"
+`;
+
+exports[`ctf > $derefSignal > should transform $derefSignal bindings for $setter 1`] = `
+"const [_count, _setcount] = createSignal(0);
+const value = {
+  set count(_value) {
+    return _setcount(() => _value);
+  }
+};"
+`;
+
+exports[`ctf > $memo > should transform $memo 1`] = `
+"import { createMemo as _createMemo } from \\"solid-js\\";
+const _message = _createMemo(() => \`Count: \${count}\`);"
+`;
+
+exports[`ctf > $memo > should transform $memo bindings 1`] = `
+"import { createMemo as _createMemo } from \\"solid-js\\";
+const _message = _createMemo(() => \`Count: \${count}\`);
+const value = _message();"
+`;
+
+exports[`ctf > $memo > should transform $memo bindings 2`] = `
+"import { createMemo as _createMemo } from \\"solid-js\\";
+const _message = _createMemo(() => \`Count: \${count}\`);
+const value = {
+  message: _message()
+};"
+`;
+
+exports[`ctf > $memo > should transform $memo on $get 1`] = `
+"import { createMemo as _createMemo } from \\"solid-js\\";
+const _message = _createMemo(() => \`Count: \${count}\`);
+const value = _message;"
+`;
+
+exports[`ctf > $memo > should transform $memo on $getter 1`] = `
+"import { createMemo as _createMemo } from \\"solid-js\\";
+const _message = _createMemo(() => \`Count: \${count}\`);
+const value = {
+  get message() {
+    return _message();
+  }
+};"
+`;
+
+exports[`ctf > $memo > should transform $memo on $property 1`] = `
+"import { createMemo as _createMemo } from \\"solid-js\\";
+const _message = _createMemo(() => \`Count: \${count}\`);
+const value = {
+  get message() {
+    return _message();
+  }
+};"
+`;
+
+exports[`ctf > $memo > should transform $memo on $refMemo 1`] = `
+"import { createMemo as _createMemo } from \\"solid-js\\";
+const _message = _createMemo(() => \`Count: \${count}\`);
+const value = _message;"
+`;
+
+exports[`ctf > $signal > should transform $signal 1`] = `
+"import { createSignal as _createSignal } from \\"solid-js\\";
+let [_count, _setcount] = _createSignal(0);"
+`;
+
+exports[`ctf > $signal > should transform $signal bindings 1`] = `
+"import { createSignal as _createSignal } from \\"solid-js\\";
+let [_count, _setcount] = _createSignal(0);
+const value = _count();"
+`;
+
+exports[`ctf > $signal > should transform $signal bindings 2`] = `
+"import { createSignal as _createSignal } from \\"solid-js\\";
+let [_count, _setcount] = _createSignal(0);
+const value = {
+  count: _count()
+};"
+`;
+
+exports[`ctf > $signal > should transform $signal bindings for $get 1`] = `
+"import { createSignal as _createSignal } from \\"solid-js\\";
+let [_count, _setcount] = _createSignal(0);
+const value = _count;"
+`;
+
+exports[`ctf > $signal > should transform $signal bindings for $getter 1`] = `
+"import { createSignal as _createSignal } from \\"solid-js\\";
+let [_count, _setcount] = _createSignal(0);
+const value = {
+  get count() {
+    return _count();
+  }
+};"
+`;
+
+exports[`ctf > $signal > should transform $signal bindings for $property 1`] = `
+"import { createSignal as _createSignal } from \\"solid-js\\";
+let [_count, _setcount] = _createSignal(0);
+const value = {
+  get count() {
+    return _count();
+  },
+  set count(_value) {
+    return _setcount(() => _value);
+  }
+};"
+`;
+
+exports[`ctf > $signal > should transform $signal bindings for $refSignal 1`] = `
+"import { createSignal as _createSignal } from \\"solid-js\\";
+let [_count, _setcount] = _createSignal(0);
+const value = [_count, _setcount];"
+`;
+
+exports[`ctf > $signal > should transform $signal bindings for $set 1`] = `
+"import { createSignal as _createSignal } from \\"solid-js\\";
+let [_count, _setcount] = _createSignal(0);
+const value = _setcount;"
+`;
+
+exports[`ctf > $signal > should transform $signal bindings for $setter 1`] = `
+"import { createSignal as _createSignal } from \\"solid-js\\";
+let [_count, _setcount] = _createSignal(0);
+const value = {
+  set count(_value) {
+    return _setcount(() => _value);
+  }
+};"
+`;

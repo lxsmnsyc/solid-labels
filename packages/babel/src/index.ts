@@ -1,21 +1,12 @@
-import { PluginObj } from '@babel/core';
+import * as babel from '@babel/core';
 import * as solid from 'solid-js';
 import * as solidWeb from 'solid-js/web';
 import * as solidStore from 'solid-js/store';
-import { State } from './types';
-import LABEL_PARSER from './label-parser';
-import COMMENT_PARSER from './comment-parser';
-import CTF_PARSER from './ctf-parser';
-import AUTO_IMPORT_EXPR from './auto-import';
-
-type UnboxLazy<T> = T extends () => infer U ? U : T;
-type BoxedTupleTypes<T extends any[]> = {
-  [P in keyof T]: [UnboxLazy<T[P]>];
-}[Exclude<keyof T, keyof any[]>];
-type UnionToIntersection<U> =
-  (U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never;
-type UnboxIntersection<T> = T extends { 0: infer U } ? U : never;
-type MergeProps<T extends any[]> = UnboxIntersection<UnionToIntersection<BoxedTupleTypes<T>>>;
+import { State, Options } from './core/types';
+import transformComponents from './components';
+import transformCTF from './transform-ctf';
+import transformLabels from './transform-label';
+import transformComments from './transform-comment';
 
 declare global {
   type Accessor<T> = solid.Accessor<T>;
@@ -56,18 +47,6 @@ declare global {
   function $get<T>(value: T): Accessor<T>;
   function $set<T>(value: T): Setter<T>;
 
-  function $effect<T>(fn: (v?: T) => T | undefined): void;
-  function $effect<T>(fn: (v: T) => T, value: T, options?: { name?: string }): void;
-
-  function $computed<T>(fn: (v?: T) => T | undefined): void;
-  function $computed<T>(fn: (v: T) => T, value: T, options?: { name?: string }): void;
-
-  function $renderEffect<T>(fn: (v?: T) => T | undefined): void;
-  function $renderEffect<T>(fn: (v: T) => T, value: T, options?: { name?: string }): void;
-
-  function $root<T>(value: T): T;
-  function $root<T>(cb: (dispose: () => void) => T): T;
-
   function $selector<T, U>(
     source: T,
     fn?: (a: U, b: T) => boolean,
@@ -89,12 +68,6 @@ declare global {
     },
   ): T;
 
-  function $uid(): string;
-
-  function $createContext<T>(): Context<T | undefined>;
-  function $createContext<T>(defaultValue: T): Context<T>;
-  function $useContext<T>(context: Context<T>): T;
-
   function $lazy<T extends Component<any>>(fn: Promise<{ default: T }>): T & {
     preload: () => void;
   };
@@ -106,7 +79,6 @@ declare global {
   }
 
   function $observable<T>(value: T): Observable<T>;
-
   function $from<T>(observable: Observable<T>): T;
   function $from<T>(produce: ((setter: Setter<T>) => () => void)): T;
 
@@ -125,14 +97,37 @@ declare global {
     },
   ): U[];
 
-  function $merge<T extends any[]>(...args: T): MergeProps<T>;
   function $destructure<T>(value: T): T;
 
+  // Object property transforms
   function $getter<T>(value: T): T;
   function $setter<T>(value: T): T;
   function $property<T>(value: T): T;
 
+  // Auto imports
+
+  const $effect: typeof solid.createEffect;
+  const $computed: typeof solid.createComputed;
+  const $renderEffect: typeof solid.createRenderEffect;
+
+  const $useContext: typeof solid.useContext;
+  const $createContext: typeof solid.createContext;
+
+  const $uid: typeof solid.createUniqueId;
+  const $root: typeof solid.createRoot;
   const $resource: typeof solid.createResource;
+  const $merge: typeof solid.mergeProps;
+
+  const $reaction: typeof solid.createReaction;
+  const $mount: typeof solid.onMount;
+  const $error: typeof solid.onError;
+  const $cleanup: typeof solid.onCleanup;
+
+  const $startTransition: typeof solid.startTransition;
+  const $useTransition: typeof solid.useTransition;
+
+  const $owner: typeof solid.getOwner;
+  const $runWithOwner: typeof solid.runWithOwner;
 
   // store
   const $store: typeof solidStore.createStore;
@@ -142,36 +137,19 @@ declare global {
   const $unwrap: typeof solidStore.unwrap;
 
   // components
-  const $for: typeof solid.For;
-  // @deprecated use solid:for
-  const $show: typeof solid.Show;
-  // @deprecated use solid:show
-  const $switch: typeof solid.Switch;
-  // @deprecated use solid:switch
-  const $match: typeof solid.Match;
-  // @deprecated use solid:match
-  const $index: typeof solid.Index;
-  // @deprecated use solid:index
-  const $errorBoundary: typeof solid.ErrorBoundary;
-  // @deprecated use solid:error-boundary
-  const $suspense: typeof solid.Suspense;
-  // @deprecated use solid:suspense
-  const $suspenseList: typeof solid.SuspenseList;
-  // @deprecated use solid:suspense-list
-  const $dynamic: typeof solidWeb.Dynamic;
-  // @deprecated use solid:portal
-  const $portal: typeof solidWeb.Portal;
-  // @deprecated use solid:assets
-  const $assets: typeof solidWeb.Assets;
-  // @deprecated use solid:hydration-script
-  const $hydrationScript: typeof solidWeb.HydrationScript;
-  // @deprecated use solid:no-hydration
-  const $noHydration: typeof solidWeb.NoHydration;
-
-  const $reaction: typeof solid.createReaction;
-  const $mount: typeof solid.onMount;
-  const $error: typeof solid.onError;
-  const $cleanup: typeof solid.onCleanup;
+  const For: typeof solid.For;
+  const Show: typeof solid.Show;
+  const Switch: typeof solid.Switch;
+  const Match: typeof solid.Match;
+  const Index: typeof solid.Index;
+  const ErrorBoundary: typeof solid.ErrorBoundary;
+  const Suspense: typeof solid.Suspense;
+  const SuspenseList: typeof solid.SuspenseList;
+  const Dynamic: typeof solidWeb.Dynamic;
+  const Portal: typeof solidWeb.Portal;
+  const Assets: typeof solidWeb.Assets;
+  const HydrationScript: typeof solidWeb.HydrationScript;
+  const NoHydration: typeof solidWeb.NoHydration;
 
   function $component<P>(Comp: (props: P) => solid.JSX.Element): (props: P) => solid.JSX.Element;
 }
@@ -181,18 +159,12 @@ type Props<T> = T extends (props: infer P) => solid.JSX.Element
   : never;
 
 declare module 'solid-js' {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace JSX {
     interface IntrinsicElements {
-      'solid:for': Props<typeof solid.For>;
-      'solid:switch': Props<typeof solid.Switch>;
-      'solid:match': Props<typeof solid.Match>;
-      'solid:show': Props<typeof solid.Show>;
-      'solid:index': Props<typeof solid.Index>;
       'solid:error-boundary': Props<typeof solid.ErrorBoundary>;
       'solid:suspense': Props<typeof solid.Suspense>;
       'solid:suspense-list': Props<typeof solid.SuspenseList>;
-
-      'solid:dynamic': Props<typeof solidWeb.Dynamic>;
       'solid:portal': Props<typeof solidWeb.Portal>;
       'solid:assets': Props<typeof solidWeb.Assets>;
       'solid:hydration-script': Props<typeof solidWeb.HydrationScript>;
@@ -201,25 +173,20 @@ declare module 'solid-js' {
   }
 }
 
+export { Options };
 
-const VISITOR = {
-  ...LABEL_PARSER,
-  ...COMMENT_PARSER,
-  ...CTF_PARSER,
-  ...AUTO_IMPORT_EXPR,
-};
-
-export default function solidLabelsPlugin(): PluginObj<State> {
+export default function solidLabelsPlugin(): babel.PluginObj<State> {
   return {
+    name: 'solid-labels',
     pre() {
       this.hooks = new Map();
     },
     visitor: {
       Program(path, state) {
-        // We do this so that we can be ahead of solid-refresh
-        // and possibly, Solid, but who knows.
-        path.traverse(VISITOR, state);
-        path.scope.crawl();
+        transformComments(state, path);
+        transformLabels(state, path);
+        transformCTF(state, path);
+        transformComponents(state, path);
       },
     },
   };

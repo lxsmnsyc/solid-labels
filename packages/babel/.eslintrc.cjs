@@ -8,6 +8,11 @@ module.exports = {
     "tsconfigRootDir": __dirname,
   },
   "rules": {
+    "import/no-extraneous-dependencies": [
+      "error", {
+        "devDependencies": ["**/*.test.ts"]
+      }
+    ],
     "no-param-reassign": "off"
   }
 };

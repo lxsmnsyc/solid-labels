@@ -1,26 +1,28 @@
-import { NodePath } from '@babel/traverse';
+import * as babel from '@babel/core';
 import * as t from '@babel/types';
+import derefMemo from './deref-memo';
 import { unexpectedType } from './errors';
-import getHookIdentifier from './get-hook-identifier';
-import normalizeBindings from './normalize-bindings';
+import getImportIdentifier from './get-import-identifier';
 import { State } from './types';
+import unwrapNode from './unwrap-node';
 
-export default function destructureVariableExpression(
+export default function destructureVariable(
   state: State,
-  path: NodePath<t.VariableDeclarator>,
+  path: babel.NodePath,
   target: t.Expression,
   pattern: t.ObjectPattern | t.ArrayPattern,
-  replace = true,
   defaultValue?: t.Expression,
-): void {
+) {
   const otherIdentifier = path.scope.generateUidIdentifier('other');
-
+  let declarators: t.VariableDeclarator[] = [];
   const properties: t.Expression[] = [];
   let restIdentifier: t.Identifier | undefined;
 
+  // Destructuring for object patterns
   if (t.isObjectPattern(pattern)) {
     for (let i = 0, len = pattern.properties.length; i < len; i += 1) {
       const property = pattern.properties[i];
+      // Check if this is an object property
       if (t.isObjectProperty(property)) {
         const { value, key } = property;
 
@@ -34,6 +36,7 @@ export default function destructureVariableExpression(
           properties.push(key);
         }
 
+        // Create a new identifier for the destructure variable
         const newIdentifier = path.scope.generateUidIdentifier('prop');
         let access: t.Expression | t.BlockStatement = (
           t.memberExpression(
@@ -45,11 +48,11 @@ export default function destructureVariableExpression(
         let defaultIdentifier: t.Identifier | undefined;
         if (t.isAssignmentPattern(value)) {
           defaultIdentifier = path.scope.generateUidIdentifier('def');
-          path.insertBefore(
+          declarators.push(
             t.variableDeclarator(
               defaultIdentifier,
               t.callExpression(
-                getHookIdentifier(state.hooks, path, 'createMemo'),
+                getImportIdentifier(state, path, 'createMemo', 'solid-js'),
                 [t.arrowFunctionExpression([], value.right)],
               ),
             ),
@@ -80,7 +83,7 @@ export default function destructureVariableExpression(
             ])
           );
         }
-        path.insertBefore(
+        declarators.push(
           t.variableDeclarator(
             newIdentifier,
             t.arrowFunctionExpression(
@@ -90,47 +93,57 @@ export default function destructureVariableExpression(
           ),
         );
 
+        // If the value is an object or array pattern
+        // destructure that value again
+        // e.g. { x: { y, z }} = w;
         if (t.isObjectPattern(value) || t.isArrayPattern(value)) {
-          destructureVariableExpression(
+          declarators = [...declarators, ...destructureVariable(
             state,
             path,
             t.callExpression(newIdentifier, []),
             value,
-            false,
-          );
+          )];
         } else if (t.isIdentifier(value)) {
-          path.scope.path.traverse(normalizeBindings(
-            path.scope.path,
-            t.callExpression(newIdentifier, []),
+          // If the value is just a normal identifier
+          // e.g. { x: y } = w;
+          // normalize bindings
+          derefMemo(
+            path,
             value,
-          ));
+            newIdentifier,
+          );
         } else if (t.isAssignmentPattern(value)) {
           if (t.isIdentifier(value.left)) {
-            path.scope.path.traverse(normalizeBindings(
-              path.scope.path,
-              t.callExpression(newIdentifier, []),
+            // If the value has a default value
+            derefMemo(
+              path,
               value.left,
-            ));
+              newIdentifier,
+            );
           } else if (t.isArrayPattern(value.left) || t.isObjectPattern(value.left)) {
-            destructureVariableExpression(
+            // Otherwise it's just another array/object
+            declarators = [...declarators, ...destructureVariable(
               state,
               path,
               t.callExpression(newIdentifier, []),
               value.left,
-              false,
               defaultIdentifier,
-            );
-          } else {
-            // TODO Member Expression
+            )];
           }
         } else {
           throw unexpectedType(path, value.type, 'Identifier | ObjectPattern | ArrayPattern');
         }
-      } else if (t.isIdentifier(property.argument)) {
-        restIdentifier = property.argument;
+      } else {
+        // or it's a rest element
+        // make sure that it is an identifier though
+        const trueIdentifier = unwrapNode(property.argument, t.isIdentifier);
+        if (trueIdentifier) {
+          restIdentifier = trueIdentifier;
+        }
       }
     }
   } else {
+    // Destructure for arrays
     for (let i = 0, len = pattern.elements.length; i < len; i += 1) {
       const property = pattern.elements[i];
       if (property) {
@@ -147,11 +160,11 @@ export default function destructureVariableExpression(
         let defaultIdentifier: t.Identifier | undefined;
         if (t.isAssignmentPattern(property)) {
           defaultIdentifier = path.scope.generateUidIdentifier('def');
-          path.insertBefore(
+          declarators.push(
             t.variableDeclarator(
               defaultIdentifier,
               t.callExpression(
-                getHookIdentifier(state.hooks, path, 'createMemo'),
+                getImportIdentifier(state, path, 'createMemo', 'solid-js'),
                 [t.arrowFunctionExpression([], property.right)],
               ),
             ),
@@ -182,7 +195,7 @@ export default function destructureVariableExpression(
             ])
           );
         }
-        path.insertBefore(
+        declarators.push(
           t.variableDeclarator(
             newIdentifier,
             t.arrowFunctionExpression(
@@ -195,41 +208,40 @@ export default function destructureVariableExpression(
         properties.push(keyExpr);
 
         if (t.isIdentifier(property)) {
-          path.scope.path.traverse(normalizeBindings(
-            path.scope.path,
-            t.callExpression(newIdentifier, []),
+          derefMemo(
+            path,
             property,
-          ));
+            newIdentifier,
+          );
         } else if (t.isAssignmentPattern(property)) {
           if (t.isIdentifier(property.left)) {
-            path.scope.path.traverse(normalizeBindings(
-              path.scope.path,
-              t.callExpression(newIdentifier, []),
+            derefMemo(
+              path,
               property.left,
-            ));
+              newIdentifier,
+            );
           } else if (t.isArrayPattern(property.left) || t.isObjectPattern(property.left)) {
-            destructureVariableExpression(
+            // Otherwise it's just another array/object
+            declarators = [...declarators, ...destructureVariable(
               state,
               path,
               t.callExpression(newIdentifier, []),
               property.left,
-              false,
               defaultIdentifier,
-            );
-          } else {
-            // TODO Member Expression
+            )];
           }
         } else if (t.isArrayPattern(property) || t.isObjectPattern(property)) {
-          destructureVariableExpression(
+          // Otherwise it's just another array/object
+          declarators = [...declarators, ...destructureVariable(
             state,
             path,
             t.callExpression(newIdentifier, []),
             property,
-            false,
-          );
+          )];
         } else if (t.isRestElement(property)) {
-          if (t.isIdentifier(property.argument)) {
-            restIdentifier = property.argument;
+          const trueIdentifier = unwrapNode(property.argument, t.isIdentifier);
+          if (trueIdentifier) {
+            restIdentifier = trueIdentifier;
           }
         }
       }
@@ -243,11 +255,11 @@ export default function destructureVariableExpression(
         ? (
           t.memberExpression(
             t.callExpression(
-              getHookIdentifier(state.hooks, path, 'splitProps'),
+              getImportIdentifier(state, path, 'splitProps', 'solid-js'),
               [
                 defaultValue != null
                   ? t.callExpression(
-                    getHookIdentifier(state.hooks, path, 'mergeProps'),
+                    getImportIdentifier(state, path, 'mergeProps', 'solid-js'),
                     [target, defaultValue],
                   )
                   : target,
@@ -262,17 +274,40 @@ export default function destructureVariableExpression(
     ),
   );
 
-  if (replace) {
-    path.replaceWith(expr);
-  } else {
-    path.insertAfter(expr);
-  }
+  declarators.push(expr);
 
   if (restIdentifier) {
-    path.scope.path.traverse(normalizeBindings(
-      path.scope.path,
-      otherIdentifier,
-      restIdentifier,
-    ));
+    const targetName = restIdentifier.name;
+    const rest = restIdentifier;
+    path.scope.path.traverse({
+      ObjectProperty(p) {
+        if (
+          !(p.scope !== path.scope && p.scope.hasOwnBinding(targetName))
+          && p.node.shorthand
+          && t.isIdentifier(p.node.key)
+          && p.node.key.name === targetName
+          && t.isIdentifier(p.node.value)
+          && p.node.value.name === targetName
+        ) {
+          p.replaceWith(
+            t.objectProperty(
+              rest,
+              otherIdentifier,
+            ),
+          );
+        }
+      },
+      Expression(p) {
+        if (
+          t.isIdentifier(p.node)
+          && p.node.name === targetName
+          && !(p.scope !== path.scope && p.scope.hasOwnBinding(targetName))
+        ) {
+          p.replaceWith(otherIdentifier);
+        }
+      },
+    });
   }
+
+  return declarators;
 }

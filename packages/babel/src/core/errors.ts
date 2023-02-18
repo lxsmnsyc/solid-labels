@@ -1,7 +1,7 @@
-import { NodePath } from '@babel/traverse';
+import * as babel from '@babel/core';
 
 export function unexpectedType<T>(
-  path: NodePath<T>,
+  path: babel.NodePath<T>,
   received: string,
   expected: string,
 ): Error {
@@ -9,13 +9,13 @@ export function unexpectedType<T>(
 }
 
 export function unexpectedMissingParent<T>(
-  path: NodePath<T>,
+  path: babel.NodePath<T>,
 ): Error {
   return path.buildCodeFrameError('Unexpected missing parent.');
 }
 
 export function unexpectedArgumentLength<T>(
-  path: NodePath<T>,
+  path: babel.NodePath<T>,
   received: number,
   expected: number,
 ): Error {
@@ -23,7 +23,7 @@ export function unexpectedArgumentLength<T>(
 }
 
 export function unexpectedAssignmentOperator<T>(
-  path: NodePath<T>,
+  path: babel.NodePath<T>,
   received: string,
   expected: string,
 ): Error {
