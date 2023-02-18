@@ -1,7 +1,7 @@
 import * as babel from '@babel/core';
 import * as t from '@babel/types';
 import { unexpectedType } from './errors';
-import isInTypeScript from './is-in-typescript';
+// import isInTypeScript from './is-in-typescript';
 import unwrapNode from './unwrap-node';
 
 const REF_MEMO_CTF = '$refMemo';
@@ -124,7 +124,7 @@ export default function derefMemo(
       }
       if (
         t.isIdentifier(p.node)
-        && !isInTypeScript(p)
+        // && !isInTypeScript(p)
         && p.node.name === memoIdentifier.name
       ) {
         p.replaceWith(t.callExpression(readIdentifier, []));

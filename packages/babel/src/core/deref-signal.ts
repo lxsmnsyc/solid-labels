@@ -1,7 +1,7 @@
 import * as babel from '@babel/core';
 import * as t from '@babel/types';
 import { unexpectedType } from './errors';
-import isInTypeScript from './is-in-typescript';
+// import isInTypeScript from './is-in-typescript';
 import unwrapNode from './unwrap-node';
 
 const REF_SIGNAL_CTF = '$refSignal';
@@ -177,7 +177,7 @@ export default function derefSignal(
       }
       if (
         t.isIdentifier(p.node)
-        && !isInTypeScript(p)
+        // && !isInTypeScript(p)
         && p.node.name === signalIdentifier.name
       ) {
         p.replaceWith(t.callExpression(readIdentifier, []));
