@@ -1,18 +1,18 @@
 {
   "name": "vite-example-ctf",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "serve": "vite preview"
   },
   "devDependencies": {
-    "vite-plugin-solid-labels": "0.13.0",
     "eslint": "^8.34.0",
     "eslint-config-lxsmnsyc": "^0.4.8",
     "typescript": "^4.9.5",
     "vite": "^4.1.2",
-    "vite-plugin-solid": "^2.5.0"
+    "vite-plugin-solid": "^2.5.0",
+    "vite-plugin-solid-labels": "0.14.0"
   },
   "private": true,
   "publishConfig": {
