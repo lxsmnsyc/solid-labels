@@ -234,4 +234,106 @@ describe('ctf', () => {
       expect(await compile(code)).toMatchSnapshot();
     });
   });
+  describe('$destructure', () => {
+    it('should transform $destructure', async () => {
+      const code = `
+      let { a: { b, c }, b: { d, e }, ...f } = $destructure(x);
+      `;
+      expect(await compile(code)).toMatchSnapshot();
+    });
+    it('should transform $destructure bindings', async () => {
+      let code = `
+      let { a: { b, c }, b: { d, e }, ...f } = $destructure(x);
+
+      effect: {
+        console.log(b, c);
+      }
+      effect: {
+        console.log(d, e);
+      }
+      effect: {
+        console.log(f);
+      }
+      `;
+      expect(await compile(code)).toMatchSnapshot();
+      code = `
+      let { a: { b, c }, b: { d, e }, ...f } = $destructure(x);
+
+      effect: {
+        console.log({ b }, { c });
+      }
+      effect: {
+        console.log({ d }, { e });
+      }
+      effect: {
+        console.log(f);
+      }
+      `;
+      expect(await compile(code)).toMatchSnapshot();
+    });
+    it('should transform $destructure bindings on $get', async () => {
+      const code = `
+      let { a: { b, c }, b: { d, e }, ...f } = $destructure(x);
+
+      effect: {
+        console.log($get(b), $get(c));
+      }
+      effect: {
+        console.log($get(d), $get(e));
+      }
+      effect: {
+        console.log(f);
+      }
+      `;
+      expect(await compile(code)).toMatchSnapshot();
+    });
+    it('should transform $destructure bindings on $refMemo', async () => {
+      const code = `
+      let { a: { b, c }, b: { d, e }, ...f } = $destructure(x);
+
+      effect: {
+        console.log($refMemo(b), $refMemo(c));
+      }
+      effect: {
+        console.log($refMemo(d), $refMemo(e));
+      }
+      effect: {
+        console.log(f);
+      }
+      `;
+      expect(await compile(code)).toMatchSnapshot();
+    });
+    it('should transform $destructure bindings on $getter', async () => {
+      const code = `
+      let { a: { b, c }, b: { d, e }, ...f } = $destructure(x);
+
+      effect: {
+        console.log({ b: $getter(b) }, { c: $getter(c) });
+      }
+      effect: {
+        console.log({ d: $getter(d) }, { e: $getter(e) });
+      }
+      effect: {
+        console.log(f);
+      }
+      `;
+      expect(await compile(code)).toMatchSnapshot();
+    });
+    it('should transform $destructure bindings on $property', async () => {
+      const code = `
+      let { a: { b, c }, b: { d, e }, ...f } = $destructure(x);
+
+      effect: {
+        console.log({ b: $property(b) }, { c: $property(c) });
+      }
+      effect: {
+        console.log({ d: $property(d) }, { e: $property(e) });
+      }
+      effect: {
+        console.log(f);
+      }
+      `;
+      expect(await compile(code)).toMatchSnapshot();
+    });
+  });
 });
