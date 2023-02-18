@@ -1,3 +1,5 @@
+import { JSX } from 'solid-js';
+
 // @refresh granular
 function useCounter(): [Accessor<number>, Setter<number>] {
   const count = $signal(0);
@@ -27,9 +29,9 @@ export default function App(): JSX.Element {
       <button type="button" onClick={increment}>
         {message}
       </button>
-      <solid:show when={count % 2 === 0} fallback={<h1>Odd</h1>}>
+      <Show when={count % 2 === 0} fallback={<h1>Odd</h1>}>
         <h1>Even</h1>
-      </solid:show>
+      </Show>
     </>
   );
 }
