@@ -90,6 +90,9 @@ export default function derefSignal(
         if (!t.isIdentifier(arg)) {
           throw unexpectedType(p, arg.type, 'Identifier');
         }
+        if (arg.name !== signalIdentifier.name) {
+          return;
+        }
         if (trueCallee.name === SETTER_CTF) {
           const param = p.scope.generateUidIdentifier('value');
           p.replaceWith(

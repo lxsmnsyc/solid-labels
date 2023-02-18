@@ -79,6 +79,9 @@ export default function derefMemo(
         if (!t.isIdentifier(arg)) {
           throw unexpectedType(p, arg.type, 'Identifier');
         }
+        if (arg.name !== memoIdentifier.name) {
+          return;
+        }
         if (trueCallee.name === GETTER_CTF) {
           p.replaceWith(
             t.objectMethod(
