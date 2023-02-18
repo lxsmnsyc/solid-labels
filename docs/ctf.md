@@ -440,7 +440,7 @@ Destructures an object while retaining reactivity. This partially compiles to `s
 Does not support default assignment.
 
 ```js
-let { a: { b, c }, b: { d, e }, ...f } = $destructure(x);
+let { a: { b, c }, b: { d = defaultD, e = defaultE }, ...f } = $destructure(x);
 
 effect: {
   console.log(b, c);
@@ -454,27 +454,31 @@ effect: {
 ```
 
 ```js
-import { createEffect as _createEffect } from "solid-js";
 import { splitProps as _splitProps } from "solid-js";
-
+import { createEffect as _createEffect } from "solid-js";
 let _prop = () => x.a,
-    _prop2 = () => _prop().b,
-    _prop3 = () => _prop().c,
-    _prop4 = () => x.b,
-    _prop5 = () => _prop4().d,
-    _prop6 = () => _prop4().e,
-    _other = _splitProps(x, ["a", "b"])[1],
-    _other3 = _splitProps(_prop4(), ["d", "e"])[1],
-    _other2 = _splitProps(_prop(), ["b", "c"])[1];
-
+  _prop2 = () => _prop().b,
+  _prop3 = () => _prop().c,
+  _other2 = _splitProps(_prop(), ["b", "c"])[1],
+  _prop4 = () => x.b,
+  _def = defaultD,
+  _prop5 = () => {
+    const _value = _prop4().d;
+    return _value == null ? _def() : _value;
+  },
+  _def2 = defaultE,
+  _prop6 = () => {
+    const _value2 = _prop4().e;
+    return _value2 == null ? _def2() : _value2;
+  },
+  _other3 = _splitProps(_prop4(), ["d", "e"])[1],
+  _other = _splitProps(x, ["a", "b"])[1];
 _createEffect(() => {
   console.log(_prop2(), _prop3());
 });
-
 _createEffect(() => {
   console.log(_prop5(), _prop6());
 });
-
 _createEffect(() => {
   console.log(_other);
 });
@@ -515,25 +519,22 @@ $component(({ [x]: { y, ...z } = { y: 10 }, ...a }) => (
 ```js
 import { mergeProps as _mergeProps } from "solid-js";
 import { splitProps as _splitProps } from "solid-js";
-import { createMemo as _createMemo } from "solid-js";
-
 _props => {
-  const _def = _createMemo(() => ({
-    y: 10
-  })),
-        _prop = () => {
-    const _value = _props[x];
-    return _value == null ? _def() : _value;
-  },
-        _prop2 = () => _prop().y,
-        _other = _splitProps(_props, [x])[1],
-        _other2 = _splitProps(_mergeProps(_prop(), _def), ["y"])[1];
-
+  const _def = {
+      y: 10
+    },
+    _prop = () => {
+      const _value = _props[x];
+      return _value == null ? _def() : _value;
+    },
+    _prop2 = () => _prop().y,
+    _other2 = _splitProps(_mergeProps(_prop(), _def), ["y"])[1],
+    _other = _splitProps(_props, [x])[1];
   return <>
-    {_prop2()}
-    {_other2}
-    {_other}
-  </>;
+          {_prop2()}
+          {_other2}
+          {_other}
+        </>;
 };
 ```
 
