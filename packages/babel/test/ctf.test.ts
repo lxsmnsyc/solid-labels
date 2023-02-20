@@ -34,6 +34,22 @@ describe('ctf', () => {
       const value = { count };
       `;
       expect(await compile(code)).toMatchSnapshot();
+      code = `
+      let count = $signal(0);
+
+      async function exampleA() {
+        count = await asyncValue();
+      }
+      function* exampleB() {
+        count = yield asyncValue();
+      }
+      async function* exampleC() {
+        count = yield asyncValue();
+      }
+
+      const example = async () => (count = await asyncValue());
+      `;
+      expect(await compile(code)).toMatchSnapshot();
     });
     it('should transform $signal bindings for $set', async () => {
       const code = `

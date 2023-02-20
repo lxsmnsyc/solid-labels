@@ -696,6 +696,27 @@ const value = {
 };"
 `;
 
+exports[`ctf > $signal > should transform $signal bindings 3`] = `
+"import { createSignal as _createSignal } from \\"solid-js\\";
+let [_count, _setcount] = _createSignal(0);
+async function exampleA() {
+  const _tmp = await asyncValue();
+  _setcount(() => _tmp);
+}
+function* exampleB() {
+  const _tmp2 = yield asyncValue();
+  _setcount(() => _tmp2);
+}
+async function* exampleC() {
+  const _tmp3 = yield asyncValue();
+  _setcount(() => _tmp3);
+}
+const example = async () => {
+  const _tmp4 = await asyncValue();
+  return _setcount(() => _tmp4);
+};"
+`;
+
 exports[`ctf > $signal > should transform $signal bindings for $get 1`] = `
 "import { createSignal as _createSignal } from \\"solid-js\\";
 let [_count, _setcount] = _createSignal(0);

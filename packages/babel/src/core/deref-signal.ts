@@ -1,6 +1,8 @@
 import * as babel from '@babel/core';
 import * as t from '@babel/types';
 import { unexpectedType } from './errors';
+import isAwaited from './is-awaited';
+import isYielded from './is-yielded';
 // import isInTypeScript from './is-in-typescript';
 import unwrapNode from './unwrap-node';
 
@@ -254,7 +256,36 @@ export default function derefSignal(
         return;
       }
       const identifier = p.node.left;
-      const expression = p.node.right;
+      let expression = p.node.right;
+      if (isAwaited(expression) || isYielded(expression)) {
+        const statement = p.getStatementParent();
+        const functionParent = p.getFunctionParent();
+        if (statement) {
+          const awaitedID = statement.scope.generateUidIdentifier('tmp');
+          const declaration = t.variableDeclaration(
+            'const',
+            [t.variableDeclarator(
+              awaitedID,
+              expression,
+            )],
+          );
+
+          if (functionParent) {
+            if (functionParent.isAncestor(statement)) {
+              statement.insertBefore(declaration);
+            } else {
+              functionParent.scope.push({
+                id: awaitedID,
+                init: expression,
+                kind: 'const',
+              });
+            }
+          } else {
+            statement.insertBefore(declaration);
+          }
+          expression = awaitedID;
+        }
+      }
       if (t.isIdentifier(identifier) && identifier.name === signalIdentifier.name) {
         let arg: t.Expression;
         if (p.node.operator === '=') {
