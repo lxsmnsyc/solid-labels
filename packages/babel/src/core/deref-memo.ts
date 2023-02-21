@@ -1,5 +1,6 @@
 import * as babel from '@babel/core';
 import * as t from '@babel/types';
+import assert from './assert';
 import { unexpectedType } from './errors';
 // import isInTypeScript from './is-in-typescript';
 import unwrapNode from './unwrap-node';
@@ -28,10 +29,9 @@ export default function derefMemo(
       if (!trueCallee || p.scope.hasBinding(trueCallee.name) || !CALL_CTF.has(trueCallee.name)) {
         return;
       }
-      const arg = unwrapNode(p.node.arguments[0], t.isIdentifier);
-      if (!arg) {
-        throw unexpectedType(p, p.node.arguments[0].type, 'Identifier');
-      }
+      const rawArgs = p.node.arguments[0];
+      const arg = unwrapNode(rawArgs, t.isIdentifier);
+      assert(arg, unexpectedType(p, rawArgs.type, 'Identifier'));
       if (arg.name !== memoIdentifier.name) {
         return;
       }
@@ -72,13 +72,9 @@ export default function derefMemo(
         ) {
           return;
         }
-        if (t.isPrivateName(p.node.key)) {
-          throw unexpectedType(p, 'PrivateName', 'Expression');
-        }
+        assert(!t.isPrivateName(p.node.key), unexpectedType(p, 'PrivateName', 'Expression'));
         const arg = trueCallExpr.arguments[0];
-        if (!t.isIdentifier(arg)) {
-          throw unexpectedType(p, arg.type, 'Identifier');
-        }
+        assert(t.isIdentifier(arg), unexpectedType(p, arg.type, 'Identifier'));
         if (arg.name !== memoIdentifier.name) {
           return;
         }

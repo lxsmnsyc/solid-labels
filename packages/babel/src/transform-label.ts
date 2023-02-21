@@ -2,6 +2,7 @@ import * as babel from '@babel/core';
 import * as t from '@babel/types';
 import accessorVariable from './core/accessor-variable';
 import { forEach } from './core/arrays';
+import assert from './core/assert';
 import deferredVariable from './core/deferred-variable';
 import destructureVariable from './core/destructure-variable';
 import { unexpectedType } from './core/errors';
@@ -74,91 +75,88 @@ export default function transformLabels(state: State, path: babel.NodePath) {
           );
         }
         if (labelName in VARIABLE_LABEL) {
-          if (t.isVariableDeclaration(body)) {
-            let declarators: t.VariableDeclarator[] = [];
+          assert(t.isVariableDeclaration(body), unexpectedType(p, p.node.type, 'VariableDeclaration'));
+          let declarators: t.VariableDeclarator[] = [];
 
-            forEach(body.declarations, (declarator) => {
-              switch (labelName as keyof typeof VARIABLE_LABEL) {
-                case 'signal':
-                  if (t.isIdentifier(declarator.id)) {
-                    declarators.push(
-                      signalVariable(
-                        state,
-                        p,
-                        declarator.id,
-                        declarator.init ?? t.identifier('undefined'),
-                      ),
-                    );
-                  }
-                  break;
-                case 'memo':
-                  if (t.isIdentifier(declarator.id)) {
-                    declarators.push(
-                      memoVariable(
-                        state,
-                        p,
-                        declarator.id,
-                        declarator.init ?? t.identifier('undefined'),
-                      ),
-                    );
-                  }
-                  break;
-                case 'deferred':
-                  if (t.isIdentifier(declarator.id)) {
-                    declarators.push(
-                      deferredVariable(
-                        state,
-                        p,
-                        declarator.id,
-                        declarator.init ?? t.identifier('undefined'),
-                      ),
-                    );
-                  }
-                  break;
-                case 'destructure':
-                  if (
-                    (t.isObjectPattern(declarator.id) || t.isArrayPattern(declarator.id))
-                    && declarator.init
-                  ) {
-                    declarators = [...declarators, ...destructureVariable(
+          forEach(body.declarations, (declarator) => {
+            switch (labelName as keyof typeof VARIABLE_LABEL) {
+              case 'signal':
+                if (t.isIdentifier(declarator.id)) {
+                  declarators.push(
+                    signalVariable(
                       state,
                       p,
-                      declarator.init,
                       declarator.id,
-                    )];
-                  }
-                  break;
-                case 'children':
-                  if (t.isIdentifier(declarator.id)) {
-                    declarators.push(
-                      accessorVariable(
-                        p,
-                        declarator.id,
-                        getImportIdentifier(state, p, 'children', 'solid-js'),
-                        [
-                          t.arrowFunctionExpression(
-                            [],
-                            declarator.init ?? t.identifier('undefined'),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-                  break;
-                default:
-                  break;
-              }
-            });
+                      declarator.init ?? t.identifier('undefined'),
+                    ),
+                  );
+                }
+                break;
+              case 'memo':
+                if (t.isIdentifier(declarator.id)) {
+                  declarators.push(
+                    memoVariable(
+                      state,
+                      p,
+                      declarator.id,
+                      declarator.init ?? t.identifier('undefined'),
+                    ),
+                  );
+                }
+                break;
+              case 'deferred':
+                if (t.isIdentifier(declarator.id)) {
+                  declarators.push(
+                    deferredVariable(
+                      state,
+                      p,
+                      declarator.id,
+                      declarator.init ?? t.identifier('undefined'),
+                    ),
+                  );
+                }
+                break;
+              case 'destructure':
+                if (
+                  (t.isObjectPattern(declarator.id) || t.isArrayPattern(declarator.id))
+                  && declarator.init
+                ) {
+                  declarators = [...declarators, ...destructureVariable(
+                    state,
+                    p,
+                    declarator.init,
+                    declarator.id,
+                  )];
+                }
+                break;
+              case 'children':
+                if (t.isIdentifier(declarator.id)) {
+                  declarators.push(
+                    accessorVariable(
+                      p,
+                      declarator.id,
+                      getImportIdentifier(state, p, 'children', 'solid-js'),
+                      [
+                        t.arrowFunctionExpression(
+                          [],
+                          declarator.init ?? t.identifier('undefined'),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                break;
+              default:
+                break;
+            }
+          });
 
-            p.replaceWith(
-              t.variableDeclaration(
-                'const',
-                declarators,
-              ),
-            );
-          } else {
-            throw unexpectedType(p, p.node.type, 'VariableDeclaration');
-          }
+          p.replaceWith(
+            t.variableDeclaration(
+              'const',
+              declarators,
+            ),
+          );
         }
         if (labelName in CALLBACK_LABEL) {
           const [name, source, named] = CALLBACK_LABEL[labelName];
