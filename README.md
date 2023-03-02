@@ -94,6 +94,10 @@ You can disable some features by passing `disabled` option to the plugin options
 
 - Detecting shadowed identifier for `signal` and `memo`.
 
+## Sponsors
+
+![Sponsors](https://github.com/lxsmnsyc/sponsors/blob/main/sponsors.svg?raw=true)
+
 ## License
 
 MIT © [lxsmnsyc](https://github.com/lxsmnsyc)
