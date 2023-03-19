@@ -1,5 +1,5 @@
 {
-  "version": "0.14.4",
+  "version": "0.14.5",
   "type": "module",
   "types": "./dist/types/index.d.ts",
   "main": "./dist/cjs/production/index.cjs",
@@ -46,7 +46,7 @@
   "dependencies": {
     "@babel/core": "^7.21.3",
     "@rollup/pluginutils": "^5.0.2",
-    "babel-plugin-solid-labels": "0.14.4"
+    "babel-plugin-solid-labels": "0.14.5"
   },
   "peerDependencies": {
     "rollup": "^3"

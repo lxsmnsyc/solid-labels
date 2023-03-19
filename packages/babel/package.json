@@ -1,5 +1,5 @@
 {
-  "version": "0.14.4",
+  "version": "0.14.5",
   "type": "module",
   "types": "./dist/types/index.d.ts",
   "main": "./dist/cjs/production/index.cjs",
