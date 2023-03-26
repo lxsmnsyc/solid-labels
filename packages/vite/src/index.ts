@@ -24,18 +24,18 @@ function repushPlugin(plugins: Plugin[], plugin: Plugin, pluginNames: string[]) 
   const namesSet = new Set(pluginNames);
 
   let baseIndex = -1;
-  let solidLabelsIndex = -1;
+  let targetIndex = -1;
   for (let i = 0, len = plugins.length; i < len; i += 1) {
     const current = plugins[i];
     if (namesSet.has(current.name) && baseIndex === -1) {
       baseIndex = i;
     }
-    if (current.name === 'solid-labels') {
-      solidLabelsIndex = i;
+    if (current.name === plugin.name) {
+      targetIndex = i;
     }
   }
-  if (baseIndex !== -1 && solidLabelsIndex !== -1) {
-    plugins.splice(solidLabelsIndex, 1);
+  if (baseIndex !== -1 && targetIndex !== -1 && baseIndex < targetIndex) {
+    plugins.splice(targetIndex, 1);
     plugins.splice(baseIndex, 0, plugin);
   }
 }
