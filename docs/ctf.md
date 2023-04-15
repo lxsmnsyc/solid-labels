@@ -464,12 +464,12 @@ let _prop = () => x.a,
   _def = defaultD,
   _prop5 = () => {
     const _value = _prop4().d;
-    return _value == null ? _def() : _value;
+    return _value === undefined ? _def : _value;
   },
   _def2 = defaultE,
   _prop6 = () => {
     const _value2 = _prop4().e;
-    return _value2 == null ? _def2() : _value2;
+    return _value2 === undefined ? _def2 : _value2;
   },
   _other3 = _splitProps(_prop4(), ["d", "e"])[1],
   _other = _splitProps(x, ["a", "b"])[1];
@@ -525,16 +525,16 @@ _props => {
     },
     _prop = () => {
       const _value = _props[x];
-      return _value == null ? _def() : _value;
+      return _value === undefined ? _def : _value;
     },
     _prop2 = () => _prop().y,
     _other2 = _splitProps(_mergeProps(_prop(), _def), ["y"])[1],
     _other = _splitProps(_props, [x])[1];
   return <>
-          {_prop2()}
-          {_other2}
-          {_other}
-        </>;
+    {_prop2()}
+    {_other2}
+    {_other}
+  </>;
 };
 ```
 

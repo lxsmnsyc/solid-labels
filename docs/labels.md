@@ -401,25 +401,21 @@ effect: {
 ```js
 import { createEffect as _createEffect } from "solid-js";
 import { splitProps as _splitProps } from "solid-js";
-
 const _prop = () => x.a,
-      _prop2 = () => _prop().b,
-      _prop3 = () => _prop().c,
-      _prop4 = () => x.b,
-      _prop5 = () => _prop4().d,
-      _prop6 = () => _prop4().e,
-      _other = _splitProps(x, ["a", "b"])[1],
-      _other3 = _splitProps(_prop4(), ["d", "e"])[1],
-      _other2 = _splitProps(_prop(), ["b", "c"])[1];
-
+  _prop2 = () => _prop().b,
+  _prop3 = () => _prop().c,
+  _other2 = _splitProps(_prop(), ["b", "c"])[1],
+  _prop4 = () => x.b,
+  _prop5 = () => _prop4().d,
+  _prop6 = () => _prop4().e,
+  _other3 = _splitProps(_prop4(), ["d", "e"])[1],
+  _other = _splitProps(x, ["a", "b"])[1];
 _createEffect(() => {
   console.log(_prop2(), _prop3());
 });
-
 _createEffect(() => {
   console.log(_prop5(), _prop6());
 });
-
 _createEffect(() => {
   console.log(_other);
 });
