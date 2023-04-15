@@ -49,7 +49,8 @@ export default function destructureVariable(
         let defaultIdentifier: t.Identifier | undefined;
         if (t.isAssignmentPattern(value)) {
           defaultIdentifier = path.scope.generateUidIdentifier('def');
-          const defValue = isStatic(value.right)
+          const isStaticValue = isStatic(value.right);
+          const defValue = isStaticValue
             ? value.right
             : t.callExpression(
               getImportIdentifier(state, path, 'createMemo', 'solid-js'),
@@ -80,7 +81,9 @@ export default function destructureVariable(
                     valueIdentifier,
                     t.identifier('undefined'),
                   ),
-                  t.callExpression(defaultIdentifier, []),
+                  isStaticValue
+                    ? defaultIdentifier
+                    : t.callExpression(defaultIdentifier, []),
                   valueIdentifier,
                 ),
               ),
@@ -163,7 +166,8 @@ export default function destructureVariable(
         let defaultIdentifier: t.Identifier | undefined;
         if (t.isAssignmentPattern(property)) {
           defaultIdentifier = path.scope.generateUidIdentifier('def');
-          const defValue = isStatic(property.right)
+          const isStaticValue = isStatic(property.right);
+          const defValue = isStaticValue
             ? property.right
             : t.callExpression(
               getImportIdentifier(state, path, 'createMemo', 'solid-js'),
@@ -194,7 +198,9 @@ export default function destructureVariable(
                     valueIdentifier,
                     t.identifier('undefined'),
                   ),
-                  t.callExpression(defaultIdentifier, []),
+                  isStaticValue
+                    ? defaultIdentifier
+                    : t.callExpression(defaultIdentifier, []),
                   valueIdentifier,
                 ),
               ),
