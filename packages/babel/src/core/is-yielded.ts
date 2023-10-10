@@ -1,5 +1,4 @@
 import * as t from '@babel/types';
-import { some } from './arrays';
 
 export default function isYielded(node: t.Expression | t.SpreadElement): boolean {
   // Default
@@ -7,7 +6,7 @@ export default function isYielded(node: t.Expression | t.SpreadElement): boolean
     return true;
   }
   if (t.isTemplateLiteral(node)) {
-    return some(node.expressions, (expr) => t.isExpression(expr) && isYielded(expr));
+    return node.expressions.some((expr) => t.isExpression(expr) && isYielded(expr));
   }
   if (
     t.isLiteral(node)
@@ -48,7 +47,7 @@ export default function isYielded(node: t.Expression | t.SpreadElement): boolean
   }
   // Check for elements
   if (t.isArrayExpression(node) || t.isTupleExpression(node)) {
-    return some(node.elements, (el) => el != null && isYielded(el));
+    return node.elements.some((el) => el != null && isYielded(el));
   }
   // Skip arrow function
   if (t.isAssignmentExpression(node)) {
@@ -70,7 +69,7 @@ export default function isYielded(node: t.Expression | t.SpreadElement): boolean
     if (t.isExpression(node.callee) && isYielded(node.callee)) {
       return true;
     }
-    return some(node.arguments, (arg) => (
+    return node.arguments.some((arg) => (
       arg && (t.isSpreadElement(arg) || t.isExpression(arg)) && isYielded(arg)
     ));
   }
@@ -87,10 +86,10 @@ export default function isYielded(node: t.Expression | t.SpreadElement): boolean
       || (node.computed && t.isExpression(node.property) && isYielded(node.property));
   }
   if (t.isSequenceExpression(node)) {
-    return some(node.expressions, isYielded);
+    return node.expressions.some(isYielded);
   }
   if (t.isObjectExpression(node) || t.isRecordExpression(node)) {
-    return some(node.properties, (prop) => {
+    return node.properties.some((prop) => {
       if (t.isObjectProperty(prop)) {
         if (t.isExpression(prop.value) && isYielded(prop.value)) {
           return true;

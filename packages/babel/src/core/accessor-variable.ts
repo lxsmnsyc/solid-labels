@@ -1,4 +1,4 @@
-import * as babel from '@babel/core';
+import type * as babel from '@babel/core';
 import * as t from '@babel/types';
 import derefMemo from './deref-memo';
 
@@ -7,7 +7,7 @@ export default function accessorVariable(
   accessorIdentifier: t.Identifier,
   callee: t.Identifier,
   replacement: Array<t.Expression | t.SpreadElement | t.JSXNamespacedName | t.ArgumentPlaceholder>,
-) {
+): t.VariableDeclarator {
   const readIdentifier = path.scope.generateUidIdentifier(accessorIdentifier.name);
 
   derefMemo(

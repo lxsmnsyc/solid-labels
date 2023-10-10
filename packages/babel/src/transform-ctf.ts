@@ -1,4 +1,4 @@
-import * as babel from '@babel/core';
+import type * as babel from '@babel/core';
 import * as t from '@babel/types';
 import derefSignalVariable from './core/deref-signal-variable';
 import accessorVariable from './core/accessor-variable';
@@ -9,7 +9,7 @@ import { unexpectedArgumentLength, unexpectedType } from './core/errors';
 import getImportIdentifier from './core/get-import-identifier';
 import memoVariable from './core/memo-variable';
 import signalVariable from './core/signal-variable';
-import { State } from './core/types';
+import type { State } from './core/types';
 import unwrapNode from './core/unwrap-node';
 import assert from './core/assert';
 
@@ -82,7 +82,7 @@ const SPECIAL_CTF = new Set([
   COMPONENT_CTF,
 ]);
 
-export default function transformCTF(state: State, path: babel.NodePath) {
+export default function transformCTF(state: State, path: babel.NodePath): void {
   path.traverse({
     CallExpression(p) {
       const trueIdentifier = unwrapNode(p.node.callee, t.isIdentifier);

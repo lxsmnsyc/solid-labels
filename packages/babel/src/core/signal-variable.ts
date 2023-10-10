@@ -1,8 +1,8 @@
-import * as babel from '@babel/core';
+import type * as babel from '@babel/core';
 import * as t from '@babel/types';
 import derefSignal from './deref-signal';
 import getImportIdentifier from './get-import-identifier';
-import { State } from './types';
+import type { State } from './types';
 
 export default function signalVariable(
   state: State,

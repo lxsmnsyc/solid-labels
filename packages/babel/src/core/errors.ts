@@ -1,4 +1,4 @@
-import * as babel from '@babel/core';
+import type * as babel from '@babel/core';
 
 export function unexpectedType<T>(
   path: babel.NodePath<T>,

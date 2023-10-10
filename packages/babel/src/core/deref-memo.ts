@@ -1,8 +1,7 @@
-import * as babel from '@babel/core';
+import type * as babel from '@babel/core';
 import * as t from '@babel/types';
 import assert from './assert';
 import { unexpectedType } from './errors';
-// import isInTypeScript from './is-in-typescript';
 import unwrapNode from './unwrap-node';
 
 const REF_MEMO_CTF = '$refMemo';
