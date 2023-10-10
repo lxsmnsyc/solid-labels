@@ -32,20 +32,20 @@
   ],
   "name": "babel-plugin-solid-labels",
   "devDependencies": {
-    "@babel/core": "^7.21.3",
-    "@types/babel__core": "^7.20.0",
-    "@types/babel__traverse": "^7.18.3",
-    "@types/node": "^18.15.3",
-    "eslint": "^8.34.0",
-    "eslint-config-lxsmnsyc": "^0.5.1",
-    "pridepack": "^2.4.2",
-    "solid-js": "^1.6.15",
-    "tslib": "^2.5.0",
-    "typescript": "^4.9.5",
-    "vitest": "^0.29.3"
+    "@babel/core": "^7.23.0",
+    "@types/babel__core": "^7.20.2",
+    "@types/babel__traverse": "^7.20.2",
+    "@types/node": "^20.8.2",
+    "eslint": "^8.51.0",
+    "eslint-config-lxsmnsyc": "^0.6.5",
+    "pridepack": "2.5.0",
+    "solid-js": "^1.8.0",
+    "tslib": "^2.6.2",
+    "typescript": "^5.2.2",
+    "vitest": "^0.34.6"
   },
   "peerDependencies": {
-    "@babel/core": "^7.20",
+    "@babel/core": "^7.23",
     "solid-js": "^1.3"
   },
   "scripts": {
@@ -58,9 +58,9 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@babel/helper-module-imports": "^7.18.6",
-    "@babel/traverse": "^7.20.13",
-    "@babel/types": "^7.20.7"
+    "@babel/helper-module-imports": "^7.22.15",
+    "@babel/traverse": "^7.23.0",
+    "@babel/types": "^7.23.0"
   },
   "description": "Simple, reactive labels for SolidJS",
   "repository": {
