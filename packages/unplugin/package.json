@@ -1,6 +1,6 @@
 {
   "name": "unplugin-solid-labels",
-  "version": "0.14.7",
+  "version": "0.15.0",
   "type": "module",
   "files": [
     "dist",
@@ -28,7 +28,7 @@
   "dependencies": {
     "@babel/core": "^7.23.0",
     "@rollup/pluginutils": "^5.0.2",
-    "babel-plugin-solid-labels": "0.14.7",
+    "babel-plugin-solid-labels": "0.15.0",
     "unplugin": "^1.3.1"
   },
   "peerDependencies": {

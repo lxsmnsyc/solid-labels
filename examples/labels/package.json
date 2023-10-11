@@ -1,7 +1,7 @@
 {
   "name": "vite-example-labels",
   "type": "module",
-  "version": "0.14.7",
+  "version": "0.15.0",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -13,7 +13,7 @@
     "typescript": "^5.2.2",
     "vite": "^4.4.11",
     "vite-plugin-solid": "^2.7.0",
-    "vite-plugin-solid-labels": "0.14.7"
+    "vite-plugin-solid-labels": "0.15.0"
   },
   "private": true,
   "publishConfig": {
