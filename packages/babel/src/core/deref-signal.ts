@@ -1,4 +1,4 @@
-import * as babel from '@babel/core';
+import type * as babel from '@babel/core';
 import * as t from '@babel/types';
 import assert from './assert';
 import { unexpectedType } from './errors';

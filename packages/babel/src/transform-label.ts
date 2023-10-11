@@ -1,7 +1,6 @@
-import * as babel from '@babel/core';
+import type * as babel from '@babel/core';
 import * as t from '@babel/types';
 import accessorVariable from './core/accessor-variable';
-import { forEach } from './core/arrays';
 import assert from './core/assert';
 import deferredVariable from './core/deferred-variable';
 import destructureVariable from './core/destructure-variable';
@@ -9,7 +8,7 @@ import { unexpectedType } from './core/errors';
 import getImportIdentifier from './core/get-import-identifier';
 import memoVariable from './core/memo-variable';
 import signalVariable from './core/signal-variable';
-import { State } from './core/types';
+import type { State } from './core/types';
 
 const REACTIVE_LABEL = '$';
 
@@ -40,7 +39,7 @@ const CALLBACK_LABEL: Record<string, CallbackLabel> = {
   transition: ['startTransition', 'solid-js', false],
 };
 
-export default function transformLabels(state: State, path: babel.NodePath) {
+export default function transformLabels(state: State, path: babel.NodePath): void {
   path.traverse({
     LabeledStatement(p) {
       const labelName = p.node.label.name;
@@ -78,7 +77,8 @@ export default function transformLabels(state: State, path: babel.NodePath) {
           assert(t.isVariableDeclaration(body), unexpectedType(p, p.node.type, 'VariableDeclaration'));
           let declarators: t.VariableDeclarator[] = [];
 
-          forEach(body.declarations, (declarator) => {
+          for (let i = 0, len = body.declarations.length; i < len; i++) {
+            const declarator = body.declarations[i];
             switch (labelName as keyof typeof VARIABLE_LABEL) {
               case 'signal':
                 if (t.isIdentifier(declarator.id)) {
@@ -149,7 +149,7 @@ export default function transformLabels(state: State, path: babel.NodePath) {
               default:
                 break;
             }
-          });
+          }
 
           p.replaceWith(
             t.variableDeclaration(

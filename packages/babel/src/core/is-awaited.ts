@@ -1,5 +1,4 @@
 import * as t from '@babel/types';
-import { some } from './arrays';
 
 export default function isAwaited(node: t.Expression | t.SpreadElement): boolean {
   // Default
@@ -7,7 +6,7 @@ export default function isAwaited(node: t.Expression | t.SpreadElement): boolean
     return true;
   }
   if (t.isTemplateLiteral(node)) {
-    return some(node.expressions, (expr) => t.isExpression(expr) && isAwaited(expr));
+    return node.expressions.some((expr) => t.isExpression(expr) && isAwaited(expr));
   }
   if (
     t.isLiteral(node)
@@ -48,7 +47,7 @@ export default function isAwaited(node: t.Expression | t.SpreadElement): boolean
   }
   // Check for elements
   if (t.isArrayExpression(node) || t.isTupleExpression(node)) {
-    return some(node.elements, (el) => el != null && isAwaited(el));
+    return node.elements.some((el) => el != null && isAwaited(el));
   }
   // Skip arrow function
   if (t.isAssignmentExpression(node)) {
@@ -70,7 +69,7 @@ export default function isAwaited(node: t.Expression | t.SpreadElement): boolean
     if (t.isExpression(node.callee) && isAwaited(node.callee)) {
       return true;
     }
-    return some(node.arguments, (arg) => (
+    return node.arguments.some((arg) => (
       arg && (t.isSpreadElement(arg) || t.isExpression(arg)) && isAwaited(arg)
     ));
   }
@@ -87,10 +86,10 @@ export default function isAwaited(node: t.Expression | t.SpreadElement): boolean
       || (node.computed && t.isExpression(node.property) && isAwaited(node.property));
   }
   if (t.isSequenceExpression(node)) {
-    return some(node.expressions, isAwaited);
+    return node.expressions.some(isAwaited);
   }
   if (t.isObjectExpression(node) || t.isRecordExpression(node)) {
-    return some(node.properties, (prop) => {
+    return node.properties.some((prop) => {
       if (t.isObjectProperty(prop)) {
         if (t.isExpression(prop.value) && isAwaited(prop.value)) {
           return true;

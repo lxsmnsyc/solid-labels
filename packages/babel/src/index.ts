@@ -1,8 +1,8 @@
-import * as babel from '@babel/core';
-import * as solid from 'solid-js';
-import * as solidWeb from 'solid-js/web';
-import * as solidStore from 'solid-js/store';
-import { State, Options } from './core/types';
+import type * as babel from '@babel/core';
+import type * as solid from 'solid-js';
+import type * as solidWeb from 'solid-js/web';
+import type * as solidStore from 'solid-js/store';
+import type { State, Options } from './core/types';
 import transformComponents from './components';
 import transformCTF from './transform-ctf';
 import transformLabels from './transform-label';
@@ -21,7 +21,7 @@ declare global {
     options?: {
       equals?: false | ((prev: T, next: T) => boolean);
       name?: string;
-      internal?: boolean,
+      internal?: boolean;
     }
   ): T;
 
@@ -120,8 +120,10 @@ declare global {
 
   const $reaction: typeof solid.createReaction;
   const $mount: typeof solid.onMount;
+  // @deprecated
   const $error: typeof solid.onError;
   const $cleanup: typeof solid.onCleanup;
+  const $catchError: typeof solid.catchError;
 
   const $startTransition: typeof solid.startTransition;
   const $useTransition: typeof solid.useTransition;
@@ -162,9 +164,9 @@ declare module 'solid-js' {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace JSX {
     interface IntrinsicElements {
-      'solid:error-boundary': Props<typeof solid.ErrorBoundary>;
-      'solid:suspense': Props<typeof solid.Suspense>;
-      'solid:suspense-list': Props<typeof solid.SuspenseList>;
+      'solid:error-boundary': Props<typeof ErrorBoundary>;
+      'solid:suspense': Props<typeof Suspense>;
+      'solid:suspense-list': Props<typeof SuspenseList>;
       'solid:portal': Props<typeof solidWeb.Portal>;
       'solid:assets': Props<typeof solidWeb.Assets>;
       'solid:hydration-script': Props<typeof solidWeb.HydrationScript>;
@@ -173,16 +175,16 @@ declare module 'solid-js' {
   }
 }
 
-export { Options };
+export type { Options };
 
 export default function solidLabelsPlugin(): babel.PluginObj<State> {
   return {
     name: 'solid-labels',
-    pre() {
+    pre(): void {
       this.hooks = new Map();
     },
     visitor: {
-      Program(path, state) {
+      Program(path, state): void {
         transformComments(state, path);
         transformLabels(state, path);
         transformCTF(state, path);

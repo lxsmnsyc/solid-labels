@@ -1,8 +1,8 @@
-import * as babel from '@babel/core';
+import type * as babel from '@babel/core';
 import * as t from '@babel/types';
 import accessorVariable from './accessor-variable';
 import getImportIdentifier from './get-import-identifier';
-import { State } from './types';
+import type { State } from './types';
 
 export default function deferredVariable(
   state: State,
@@ -10,7 +10,7 @@ export default function deferredVariable(
   deferredIdentifier: t.Identifier,
   stateIdentifier: t.Expression = t.identifier('undefined'),
   optionsIdentifier: t.Expression | undefined = undefined,
-) {
+): t.VariableDeclarator {
   const normalIdentifier = t.arrowFunctionExpression([], stateIdentifier);
   const args: t.Expression[] = [normalIdentifier];
   if (state.opts.dev) {

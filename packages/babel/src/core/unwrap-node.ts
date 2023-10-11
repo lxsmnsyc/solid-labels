@@ -1,9 +1,33 @@
-import * as t from '@babel/types';
+import type * as t from '@babel/types';
 
 type TypeCheck<K> =
   K extends (node: t.Node) => node is (infer U extends t.Node)
     ? U
     : never;
+
+type NestedExpression =
+  | t.ParenthesizedExpression
+  | t.TypeCastExpression
+  | t.TSAsExpression
+  | t.TSSatisfiesExpression
+  | t.TSNonNullExpression
+  | t.TSInstantiationExpression
+  | t.TSTypeAssertion;
+
+function isNestedExpression(node: t.Node): node is NestedExpression {
+  switch (node.type) {
+    case 'ParenthesizedExpression':
+    case 'TypeCastExpression':
+    case 'TSAsExpression':
+    case 'TSSatisfiesExpression':
+    case 'TSNonNullExpression':
+    case 'TSTypeAssertion':
+    case 'TSInstantiationExpression':
+      return true;
+    default:
+      return false;
+  }
+}
 
 export default function unwrapNode<
   K extends(
@@ -15,15 +39,7 @@ export default function unwrapNode<
   if (key(node)) {
     return node as TypeCheck<K>;
   }
-  if (
-    t.isParenthesizedExpression(node)
-    || t.isTypeCastExpression(node)
-    || t.isTSAsExpression(node)
-    || t.isTSSatisfiesExpression(node)
-    || t.isTSNonNullExpression(node)
-    || t.isTSTypeAssertion(node)
-    || t.isTSInstantiationExpression(node)
-  ) {
+  if (isNestedExpression(node)) {
     return unwrapNode(node.expression, key);
   }
   return undefined;

@@ -1,11 +1,10 @@
-import * as babel from '@babel/core';
+import type * as babel from '@babel/core';
 import * as t from '@babel/types';
-import { forEach } from './arrays';
 import derefMemo from './deref-memo';
 import { unexpectedType } from './errors';
 import getImportIdentifier from './get-import-identifier';
 import isStatic from './is-static';
-import { State } from './types';
+import type { State } from './types';
 import unwrapNode from './unwrap-node';
 
 export default function destructureVariable(
@@ -14,7 +13,7 @@ export default function destructureVariable(
   target: t.Expression,
   pattern: t.ObjectPattern | t.ArrayPattern,
   defaultValue?: t.Expression,
-) {
+): t.VariableDeclarator[] {
   const otherIdentifier = path.scope.generateUidIdentifier('other');
   let declarators: t.VariableDeclarator[] = [];
   const properties: t.Expression[] = [];
@@ -22,7 +21,8 @@ export default function destructureVariable(
 
   // Destructuring for object patterns
   if (t.isObjectPattern(pattern)) {
-    forEach(pattern.properties, (property) => {
+    for (let i = 0, len = pattern.properties.length; i < len; i++) {
+      const property = pattern.properties[i];
       // Check if this is an object property
       if (t.isObjectProperty(property)) {
         const { value, key } = property;
@@ -148,10 +148,11 @@ export default function destructureVariable(
           restIdentifier = trueIdentifier;
         }
       }
-    });
+    }
   } else {
     // Destructure for arrays
-    forEach(pattern.elements, (property, i) => {
+    for (let i = 0, len = pattern.elements.length; i < len; i++) {
+      const property = pattern.elements[i];
       if (property) {
         const keyExpr = t.numericLiteral(i);
 
@@ -257,7 +258,7 @@ export default function destructureVariable(
           }
         }
       }
-    });
+    }
   }
 
   const expr = t.variableDeclarator(

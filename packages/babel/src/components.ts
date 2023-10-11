@@ -1,5 +1,5 @@
 import * as t from '@babel/types';
-import { State } from './core/types';
+import type { State } from './core/types';
 import getImportIdentifier from './core/get-import-identifier';
 
 type ComponentImport = [name: string, source: string];
@@ -40,7 +40,7 @@ const NAMESPACE_COMPONENTS: Record<string, ComponentImport> = {
   'no-hydration': ['NoHydration', 'solid-js/web'],
 };
 
-export default function transformComponents(state: State, path: babel.NodePath) {
+export default function transformComponents(state: State, path: babel.NodePath): void {
   path.traverse({
     Expression(p) {
       if (

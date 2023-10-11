@@ -1,5 +1,4 @@
 import * as t from '@babel/types';
-import { every } from './arrays';
 
 export default function isStatic(
   node: t.Expression
@@ -37,7 +36,7 @@ export default function isStatic(
   }
   if (t.isLiteral(node)) {
     if (t.isTemplateLiteral(node)) {
-      return every(node.expressions, (expr) => {
+      return node.expressions.every((expr) => {
         if (t.isExpression(expr)) {
           return isStatic(expr);
         }
@@ -61,7 +60,7 @@ export default function isStatic(
     t.isArrayExpression(node)
     || t.isTupleExpression(node)
   ) {
-    return every(node.elements, (el) => {
+    return node.elements.every((el) => {
       if (el) {
         return isStatic(el);
       }
@@ -69,7 +68,7 @@ export default function isStatic(
     });
   }
   if (t.isArrayPattern(node)) {
-    return every(node.elements, (el) => {
+    return node.elements.every((el) => {
       if (t.isTSParameterProperty(el)) {
         return false;
       }
@@ -80,7 +79,7 @@ export default function isStatic(
     });
   }
   if (t.isObjectExpression(node) || t.isRecordExpression(node)) {
-    return every(node.properties, (prop) => {
+    return node.properties.every((prop) => {
       if (t.isObjectProperty(prop)) {
         if (t.isExpression(prop.value) && isStatic(prop.value)) {
           return true;
@@ -98,7 +97,7 @@ export default function isStatic(
     });
   }
   if (t.isObjectPattern(node)) {
-    return every(node.properties, (prop) => {
+    return node.properties.every((prop) => {
       if (t.isObjectProperty(prop)) {
         if (!t.isTSTypeParameter(prop.value) && isStatic(prop.value)) {
           return true;
@@ -125,7 +124,7 @@ export default function isStatic(
     return isStatic(node);
   }
   if (t.isSequenceExpression(node)) {
-    return every(node.expressions, isStatic);
+    return node.expressions.every(isStatic);
   }
   if (t.isConditionalExpression(node)) {
     return isStatic(node.test)

@@ -1,8 +1,8 @@
-import * as babel from '@babel/core';
+import type * as babel from '@babel/core';
 import * as t from '@babel/types';
 import accessorVariable from './accessor-variable';
 import getImportIdentifier from './get-import-identifier';
-import { State } from './types';
+import type { State } from './types';
 
 export default function memoVariable(
   state: State,
@@ -10,7 +10,7 @@ export default function memoVariable(
   memoIdentifier: t.Identifier,
   stateIdentifier: t.Expression,
   optionsIdentifier?: t.Expression,
-) {
+): t.VariableDeclarator {
   const normalIdentifier = t.arrowFunctionExpression([], stateIdentifier);
 
   const exprs: t.Expression[] = [normalIdentifier];
