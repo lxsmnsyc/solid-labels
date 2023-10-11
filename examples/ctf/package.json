@@ -1,5 +1,6 @@
 {
   "name": "vite-example-ctf",
+  "type": "module",
   "version": "0.14.7",
   "scripts": {
     "dev": "vite",
