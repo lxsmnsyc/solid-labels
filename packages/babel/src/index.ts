@@ -120,8 +120,10 @@ declare global {
 
   const $reaction: typeof solid.createReaction;
   const $mount: typeof solid.onMount;
+  // @deprecated
   const $error: typeof solid.onError;
   const $cleanup: typeof solid.onCleanup;
+  const $catchError: typeof solid.catchError;
 
   const $startTransition: typeof solid.startTransition;
   const $useTransition: typeof solid.useTransition;

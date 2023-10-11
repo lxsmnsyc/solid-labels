@@ -44,6 +44,7 @@ const AUTO_IMPORT_ALIAS_CTF: Record<string, AutoImportAliasCTF> = {
   $useTransition: ['useTransition', 'solid-js'],
   $owner: ['getOwner', 'solid-js'],
   $runWithOwner: ['runWithOwner', 'solid-js'],
+  $catchError: ['catchError', 'solid-js'],
 
   // Store API
   $store: ['createStore', 'solid-js/store'],
