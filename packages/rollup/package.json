@@ -33,11 +33,11 @@
   ],
   "name": "rollup-plugin-solid-labels",
   "devDependencies": {
-    "@types/node": "^20.8.2",
-    "eslint": "^8.33.0",
+    "@types/node": "^20.8.7",
+    "eslint": "^8.51.0",
     "eslint-config-lxsmnsyc": "^0.6.5",
-    "pridepack": "2.5.0",
-    "rollup": "^4.0.2",
+    "pridepack": "2.5.1",
+    "rollup": "^4.1.4",
     "tslib": "^2.6.2",
     "typescript": "^5.2.2"
   },
