@@ -2,71 +2,63 @@ import type * as babel from '@babel/core';
 import * as t from '@babel/types';
 
 interface ProtoObjectState {
-  hasProto: boolean;
   root: t.ObjectExpression;
   proto: t.ObjectExpression;
-  getters?: t.ObjectExpression;
-  setters?: t.ObjectExpression;
 }
 
 const ROOT_GET = 'get';
 const ROOT_SET = 'set';
-const ROOT_SYMBOL = '___'; // TODO
+const ROOT_SYMBOL = '__$';
 
-function generateProto(
+const PROTO_STATES = new WeakMap<t.Node, ProtoObjectState>();
+
+function getProtoState(
   path: babel.NodePath<t.ObjectExpression>,
-): void {
-  const current = (path.state || {}) as ProtoObjectState;
-  if (!current.hasProto) {
-    const protoID = path.scope.generateUidIdentifier('proto');
-    const proto = t.objectExpression([]);
-    path.scope.push({
-      id: protoID,
-      init: proto,
-      kind: 'const',
-    });
-    current.proto = proto;
-
-    const root = t.objectExpression([]);
-    path.node.properties.push(
-      t.objectProperty(t.identifier(ROOT_SYMBOL), root),
-      t.objectProperty(t.identifier('__proto__'), protoID),
-    );
-    current.root = root;
-    current.hasProto = true;
+): ProtoObjectState {
+  const current = PROTO_STATES.get(path.node);
+  if (current) {
+    return current;
   }
-  path.state = current;
+  const protoID = path.scope.generateUidIdentifier('proto');
+  const proto = t.objectExpression([]);
+  path.scope.push({
+    id: protoID,
+    init: proto,
+    kind: 'const',
+  });
+  const root = t.objectExpression([]);
+  path.node.properties.push(
+    t.objectProperty(t.identifier(ROOT_SYMBOL), root),
+    t.objectProperty(t.identifier('__proto__'), protoID),
+  );
+  const state: ProtoObjectState = {
+    proto,
+    root,
+  };
+  PROTO_STATES.set(path.node, state);
+  return state;
 }
 
 function initProtoGetters(
   path: babel.NodePath<t.ObjectExpression>,
-  property: t.ObjectProperty,
+  identifier: t.Identifier,
+  source: t.Identifier,
 ): void {
-  generateProto(path);
-  const current = path.state as ProtoObjectState;
-  if (current.getters) {
-    current.getters.properties.push(property);
-  } else {
-    const rootGet = t.objectExpression([property]);
-    current.root.properties.push(
-      t.objectProperty(t.identifier(ROOT_GET), rootGet),
-    );
-    current.getters = rootGet;
-  }
+  const current = getProtoState(path);
+  current.root.properties.push(
+    t.objectProperty(t.identifier(`${ROOT_GET}$${identifier.name}`), source),
+  );
 }
 
 function registerProtoGetter(
   path: babel.NodePath<t.ObjectExpression>,
   identifier: t.Identifier,
 ): void {
+  const current = getProtoState(path);
   const targetProperty = t.memberExpression(
-    t.memberExpression(
-      t.memberExpression(t.identifier('this'), t.identifier(ROOT_SYMBOL)),
-      t.identifier(ROOT_GET),
-    ),
-    identifier,
+    t.memberExpression(t.identifier('this'), t.identifier(ROOT_SYMBOL)),
+    t.identifier(`${ROOT_GET}$${identifier.name}`),
   );
-  const current = path.state as ProtoObjectState;
   current.proto.properties.push(
     t.objectMethod('get', identifier, [], t.blockStatement([
       t.returnStatement(
@@ -107,7 +99,7 @@ export function addProtoGetter(
 ): void {
   if (t.isIdentifier(property.node.key)) {
     const identifier = property.node.key;
-    initProtoGetters(path, t.objectProperty(identifier, source));
+    initProtoGetters(path, identifier, source);
     registerProtoGetter(path, identifier);
     property.remove();
   } else {
@@ -117,33 +109,24 @@ export function addProtoGetter(
 
 function initProtoSetters(
   path: babel.NodePath<t.ObjectExpression>,
-  property: t.ObjectProperty,
+  identifier: t.Identifier,
+  source: t.Identifier,
 ): void {
-  generateProto(path);
-  const current = path.state as ProtoObjectState;
-  if (current.setters) {
-    current.setters.properties.push(property);
-  } else {
-    const rootSet = t.objectExpression([property]);
-    current.root.properties.push(
-      t.objectProperty(t.identifier(ROOT_SET), rootSet),
-    );
-    current.setters = rootSet;
-  }
+  const current = getProtoState(path);
+  current.root.properties.push(
+    t.objectProperty(t.identifier(`${ROOT_SET}$${identifier.name}`), source),
+  );
 }
 
 function registerProtoSetter(
   path: babel.NodePath<t.ObjectExpression>,
   identifier: t.Identifier,
 ): void {
+  const current = getProtoState(path);
   const targetProperty = t.memberExpression(
-    t.memberExpression(
-      t.memberExpression(t.identifier('this'), t.identifier(ROOT_SYMBOL)),
-      t.identifier(ROOT_SET),
-    ),
-    identifier,
+    t.memberExpression(t.identifier('this'), t.identifier(ROOT_SYMBOL)),
+    t.identifier(`${ROOT_SET}$${identifier.name}`),
   );
-  const current = path.state as ProtoObjectState;
   const param = path.scope.generateUidIdentifier('param');
   current.proto.properties.push(
     t.objectMethod('set', identifier, [param], t.blockStatement([
@@ -188,7 +171,7 @@ export function addProtoSetter(
 ): void {
   if (t.isIdentifier(property.node.key)) {
     const identifier = property.node.key;
-    initProtoSetters(path, t.objectProperty(identifier, source));
+    initProtoSetters(path, identifier, source);
     registerProtoSetter(path, identifier);
     property.remove();
   } else {
@@ -204,8 +187,8 @@ export function addProtoProperty(
 ): void {
   if (t.isIdentifier(property.node.key)) {
     const identifier = property.node.key;
-    initProtoGetters(path, t.objectProperty(identifier, readSource));
-    initProtoSetters(path, t.objectProperty(identifier, writeSource));
+    initProtoGetters(path, identifier, readSource);
+    initProtoSetters(path, identifier, writeSource);
     registerProtoGetter(path, identifier);
     registerProtoSetter(path, identifier);
     property.remove();

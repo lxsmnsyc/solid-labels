@@ -17,11 +17,13 @@ async function compile(code, dev) {
 }
 
 console.log(await compile(`
-let count = $signal(0);
+let foo = $signal('foo');
+let bar = $signal('bar')
 
 const example = {
-  count: $property(count),
+  foo: $property(foo),
+  bar: $property(bar),
 };
 
-$(console.log(example.count));
+$(console.log(example.foo, example.bar));
 `));
