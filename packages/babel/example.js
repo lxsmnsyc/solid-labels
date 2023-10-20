@@ -22,4 +22,6 @@ let count = $signal(0);
 const example = {
   count: $property(count),
 };
+
+$(console.log(example.count));
 `));

@@ -147,7 +147,7 @@ function registerProtoSetter(
   const param = path.scope.generateUidIdentifier('param');
   current.proto.properties.push(
     t.objectMethod('set', identifier, [param], t.blockStatement([
-      t.returnStatement(
+      t.expressionStatement(
         t.callExpression(targetProperty, [
           t.arrowFunctionExpression([], param),
         ]),
@@ -168,7 +168,7 @@ function addUnoptimizedSetter(
         property.node.key,
         [param],
         t.blockStatement([
-          t.returnStatement(
+          t.expressionStatement(
             t.callExpression(
               source,
               [t.arrowFunctionExpression([], param)],
