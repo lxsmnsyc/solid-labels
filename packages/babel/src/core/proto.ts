@@ -39,6 +39,47 @@ function getProtoState(
   return state;
 }
 
+function getGetterReplacement(
+  key: t.Expression,
+  source: t.Expression,
+  computed: boolean,
+): t.ObjectMethod {
+  return t.objectMethod(
+    'get',
+    key,
+    [],
+    t.blockStatement([
+      t.returnStatement(
+        t.callExpression(source, []),
+      ),
+    ]),
+    computed,
+  );
+}
+
+function getSetterReplacement(
+  path: babel.NodePath,
+  key: t.Expression,
+  source: t.Expression,
+  computed: boolean,
+): t.ObjectMethod {
+  const param = path.scope.generateUidIdentifier('param');
+  return t.objectMethod(
+    'set',
+    key,
+    [param],
+    t.blockStatement([
+      t.expressionStatement(
+        t.callExpression(
+          source,
+          [t.arrowFunctionExpression([], param)],
+        ),
+      ),
+    ]),
+    computed,
+  );
+}
+
 function initProtoGetters(
   path: babel.NodePath<t.ObjectExpression>,
   identifier: t.Identifier,
@@ -60,36 +101,21 @@ function registerProtoGetter(
     t.identifier(`${ROOT_GET}$${identifier.name}`),
   );
   current.proto.properties.push(
-    t.objectMethod('get', identifier, [], t.blockStatement([
-      t.returnStatement(
-        t.callExpression(targetProperty, []),
-      ),
-    ])),
+    getGetterReplacement(identifier, targetProperty, false),
   );
 }
 
 function addUnoptimizedGetter(
   property: babel.NodePath<t.ObjectProperty>,
   source: t.Identifier,
-): void {
+): boolean {
   if (!t.isPrivateName(property.node.key)) {
-    property.replaceWith(
-      t.objectMethod(
-        'get',
-        property.node.key,
-        [],
-        t.blockStatement([
-          t.returnStatement(
-            t.callExpression(
-              source,
-              [],
-            ),
-          ),
-        ]),
-        property.node.computed,
-      ),
+    property.insertBefore(
+      getGetterReplacement(property.node.key, source, property.node.computed),
     );
+    return true;
   }
+  return false;
 }
 
 export function addProtoGetter(
@@ -102,8 +128,8 @@ export function addProtoGetter(
     initProtoGetters(path, identifier, source);
     registerProtoGetter(path, identifier);
     property.remove();
-  } else {
-    addUnoptimizedGetter(property, source);
+  } else if (addUnoptimizedGetter(property, source)) {
+    property.remove();
   }
 }
 
@@ -127,41 +153,22 @@ function registerProtoSetter(
     t.memberExpression(t.identifier('this'), t.identifier(ROOT_SYMBOL)),
     t.identifier(`${ROOT_SET}$${identifier.name}`),
   );
-  const param = path.scope.generateUidIdentifier('param');
   current.proto.properties.push(
-    t.objectMethod('set', identifier, [param], t.blockStatement([
-      t.expressionStatement(
-        t.callExpression(targetProperty, [
-          t.arrowFunctionExpression([], param),
-        ]),
-      ),
-    ])),
+    getSetterReplacement(path, identifier, targetProperty, false),
   );
 }
 
 function addUnoptimizedSetter(
   property: babel.NodePath<t.ObjectProperty>,
   source: t.Identifier,
-): void {
+): boolean {
   if (!t.isPrivateName(property.node.key)) {
-    const param = property.scope.generateUidIdentifier('param');
-    property.replaceWith(
-      t.objectMethod(
-        'set',
-        property.node.key,
-        [param],
-        t.blockStatement([
-          t.expressionStatement(
-            t.callExpression(
-              source,
-              [t.arrowFunctionExpression([], param)],
-            ),
-          ),
-        ]),
-        property.node.computed,
-      ),
+    property.insertBefore(
+      getSetterReplacement(property, property.node.key, source, property.node.computed),
     );
+    return true;
   }
+  return false;
 }
 
 export function addProtoSetter(
@@ -174,8 +181,8 @@ export function addProtoSetter(
     initProtoSetters(path, identifier, source);
     registerProtoSetter(path, identifier);
     property.remove();
-  } else {
-    addUnoptimizedSetter(property, source);
+  } else if (addUnoptimizedSetter(property, source)) {
+    property.remove();
   }
 }
 
@@ -192,8 +199,10 @@ export function addProtoProperty(
     registerProtoGetter(path, identifier);
     registerProtoSetter(path, identifier);
     property.remove();
-  } else {
-    addUnoptimizedGetter(property, readSource);
-    addUnoptimizedSetter(property, writeSource);
+  } else if (
+    addUnoptimizedGetter(property, readSource)
+    && addUnoptimizedSetter(property, writeSource)
+  ) {
+    property.remove();
   }
 }
