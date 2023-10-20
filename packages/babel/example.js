@@ -22,7 +22,7 @@ let bar = $signal('bar')
 
 const example = {
   foo: $property(foo),
-  bar: $property(bar),
+  [Math.random()]: $property(bar),
 };
 
 $(console.log(example.foo, example.bar));
