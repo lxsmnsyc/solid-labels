@@ -3,6 +3,7 @@ import * as t from '@babel/types';
 import assert from './assert';
 import { unexpectedType } from './errors';
 import unwrapNode from './unwrap-node';
+import { addProtoGetter } from './proto';
 
 const REF_MEMO_CTF = '$refMemo';
 const GET_CTF = '$get';
@@ -14,12 +15,17 @@ const PROPERTY_CTF = '$property';
 
 const OBJECT_PROPERTY_CTF = new Set([GETTER_CTF, PROPERTY_CTF]);
 
+interface DerefMemoState {
+  current?: babel.NodePath<t.ObjectExpression>;
+  prev?: babel.NodePath<t.ObjectExpression>;
+}
+
 export default function derefMemo(
   path: babel.NodePath,
   memoIdentifier: t.Identifier,
   readIdentifier: t.Identifier,
 ): void {
-  path.scope.path.traverse({
+  path.scope.path.traverse<DerefMemoState>({
     CallExpression(p) {
       if (p.scope !== path.scope && p.scope.hasOwnBinding(memoIdentifier.name)) {
         return;
@@ -40,6 +46,15 @@ export default function derefMemo(
       if (trueCallee.name === GET_CTF) {
         p.replaceWith(readIdentifier);
       }
+    },
+    ObjectExpression: {
+      enter(p) {
+        this.prev = this.current;
+        this.current = p;
+      },
+      exit() {
+        this.current = this.prev;
+      },
     },
     ObjectProperty(p) {
       if (p.scope !== path.scope && p.scope.hasOwnBinding(memoIdentifier.name)) {
@@ -77,39 +92,15 @@ export default function derefMemo(
         if (arg.name !== memoIdentifier.name) {
           return;
         }
-        if (trueCallee.name === GETTER_CTF) {
-          p.replaceWith(
-            t.objectMethod(
-              'get',
-              p.node.key,
-              [],
-              t.blockStatement([
-                t.returnStatement(
-                  t.callExpression(
-                    readIdentifier,
-                    [],
-                  ),
-                ),
-              ]),
-            ),
-          );
-        }
-        if (trueCallee.name === PROPERTY_CTF) {
-          p.replaceWith(
-            t.objectMethod(
-              'get',
-              p.node.key,
-              [],
-              t.blockStatement([
-                t.returnStatement(
-                  t.callExpression(
-                    readIdentifier,
-                    [],
-                  ),
-                ),
-              ]),
-            ),
-          );
+        if (this.current) {
+          switch (trueCallee.name) {
+            case GETTER_CTF:
+            case PROPERTY_CTF:
+              addProtoGetter(this.current, p, readIdentifier);
+              break;
+            default:
+              break;
+          }
         }
       }
     },
@@ -125,5 +116,8 @@ export default function derefMemo(
         p.replaceWith(t.callExpression(readIdentifier, []));
       }
     },
+  }, {
+    current: undefined,
+    prev: undefined,
   });
 }

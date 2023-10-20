@@ -17,16 +17,9 @@ async function compile(code, dev) {
 }
 
 console.log(await compile(`
-// @destructure
-let { a: { b, c }, b: { d, e }, ...f } = x;
+let count = $signal(0);
 
-effect: {
-  console.log(b, c);
-}
-effect: {
-  console.log(d, e);
-}
-effect: {
-  console.log(f);
-}
+const example = {
+  count: $property(count),
+};
 `));
