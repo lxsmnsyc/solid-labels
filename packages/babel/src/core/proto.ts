@@ -21,7 +21,7 @@ function getProtoState(
   }
   const protoID = path.scope.generateUidIdentifier('proto');
   const proto = t.objectExpression([]);
-  path.scope.push({
+  path.scope.getProgramParent().push({
     id: protoID,
     init: proto,
     kind: 'const',
