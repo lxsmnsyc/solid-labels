@@ -195,7 +195,7 @@ function registerProtoSetter(
       !t.isIdentifier(key),
     );
     current.proto.properties.push(
-      getGetterReplacement(identifier, targetProperty, false),
+      getSetterReplacement(path, identifier, targetProperty, false),
     );
   }
 }
