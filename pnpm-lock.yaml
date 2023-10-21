@@ -228,6 +228,9 @@ importers:
       eslint-config-lxsmnsyc:
         specifier: ^0.6.5
         version: 0.6.5(eslint@8.34.0)(typescript@5.2.2)
+      pridepack:
+        specifier: 2.5.1
+        version: 2.5.1(eslint@8.34.0)(tslib@2.6.2)(typescript@5.2.2)
       rollup:
         specifier: ^4.0.2
         version: 4.0.2
@@ -7022,6 +7025,31 @@ packages:
       '@jest/schemas': 29.6.3
       ansi-styles: 5.2.0
       react-is: 18.2.0
+    dev: true
+
+  /pridepack@2.5.1(eslint@8.34.0)(tslib@2.6.2)(typescript@5.2.2):
+    resolution: {integrity: sha512-mDZ6VagGxqrf6ljjULRFWaw+VKhr15MulUXhfuH5blY2AfeXHd67iMtO4jsYOogB/eU6OGh5dGWzZMfbHBES2A==}
+    engines: {node: '>=16'}
+    hasBin: true
+    peerDependencies:
+      eslint: ^8.0
+      tslib: ^2.0
+      typescript: ^5.0
+    dependencies:
+      '@ovyerus/licenses': 6.4.4
+      degit: 2.8.4
+      dotenv: 16.3.1
+      esbuild: 0.19.4
+      eslint: 8.34.0
+      execa: 8.0.1
+      license: 1.0.3
+      ora: 7.0.1
+      package-json-type: 1.0.3
+      pretty-bytes: 6.1.1
+      prompts: 2.4.2
+      tslib: 2.6.2
+      typescript: 5.2.2
+      yargs: 17.7.2
     dev: true
 
   /pridepack@2.5.1(eslint@8.51.0)(tslib@2.6.2)(typescript@5.2.2):
