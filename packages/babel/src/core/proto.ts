@@ -26,14 +26,12 @@ function getProtoState(
     init: proto,
     kind: 'const',
   });
-  const root = t.objectExpression([]);
   path.node.properties.push(
-    t.objectProperty(t.identifier(ROOT_SYMBOL), root),
     t.objectProperty(t.identifier('__proto__'), protoID),
   );
   const state: ProtoObjectState = {
     proto,
-    root,
+    root: path.node,
   };
   PROTO_STATES.set(path.node, state);
   return state;
@@ -87,11 +85,11 @@ function getNamespacedKey(
   switch (identifier.type) {
     case 'StringLiteral':
     case 'NumericLiteral':
-      return t.stringLiteral(`${name}$${identifier.value}`);
+      return t.stringLiteral(`${ROOT_SYMBOL}${name}$${identifier.value}`);
     case 'Identifier':
-      return t.identifier(`${name}$${identifier.name}`);
+      return t.identifier(`${ROOT_SYMBOL}${name}$${identifier.name}`);
     case 'NullLiteral':
-      return t.identifier(`${name}$null`);
+      return t.identifier(`${ROOT_SYMBOL}${name}$null`);
     default:
       return undefined;
   }
@@ -108,9 +106,7 @@ function initProtoGetters(
   const current = getProtoState(path);
   const key = getNamespacedKey(ROOT_GET, identifier);
   if (key) {
-    current.root.properties.push(
-      t.objectProperty(key, source),
-    );
+    current.root.properties.push(t.objectProperty(key, source));
   }
 }
 
@@ -125,7 +121,7 @@ function registerProtoGetter(
   const key = getNamespacedKey(ROOT_GET, identifier);
   if (key) {
     const targetProperty = t.memberExpression(
-      t.memberExpression(t.identifier('this'), t.identifier(ROOT_SYMBOL)),
+      t.identifier('this'),
       key,
       !t.isIdentifier(key),
     );
@@ -173,9 +169,7 @@ function initProtoSetters(
   const current = getProtoState(path);
   const key = getNamespacedKey(ROOT_SET, identifier);
   if (key) {
-    current.root.properties.push(
-      t.objectProperty(key, source),
-    );
+    current.root.properties.push(t.objectProperty(key, source));
   }
 }
 
@@ -190,7 +184,7 @@ function registerProtoSetter(
   const key = getNamespacedKey(ROOT_SET, identifier);
   if (key) {
     const targetProperty = t.memberExpression(
-      t.memberExpression(t.identifier('this'), t.identifier(ROOT_SYMBOL)),
+      t.identifier('this'),
       key,
       !t.isIdentifier(key),
     );
