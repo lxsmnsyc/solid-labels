@@ -80,29 +80,59 @@ function getSetterReplacement(
   );
 }
 
+function getNamespacedKey(
+  name: string,
+  identifier: t.Expression,
+): t.Expression | undefined {
+  switch (identifier.type) {
+    case 'StringLiteral':
+    case 'NumericLiteral':
+      return t.stringLiteral(`${name}$${identifier.value}`);
+    case 'Identifier':
+      return t.identifier(`${name}$${identifier.name}`);
+    case 'NullLiteral':
+      return t.identifier(`${name}$null`);
+    default:
+      return undefined;
+  }
+}
+
 function initProtoGetters(
   path: babel.NodePath<t.ObjectExpression>,
-  identifier: t.Identifier,
+  identifier: t.Expression | t.PrivateName,
   source: t.Identifier,
 ): void {
+  if (t.isPrivateName(identifier)) {
+    return;
+  }
   const current = getProtoState(path);
-  current.root.properties.push(
-    t.objectProperty(t.identifier(`${ROOT_GET}$${identifier.name}`), source),
-  );
+  const key = getNamespacedKey(ROOT_GET, identifier);
+  if (key) {
+    current.root.properties.push(
+      t.objectProperty(key, source),
+    );
+  }
 }
 
 function registerProtoGetter(
   path: babel.NodePath<t.ObjectExpression>,
-  identifier: t.Identifier,
+  identifier: t.Expression | t.PrivateName,
 ): void {
+  if (t.isPrivateName(identifier)) {
+    return;
+  }
   const current = getProtoState(path);
-  const targetProperty = t.memberExpression(
-    t.memberExpression(t.identifier('this'), t.identifier(ROOT_SYMBOL)),
-    t.identifier(`${ROOT_GET}$${identifier.name}`),
-  );
-  current.proto.properties.push(
-    getGetterReplacement(identifier, targetProperty, false),
-  );
+  const key = getNamespacedKey(ROOT_GET, identifier);
+  if (key) {
+    const targetProperty = t.memberExpression(
+      t.memberExpression(t.identifier('this'), t.identifier(ROOT_SYMBOL)),
+      key,
+      !t.isIdentifier(key),
+    );
+    current.proto.properties.push(
+      getGetterReplacement(identifier, targetProperty, false),
+    );
+  }
 }
 
 function addUnoptimizedGetter(
@@ -123,38 +153,51 @@ export function addProtoGetter(
   source: t.Identifier,
 ): void {
   const identifier = property.node.key;
-  if (t.isIdentifier(identifier)) {
+  if (property.node.computed) {
+    addUnoptimizedGetter(property, identifier, source);
+  } else {
     initProtoGetters(path, identifier, source);
     registerProtoGetter(path, identifier);
     property.remove();
-  } else {
-    addUnoptimizedGetter(property, identifier, source);
   }
 }
 
 function initProtoSetters(
   path: babel.NodePath<t.ObjectExpression>,
-  identifier: t.Identifier,
+  identifier: t.Expression | t.PrivateName,
   source: t.Identifier,
 ): void {
+  if (t.isPrivateName(identifier)) {
+    return;
+  }
   const current = getProtoState(path);
-  current.root.properties.push(
-    t.objectProperty(t.identifier(`${ROOT_SET}$${identifier.name}`), source),
-  );
+  const key = getNamespacedKey(ROOT_SET, identifier);
+  if (key) {
+    current.root.properties.push(
+      t.objectProperty(key, source),
+    );
+  }
 }
 
 function registerProtoSetter(
   path: babel.NodePath<t.ObjectExpression>,
-  identifier: t.Identifier,
+  identifier: t.Expression | t.PrivateName,
 ): void {
+  if (t.isPrivateName(identifier)) {
+    return;
+  }
   const current = getProtoState(path);
-  const targetProperty = t.memberExpression(
-    t.memberExpression(t.identifier('this'), t.identifier(ROOT_SYMBOL)),
-    t.identifier(`${ROOT_SET}$${identifier.name}`),
-  );
-  current.proto.properties.push(
-    getSetterReplacement(path, identifier, targetProperty, false),
-  );
+  const key = getNamespacedKey(ROOT_SET, identifier);
+  if (key) {
+    const targetProperty = t.memberExpression(
+      t.memberExpression(t.identifier('this'), t.identifier(ROOT_SYMBOL)),
+      key,
+      !t.isIdentifier(key),
+    );
+    current.proto.properties.push(
+      getGetterReplacement(identifier, targetProperty, false),
+    );
+  }
 }
 
 function addUnoptimizedSetter(
@@ -175,12 +218,12 @@ export function addProtoSetter(
   source: t.Identifier,
 ): void {
   const identifier = property.node.key;
-  if (t.isIdentifier(identifier)) {
+  if (property.node.computed) {
+    addUnoptimizedSetter(property, identifier, source);
+  } else {
     initProtoSetters(path, identifier, source);
     registerProtoSetter(path, identifier);
     property.remove();
-  } else {
-    addUnoptimizedSetter(property, identifier, source);
   }
 }
 
@@ -217,13 +260,13 @@ export function addProtoProperty(
   writeSource: t.Identifier,
 ): void {
   const identifier = property.node.key;
-  if (t.isIdentifier(identifier)) {
+  if (property.node.computed) {
+    addUnoptimizedProperty(property, identifier, readSource, writeSource);
+  } else {
     initProtoGetters(path, identifier, readSource);
     initProtoSetters(path, identifier, writeSource);
     registerProtoGetter(path, identifier);
     registerProtoSetter(path, identifier);
     property.remove();
-  } else {
-    addUnoptimizedProperty(property, identifier, readSource, writeSource);
   }
 }
