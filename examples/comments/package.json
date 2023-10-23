@@ -1,7 +1,7 @@
 {
   "name": "vite-example-comments",
   "type": "module",
-  "version": "0.16.0",
+  "version": "0.16.1",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -14,7 +14,7 @@
     "typescript": "^5.2.2",
     "vite": "^4.5.0",
     "vite-plugin-solid": "^2.7.2",
-    "vite-plugin-solid-labels": "0.16.0"
+    "vite-plugin-solid-labels": "0.16.1"
   },
   "private": true,
   "publishConfig": {

@@ -1,5 +1,5 @@
 {
-  "version": "0.16.0",
+  "version": "0.16.1",
   "type": "module",
   "types": "./dist/types/index.d.ts",
   "main": "./dist/cjs/production/index.cjs",
@@ -41,7 +41,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "unplugin-solid-labels": "0.16.0"
+    "unplugin-solid-labels": "0.16.1"
   },
   "peerDependencies": {
     "rollup": "^3 || ^4",
