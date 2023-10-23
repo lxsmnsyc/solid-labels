@@ -9,6 +9,7 @@ module.exports = {
   },
   "rules": {
     "no-unused-labels": "off",
-    "no-labels": "off"
+    "no-labels": "off",
+    "react/jsx-no-undef": "off"
   }
 };

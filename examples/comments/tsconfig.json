@@ -17,7 +17,7 @@
     "jsxImportSource": "solid-js",
     "types": [
       "vite/client",
-      "babel-plugin-solid-labels"
+      "solid-labels"
     ]
   },
   "include": ["./src"]

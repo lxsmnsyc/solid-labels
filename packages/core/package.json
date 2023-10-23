@@ -1,9 +1,6 @@
 {
   "version": "0.15.1",
   "type": "module",
-  "types": "./dist/types/index.d.ts",
-  "main": "./dist/cjs/production/index.cjs",
-  "module": "./dist/esm/production/index.mjs",
   "exports": {
     ".": {
       "development": {
@@ -12,7 +9,16 @@
       },
       "require": "./dist/cjs/production/index.cjs",
       "import": "./dist/esm/production/index.mjs",
-      "types": "./dist/types/index.d.ts"
+      "types": "./dist/types/src/index.d.ts"
+    },
+    "./babel": {
+      "development": {
+        "require": "./dist/cjs/development/babel.cjs",
+        "import": "./dist/esm/development/babel.mjs"
+      },
+      "require": "./dist/cjs/production/babel.cjs",
+      "import": "./dist/esm/production/babel.mjs",
+      "types": "./dist/types/babel/index.d.ts"
     }
   },
   "files": [
@@ -30,7 +36,7 @@
     "labels",
     "reactivity"
   ],
-  "name": "babel-plugin-solid-labels",
+  "name": "solid-labels",
   "devDependencies": {
     "@babel/core": "^7.23.2",
     "@types/babel__core": "^7.20.3",
@@ -48,6 +54,11 @@
     "@babel/core": "^7.23",
     "solid-js": "^1.3"
   },
+  "dependencies": {
+    "@babel/helper-module-imports": "^7.22.15",
+    "@babel/traverse": "^7.23.2",
+    "@babel/types": "^7.23.0"
+  },
   "scripts": {
     "prepublish": "pridepack clean && pridepack build",
     "build": "pridepack build",
@@ -57,17 +68,12 @@
     "watch": "pridepack watch",
     "test": "vitest"
   },
-  "dependencies": {
-    "@babel/helper-module-imports": "^7.22.15",
-    "@babel/traverse": "^7.23.2",
-    "@babel/types": "^7.23.0"
-  },
   "description": "Simple, reactive labels for SolidJS",
   "repository": {
     "url": "https://github.com/lxsmnsyc/solid-labels.git",
     "type": "git"
   },
-  "homepage": "https://github.com/lxsmnsyc/solid-labels/tree/main/packages/babel",
+  "homepage": "https://github.com/lxsmnsyc/solid-labels/tree/main/packages/core",
   "bugs": {
     "url": "https://github.com/lxsmnsyc/solid-labels/issues"
   },
@@ -77,6 +83,13 @@
   "author": "Alexis Munsayac",
   "private": false,
   "typesVersions": {
-    "*": {}
-  }
+    "*": {
+      "babel": [
+        "./dist/types/babel/index.d.ts"
+      ]
+    }
+  },
+  "types": "./dist/types/src/index.d.ts",
+  "main": "./dist/cjs/production/index.cjs",
+  "module": "./dist/esm/production/index.mjs"
 }

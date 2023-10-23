@@ -17,8 +17,7 @@
   },
   "files": [
     "dist",
-    "src",
-    "env.d.ts"
+    "src"
   ],
   "engines": {
     "node": ">=10"
@@ -45,6 +44,7 @@
     "unplugin-solid-labels": "0.15.1"
   },
   "peerDependencies": {
+    "solid-labels": "^0.15",
     "rollup": "^3 || ^4"
   },
   "scripts": {

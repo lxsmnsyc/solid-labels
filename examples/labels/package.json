@@ -8,10 +8,10 @@
     "serve": "vite preview"
   },
   "devDependencies": {
-    "babel-plugin-solid-labels": "0.15.1",
     "eslint": "^8.51.0",
     "eslint-config-lxsmnsyc": "^0.6.5",
     "typescript": "^5.2.2",
+    "solid-labels": "0.15.1",
     "vite": "^4.5.0",
     "vite-plugin-solid": "^2.7.2",
     "vite-plugin-solid-labels": "0.15.1"

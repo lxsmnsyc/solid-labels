@@ -27,15 +27,15 @@ importers:
         specifier: ^1.8.0
         version: 1.8.0
     devDependencies:
-      babel-plugin-solid-labels:
-        specifier: 0.15.1
-        version: link:../../packages/babel
       eslint:
         specifier: ^8.51.0
         version: 8.51.0
       eslint-config-lxsmnsyc:
         specifier: ^0.6.5
         version: 0.6.5(eslint@8.51.0)(typescript@5.2.2)
+      solid-labels:
+        specifier: 0.15.1
+        version: link:../../packages/core
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
@@ -55,15 +55,15 @@ importers:
         specifier: ^1.8.0
         version: 1.8.0
     devDependencies:
-      babel-plugin-solid-labels:
-        specifier: 0.15.1
-        version: link:../../packages/babel
       eslint:
         specifier: ^8.51.0
         version: 8.51.0
       eslint-config-lxsmnsyc:
         specifier: ^0.6.5
         version: 0.6.5(eslint@8.51.0)(typescript@5.2.2)
+      solid-labels:
+        specifier: 0.15.1
+        version: link:../../packages/core
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
@@ -83,15 +83,15 @@ importers:
         specifier: ^1.8.0
         version: 1.8.0
     devDependencies:
-      babel-plugin-solid-labels:
-        specifier: 0.15.1
-        version: link:../../packages/babel
       eslint:
         specifier: ^8.51.0
         version: 8.51.0
       eslint-config-lxsmnsyc:
         specifier: ^0.6.5
         version: 0.6.5(eslint@8.51.0)(typescript@5.2.2)
+      solid-labels:
+        specifier: 0.15.1
+        version: link:../../packages/core
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
@@ -106,6 +106,40 @@ importers:
         version: link:../../packages/vite
 
   packages/babel:
+    dependencies:
+      solid-labels:
+        specifier: 0.15.1
+        version: link:../core
+    devDependencies:
+      '@babel/core':
+        specifier: ^7.23.2
+        version: 7.23.2
+      '@types/node':
+        specifier: ^20.8.7
+        version: 20.8.7
+      eslint:
+        specifier: ^8.51.0
+        version: 8.51.0
+      eslint-config-lxsmnsyc:
+        specifier: ^0.6.5
+        version: 0.6.5(eslint@8.51.0)(typescript@5.2.2)
+      pridepack:
+        specifier: 2.5.1
+        version: 2.5.1(eslint@8.51.0)(tslib@2.6.2)(typescript@5.2.2)
+      solid-js:
+        specifier: ^1.8.0
+        version: 1.8.0
+      tslib:
+        specifier: ^2.6.2
+        version: 2.6.2
+      typescript:
+        specifier: ^5.2.2
+        version: 5.2.2
+      vitest:
+        specifier: ^0.34.6
+        version: 0.34.6
+
+  packages/core:
     dependencies:
       '@babel/helper-module-imports':
         specifier: ^7.22.15
@@ -153,6 +187,9 @@ importers:
 
   packages/rollup:
     dependencies:
+      solid-labels:
+        specifier: ^0.15
+        version: link:../core
       unplugin-solid-labels:
         specifier: 0.15.1
         version: link:../unplugin
@@ -187,9 +224,6 @@ importers:
       '@rollup/pluginutils':
         specifier: ^5.0.2
         version: 5.0.2(rollup@4.0.2)
-      babel-plugin-solid-labels:
-        specifier: 0.15.1
-        version: link:../babel
       unplugin:
         specifier: ^1.3.1
         version: 1.5.0
@@ -212,6 +246,9 @@ importers:
       rollup:
         specifier: ^4.0.2
         version: 4.0.2
+      solid-labels:
+        specifier: 0.15.1
+        version: link:../core
       tslib:
         specifier: ^2.6.2
         version: 2.6.2
@@ -243,6 +280,9 @@ importers:
       rollup:
         specifier: ^4.0.2
         version: 4.0.2
+      solid-labels:
+        specifier: 0.15.1
+        version: link:../core
       tslib:
         specifier: ^2.6.2
         version: 2.6.2
@@ -1031,16 +1071,6 @@ packages:
     dev: true
     optional: true
 
-  /@eslint-community/eslint-utils@4.3.0(eslint@8.34.0):
-    resolution: {integrity: sha512-v3oplH6FYCULtFuCeqyuTd9D2WKO937Dxdq+GmHOLL72TTRriLxz2VLlNfkZRsvj6PKnOPAtuT6dwrs/pA5DvA==}
-    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
-    peerDependencies:
-      eslint: ^6.0.0 || ^7.0.0 || >=8.0.0
-    dependencies:
-      eslint: 8.34.0
-      eslint-visitor-keys: 3.4.3
-    dev: true
-
   /@eslint-community/eslint-utils@4.3.0(eslint@8.51.0):
     resolution: {integrity: sha512-v3oplH6FYCULtFuCeqyuTd9D2WKO937Dxdq+GmHOLL72TTRriLxz2VLlNfkZRsvj6PKnOPAtuT6dwrs/pA5DvA==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
@@ -1058,7 +1088,7 @@ packages:
       eslint: ^6.0.0 || ^7.0.0 || >=8.0.0
     dependencies:
       eslint: 8.34.0
-      eslint-visitor-keys: 3.3.0
+      eslint-visitor-keys: 3.4.3
     dev: true
 
   /@eslint-community/eslint-utils@4.4.0(eslint@8.51.0):
@@ -1068,7 +1098,7 @@ packages:
       eslint: ^6.0.0 || ^7.0.0 || >=8.0.0
     dependencies:
       eslint: 8.51.0
-      eslint-visitor-keys: 3.3.0
+      eslint-visitor-keys: 3.4.3
     dev: true
 
   /@eslint-community/regexpp@4.4.0:
@@ -2229,7 +2259,7 @@ packages:
       debug: 4.3.4
       globby: 11.1.0
       is-glob: 4.0.3
-      semver: 7.3.7
+      semver: 7.5.4
       tsutils: 3.21.0(typescript@5.2.2)
       typescript: 5.2.2
     transitivePeerDependencies:
@@ -2263,7 +2293,7 @@ packages:
     peerDependencies:
       eslint: ^6.0.0 || ^7.0.0 || ^8.0.0
     dependencies:
-      '@eslint-community/eslint-utils': 4.3.0(eslint@8.34.0)
+      '@eslint-community/eslint-utils': 4.4.0(eslint@8.34.0)
       '@types/json-schema': 7.0.9
       '@types/semver': 7.3.13
       '@typescript-eslint/scope-manager': 5.62.0
@@ -2271,7 +2301,7 @@ packages:
       '@typescript-eslint/typescript-estree': 5.62.0(typescript@5.2.2)
       eslint: 8.34.0
       eslint-scope: 5.1.1
-      semver: 7.3.7
+      semver: 7.5.4
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -2283,7 +2313,7 @@ packages:
     peerDependencies:
       eslint: ^6.0.0 || ^7.0.0 || ^8.0.0
     dependencies:
-      '@eslint-community/eslint-utils': 4.3.0(eslint@8.51.0)
+      '@eslint-community/eslint-utils': 4.4.0(eslint@8.51.0)
       '@types/json-schema': 7.0.9
       '@types/semver': 7.3.13
       '@typescript-eslint/scope-manager': 5.62.0
@@ -2291,7 +2321,7 @@ packages:
       '@typescript-eslint/typescript-estree': 5.62.0(typescript@5.2.2)
       eslint: 8.51.0
       eslint-scope: 5.1.1
-      semver: 7.3.7
+      semver: 7.5.4
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -2302,7 +2332,7 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dependencies:
       '@typescript-eslint/types': 5.62.0
-      eslint-visitor-keys: 3.3.0
+      eslint-visitor-keys: 3.4.3
     dev: true
 
   /@typescript-eslint/visitor-keys@5.9.1:
@@ -3662,7 +3692,7 @@ packages:
       eslint-plugin-import: 2.27.5(@typescript-eslint/parser@5.62.0)(eslint-import-resolver-typescript@3.6.1)(eslint@8.34.0)
       object.assign: 4.1.4
       object.entries: 1.1.6
-      semver: 6.3.0
+      semver: 6.3.1
     dev: true
 
   /eslint-config-airbnb-base@15.0.0(eslint-plugin-import@2.27.5)(eslint@8.51.0):
@@ -3677,7 +3707,7 @@ packages:
       eslint-plugin-import: 2.27.5(@typescript-eslint/parser@5.62.0)(eslint-import-resolver-typescript@3.6.1)(eslint@8.51.0)
       object.assign: 4.1.4
       object.entries: 1.1.6
-      semver: 6.3.0
+      semver: 6.3.1
     dev: true
 
   /eslint-config-airbnb@19.0.4(eslint-plugin-import@2.27.5)(eslint-plugin-jsx-a11y@6.7.1)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.32.2)(eslint@8.34.0):
@@ -4164,7 +4194,7 @@ packages:
       object.values: 1.1.6
       prop-types: 15.8.1
       resolve: 2.0.0-next.4
-      semver: 6.3.0
+      semver: 6.3.1
       string.prototype.matchall: 4.0.8
     dev: true
 
@@ -4188,7 +4218,7 @@ packages:
       object.values: 1.1.6
       prop-types: 15.8.1
       resolve: 2.0.0-next.4
-      semver: 6.3.0
+      semver: 6.3.1
       string.prototype.matchall: 4.0.8
     dev: true
 

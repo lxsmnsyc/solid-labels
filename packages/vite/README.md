@@ -7,15 +7,15 @@
 ## Install
 
 ```bash
-npm install --D vite-plugin-solid-labels
+npm install --D solid-labels vite-plugin-solid-labels
 ```
 
 ```bash
-yarn add -D vite-plugin-solid-labels
+yarn add -D solid-labels vite-plugin-solid-labels
 ```
 
 ```bash
-pnpm add -D vite-plugin-solid-labels
+pnpm add -D solid-labels vite-plugin-solid-labels
 ```
 
 ## Usage

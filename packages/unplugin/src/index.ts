@@ -1,5 +1,5 @@
-import type { Options } from 'babel-plugin-solid-labels';
-import solidLabelsBabel from 'babel-plugin-solid-labels';
+import type { Options } from 'solid-labels/babel';
+import solidLabelsBabel from 'solid-labels/babel';
 import * as babel from '@babel/core';
 import type { Plugin } from 'vite';
 import type { FilterPattern } from '@rollup/pluginutils';
