@@ -1,12 +1,12 @@
-import { JSX } from 'solid-js';
+import type { Accessor, JSX, Setter } from 'solid-js';
 
 // @refresh granular
 function useCounter(): [Accessor<number>, Setter<number>] {
   const count = $signal(0);
 
-  effect: {
+  $effect(() => {
     console.log('Current count:', count);
-  }
+  });
 
   return $refSignal(count);
 }

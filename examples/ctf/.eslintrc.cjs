@@ -8,9 +8,7 @@ module.exports = {
     "tsconfigRootDir": __dirname,
   },
   "rules": {
-    "no-restricted-syntax": "off",
     "no-unused-labels": "off",
-    "no-labels": "off",
-    "react/jsx-no-undef": "off"
+    "no-labels": "off"
   }
 };

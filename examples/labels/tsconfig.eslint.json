@@ -15,6 +15,10 @@
     "allowUnusedLabels": true,
     "jsx": "preserve",
     "jsxImportSource": "solid-js",
+    "types": [
+      "vite/client",
+      "babel-plugin-solid-labels"
+    ]
   },
   "include": ["./src"]
 }

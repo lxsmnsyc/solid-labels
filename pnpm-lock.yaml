@@ -27,6 +27,9 @@ importers:
         specifier: ^1.8.0
         version: 1.8.0
     devDependencies:
+      babel-plugin-solid-labels:
+        specifier: 0.15.1
+        version: link:../../packages/babel
       eslint:
         specifier: ^8.51.0
         version: 8.51.0
@@ -52,6 +55,9 @@ importers:
         specifier: ^1.8.0
         version: 1.8.0
     devDependencies:
+      babel-plugin-solid-labels:
+        specifier: 0.15.1
+        version: link:../../packages/babel
       eslint:
         specifier: ^8.51.0
         version: 8.51.0
@@ -77,6 +83,9 @@ importers:
         specifier: ^1.8.0
         version: 1.8.0
     devDependencies:
+      babel-plugin-solid-labels:
+        specifier: 0.15.1
+        version: link:../../packages/babel
       eslint:
         specifier: ^8.51.0
         version: 8.51.0
