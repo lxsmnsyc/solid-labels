@@ -5,7 +5,7 @@
 
 <p align="center">
   <img
-    src="https://github.com/LXSMNSYC/solid-labels/blob/main/images/example.png?raw=true"
+    src="https://github.com/LXSMNSYC/solid-labels/blob/main/images/ctf.png?raw=true"
     alt="Example"
     style="width: 80%; height: auto;"
   />
