@@ -105,40 +105,6 @@ importers:
         specifier: 0.15.1
         version: link:../../packages/vite
 
-  packages/babel:
-    dependencies:
-      solid-labels:
-        specifier: 0.15.1
-        version: link:../core
-    devDependencies:
-      '@babel/core':
-        specifier: ^7.23.2
-        version: 7.23.2
-      '@types/node':
-        specifier: ^20.8.7
-        version: 20.8.7
-      eslint:
-        specifier: ^8.51.0
-        version: 8.51.0
-      eslint-config-lxsmnsyc:
-        specifier: ^0.6.5
-        version: 0.6.5(eslint@8.51.0)(typescript@5.2.2)
-      pridepack:
-        specifier: 2.5.1
-        version: 2.5.1(eslint@8.51.0)(tslib@2.6.2)(typescript@5.2.2)
-      solid-js:
-        specifier: ^1.8.0
-        version: 1.8.0
-      tslib:
-        specifier: ^2.6.2
-        version: 2.6.2
-      typescript:
-        specifier: ^5.2.2
-        version: 5.2.2
-      vitest:
-        specifier: ^0.34.6
-        version: 0.34.6
-
   packages/core:
     dependencies:
       '@babel/helper-module-imports':
