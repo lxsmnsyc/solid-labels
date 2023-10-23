@@ -97,12 +97,9 @@ function getNamespacedKey(
 
 function initProtoGetters(
   path: babel.NodePath<t.ObjectExpression>,
-  identifier: t.Expression | t.PrivateName,
+  identifier: t.Expression,
   source: t.Identifier,
 ): void {
-  if (t.isPrivateName(identifier)) {
-    return;
-  }
   const current = getProtoState(path);
   const key = getNamespacedKey(ROOT_GET, identifier);
   if (key) {
@@ -112,11 +109,8 @@ function initProtoGetters(
 
 function registerProtoGetter(
   path: babel.NodePath<t.ObjectExpression>,
-  identifier: t.Expression | t.PrivateName,
+  identifier: t.Expression,
 ): void {
-  if (t.isPrivateName(identifier)) {
-    return;
-  }
   const current = getProtoState(path);
   const key = getNamespacedKey(ROOT_GET, identifier);
   if (key) {
@@ -133,22 +127,20 @@ function registerProtoGetter(
 
 function addUnoptimizedGetter(
   property: babel.NodePath<t.ObjectProperty>,
-  key: t.PrivateName | t.Expression,
+  key: t.Expression,
   source: t.Identifier,
 ): void {
-  if (!t.isPrivateName(key)) {
-    property.replaceWith(
-      getGetterReplacement(key, source, property.node.computed),
-    );
-  }
+  property.replaceWith(
+    getGetterReplacement(key, source, property.node.computed),
+  );
 }
 
 export function addProtoGetter(
   path: babel.NodePath<t.ObjectExpression>,
   property: babel.NodePath<t.ObjectProperty>,
+  identifier: t.Expression,
   source: t.Identifier,
 ): void {
-  const identifier = property.node.key;
   if (property.node.computed) {
     addUnoptimizedGetter(property, identifier, source);
   } else {
@@ -160,12 +152,9 @@ export function addProtoGetter(
 
 function initProtoSetters(
   path: babel.NodePath<t.ObjectExpression>,
-  identifier: t.Expression | t.PrivateName,
+  identifier: t.Expression,
   source: t.Identifier,
 ): void {
-  if (t.isPrivateName(identifier)) {
-    return;
-  }
   const current = getProtoState(path);
   const key = getNamespacedKey(ROOT_SET, identifier);
   if (key) {
@@ -175,11 +164,8 @@ function initProtoSetters(
 
 function registerProtoSetter(
   path: babel.NodePath<t.ObjectExpression>,
-  identifier: t.Expression | t.PrivateName,
+  identifier: t.Expression,
 ): void {
-  if (t.isPrivateName(identifier)) {
-    return;
-  }
   const current = getProtoState(path);
   const key = getNamespacedKey(ROOT_SET, identifier);
   if (key) {
@@ -196,22 +182,20 @@ function registerProtoSetter(
 
 function addUnoptimizedSetter(
   property: babel.NodePath<t.ObjectProperty>,
-  key: t.PrivateName | t.Expression,
+  key: t.Expression,
   source: t.Identifier,
 ): void {
-  if (!t.isPrivateName(key)) {
-    property.replaceWith(
-      getSetterReplacement(property, key, source, property.node.computed),
-    );
-  }
+  property.replaceWith(
+    getSetterReplacement(property, key, source, property.node.computed),
+  );
 }
 
 export function addProtoSetter(
   path: babel.NodePath<t.ObjectExpression>,
   property: babel.NodePath<t.ObjectProperty>,
+  identifier: t.Expression,
   source: t.Identifier,
 ): void {
-  const identifier = property.node.key;
   if (property.node.computed) {
     addUnoptimizedSetter(property, identifier, source);
   } else {
@@ -250,10 +234,10 @@ function addUnoptimizedProperty(
 export function addProtoProperty(
   path: babel.NodePath<t.ObjectExpression>,
   property: babel.NodePath<t.ObjectProperty>,
+  identifier: t.Expression,
   readSource: t.Identifier,
   writeSource: t.Identifier,
 ): void {
-  const identifier = property.node.key;
   if (property.node.computed) {
     addUnoptimizedProperty(property, identifier, readSource, writeSource);
   } else {

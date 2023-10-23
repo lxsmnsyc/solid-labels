@@ -74,23 +74,25 @@ export default function derefSignal(
       if (p.scope !== path.scope && p.scope.hasOwnBinding(signalIdentifier.name)) {
         return;
       }
+      const currentValue = p.node.value;
+      const currentKey = p.node.key;
       if (p.node.shorthand && !p.node.computed) {
         if (
-          t.isIdentifier(p.node.key)
-          && t.isIdentifier(p.node.value)
-          && p.node.key.name === signalIdentifier.name
-          && p.node.value.name === signalIdentifier.name
+          t.isIdentifier(currentKey)
+          && t.isIdentifier(currentValue)
+          && currentKey.name === signalIdentifier.name
+          && currentValue.name === signalIdentifier.name
         ) {
           p.replaceWith(
             t.objectProperty(
-              p.node.key,
+              currentKey,
               t.callExpression(readIdentifier, []),
             ),
           );
         }
         return;
       }
-      const trueCallExpr = unwrapNode(p.node.value, t.isCallExpression);
+      const trueCallExpr = unwrapNode(currentValue, t.isCallExpression);
       if (trueCallExpr) {
         const trueCallee = unwrapNode(trueCallExpr.callee, t.isIdentifier);
         if (
@@ -100,7 +102,7 @@ export default function derefSignal(
         ) {
           return;
         }
-        assert(!t.isPrivateName(p.node.key), unexpectedType(p, 'PrivateName', 'Expression'));
+        assert(!t.isPrivateName(currentKey), unexpectedType(p, 'PrivateName', 'Expression'));
         const arg = trueCallExpr.arguments[0];
         assert(t.isIdentifier(arg), unexpectedType(p, arg.type, 'Identifier'));
         if (arg.name !== signalIdentifier.name) {
@@ -109,13 +111,13 @@ export default function derefSignal(
         if (this.current) {
           switch (trueCallee.name) {
             case GETTER_CTF:
-              addProtoGetter(this.current, p, readIdentifier);
+              addProtoGetter(this.current, p, currentKey, readIdentifier);
               break;
             case SETTER_CTF:
-              addProtoSetter(this.current, p, writeIdentifier);
+              addProtoSetter(this.current, p, currentKey, writeIdentifier);
               break;
             case PROPERTY_CTF:
-              addProtoProperty(this.current, p, readIdentifier, writeIdentifier);
+              addProtoProperty(this.current, p, currentKey, readIdentifier, writeIdentifier);
               break;
             default:
               break;

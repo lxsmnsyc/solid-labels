@@ -60,23 +60,25 @@ export default function derefMemo(
       if (p.scope !== path.scope && p.scope.hasOwnBinding(memoIdentifier.name)) {
         return;
       }
+      const currentValue = p.node.value;
+      const currentKey = p.node.key;
       if (p.node.shorthand && !p.node.computed) {
         if (
-          t.isIdentifier(p.node.key)
-          && t.isIdentifier(p.node.value)
-          && p.node.key.name === memoIdentifier.name
-          && p.node.value.name === memoIdentifier.name
+          t.isIdentifier(currentKey)
+          && t.isIdentifier(currentValue)
+          && currentKey.name === memoIdentifier.name
+          && currentValue.name === memoIdentifier.name
         ) {
           p.replaceWith(
             t.objectProperty(
-              p.node.key,
+              currentKey,
               t.callExpression(readIdentifier, []),
             ),
           );
         }
         return;
       }
-      const trueCallExpr = unwrapNode(p.node.value, t.isCallExpression);
+      const trueCallExpr = unwrapNode(currentValue, t.isCallExpression);
       if (trueCallExpr) {
         const trueCallee = unwrapNode(trueCallExpr.callee, t.isIdentifier);
         if (
@@ -86,7 +88,7 @@ export default function derefMemo(
         ) {
           return;
         }
-        assert(!t.isPrivateName(p.node.key), unexpectedType(p, 'PrivateName', 'Expression'));
+        assert(!t.isPrivateName(currentKey), unexpectedType(p, 'PrivateName', 'Expression'));
         const arg = trueCallExpr.arguments[0];
         assert(t.isIdentifier(arg), unexpectedType(p, arg.type, 'Identifier'));
         if (arg.name !== memoIdentifier.name) {
@@ -96,7 +98,7 @@ export default function derefMemo(
           switch (trueCallee.name) {
             case GETTER_CTF:
             case PROPERTY_CTF:
-              addProtoGetter(this.current, p, readIdentifier);
+              addProtoGetter(this.current, p, currentKey, readIdentifier);
               break;
             default:
               break;
