@@ -34,7 +34,7 @@ importers:
         specifier: ^0.6.5
         version: 0.6.5(eslint@8.51.0)(typescript@5.2.2)
       solid-labels:
-        specifier: 0.15.1
+        specifier: 0.16.0
         version: link:../../packages/core
       typescript:
         specifier: ^5.2.2
@@ -46,7 +46,7 @@ importers:
         specifier: ^2.7.2
         version: 2.7.2(solid-js@1.8.0)(vite@4.5.0)
       vite-plugin-solid-labels:
-        specifier: 0.15.1
+        specifier: 0.16.0
         version: link:../../packages/vite
 
   examples/ctf:
@@ -62,7 +62,7 @@ importers:
         specifier: ^0.6.5
         version: 0.6.5(eslint@8.51.0)(typescript@5.2.2)
       solid-labels:
-        specifier: 0.15.1
+        specifier: 0.16.0
         version: link:../../packages/core
       typescript:
         specifier: ^5.2.2
@@ -74,7 +74,7 @@ importers:
         specifier: ^2.7.2
         version: 2.7.2(solid-js@1.8.0)(vite@4.5.0)
       vite-plugin-solid-labels:
-        specifier: 0.15.1
+        specifier: 0.16.0
         version: link:../../packages/vite
 
   examples/labels:
@@ -90,7 +90,7 @@ importers:
         specifier: ^0.6.5
         version: 0.6.5(eslint@8.51.0)(typescript@5.2.2)
       solid-labels:
-        specifier: 0.15.1
+        specifier: 0.16.0
         version: link:../../packages/core
       typescript:
         specifier: ^5.2.2
@@ -102,7 +102,7 @@ importers:
         specifier: ^2.7.2
         version: 2.7.2(solid-js@1.8.0)(vite@4.5.0)
       vite-plugin-solid-labels:
-        specifier: 0.15.1
+        specifier: 0.16.0
         version: link:../../packages/vite
 
   packages/core:
@@ -154,10 +154,10 @@ importers:
   packages/rollup:
     dependencies:
       solid-labels:
-        specifier: ^0.15
+        specifier: ^0.16
         version: link:../core
       unplugin-solid-labels:
-        specifier: 0.15.1
+        specifier: 0.16.0
         version: link:../unplugin
     devDependencies:
       '@types/node':
@@ -213,7 +213,7 @@ importers:
         specifier: ^4.0.2
         version: 4.0.2
       solid-labels:
-        specifier: 0.15.1
+        specifier: 0.16.0
         version: link:../core
       tslib:
         specifier: ^2.6.2
@@ -228,7 +228,7 @@ importers:
   packages/vite:
     dependencies:
       unplugin-solid-labels:
-        specifier: 0.15.1
+        specifier: 0.16.0
         version: link:../unplugin
     devDependencies:
       '@types/node':
@@ -247,7 +247,7 @@ importers:
         specifier: ^4.0.2
         version: 4.0.2
       solid-labels:
-        specifier: 0.15.1
+        specifier: 0.16.0
         version: link:../core
       tslib:
         specifier: ^2.6.2

@@ -46,7 +46,7 @@
     "unplugin-solid-labels": "0.16.0"
   },
   "peerDependencies": {
-    "solid-labels": "^0.15",
+    "solid-labels": "^0.16",
     "vite": "^3 || ^4"
   },
   "scripts": {

@@ -33,7 +33,7 @@
   },
   "peerDependencies": {
     "rollup": "^3 || 4",
-    "solid-labels": "^0.15",
+    "solid-labels": "^0.16",
     "vite": "^3 || ^4"
   },
   "peerDependenciesMeta": {
