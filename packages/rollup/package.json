@@ -53,8 +53,7 @@
     "type-check": "pridepack check",
     "lint": "pridepack lint",
     "clean": "pridepack clean",
-    "watch": "pridepack watch",
-    "test": "vitest"
+    "watch": "pridepack watch"
   },
   "description": "Simple, reactive labels for SolidJS",
   "repository": {

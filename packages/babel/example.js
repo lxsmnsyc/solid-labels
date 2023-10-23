@@ -17,16 +17,14 @@ async function compile(code, dev) {
 }
 
 console.log(await compile(`
-// @destructure
-let { a: { b, c }, b: { d, e }, ...f } = x;
+let foo = $signal('foo');
+let bar = $signal('bar')
 
-effect: {
-  console.log(b, c);
-}
-effect: {
-  console.log(d, e);
-}
-effect: {
-  console.log(f);
-}
+const example = {
+  foo: $property(foo),
+  bar: $property(bar),
+  baz: baz,
+};
+
+$(console.log(example.foo, example.bar));
 `));

@@ -6,6 +6,7 @@ import isAwaited from './is-awaited';
 import isYielded from './is-yielded';
 // import isInTypeScript from './is-in-typescript';
 import unwrapNode from './unwrap-node';
+import { addProtoGetter, addProtoProperty, addProtoSetter } from './proto';
 
 const REF_SIGNAL_CTF = '$refSignal';
 const GET_CTF = '$get';
@@ -19,13 +20,18 @@ const PROPERTY_CTF = '$property';
 
 const OBJECT_PROPERTY_CTF = new Set([GETTER_CTF, SETTER_CTF, PROPERTY_CTF]);
 
+interface DerefSignalState {
+  current?: babel.NodePath<t.ObjectExpression>;
+  prev?: babel.NodePath<t.ObjectExpression>;
+}
+
 export default function derefSignal(
   path: babel.NodePath,
   signalIdentifier: t.Identifier,
   readIdentifier: t.Identifier,
   writeIdentifier: t.Identifier,
 ): void {
-  path.scope.path.traverse({
+  path.scope.path.traverse<DerefSignalState>({
     CallExpression(p) {
       if (p.scope !== path.scope && p.scope.hasOwnBinding(signalIdentifier.name)) {
         return;
@@ -55,117 +61,66 @@ export default function derefSignal(
         p.replaceWith(writeIdentifier);
       }
     },
+    ObjectExpression: {
+      enter(p) {
+        this.prev = this.current;
+        this.current = p;
+      },
+      exit() {
+        this.current = this.prev;
+      },
+    },
     ObjectProperty(p) {
       if (p.scope !== path.scope && p.scope.hasOwnBinding(signalIdentifier.name)) {
         return;
       }
+      const currentValue = p.node.value;
+      const currentKey = p.node.key;
       if (p.node.shorthand && !p.node.computed) {
         if (
-          t.isIdentifier(p.node.key)
-          && t.isIdentifier(p.node.value)
-          && p.node.key.name === signalIdentifier.name
-          && p.node.value.name === signalIdentifier.name
+          t.isIdentifier(currentKey)
+          && t.isIdentifier(currentValue)
+          && currentKey.name === signalIdentifier.name
+          && currentValue.name === signalIdentifier.name
         ) {
           p.replaceWith(
             t.objectProperty(
-              p.node.key,
+              currentKey,
               t.callExpression(readIdentifier, []),
             ),
           );
         }
         return;
       }
-      const trueCallExpr = unwrapNode(p.node.value, t.isCallExpression);
+      const trueCallExpr = unwrapNode(currentValue, t.isCallExpression);
       if (trueCallExpr) {
         const trueCallee = unwrapNode(trueCallExpr.callee, t.isIdentifier);
         if (
           !trueCallee
-          || p.scope.hasBinding(trueCallee.name)
           || !OBJECT_PROPERTY_CTF.has(trueCallee.name)
         ) {
           return;
         }
-        assert(!t.isPrivateName(p.node.key), unexpectedType(p, 'PrivateName', 'Expression'));
+        assert(!t.isPrivateName(currentKey), unexpectedType(p, 'PrivateName', 'Expression'));
         const arg = trueCallExpr.arguments[0];
         assert(t.isIdentifier(arg), unexpectedType(p, arg.type, 'Identifier'));
         if (arg.name !== signalIdentifier.name) {
           return;
         }
-        if (trueCallee.name === SETTER_CTF) {
-          const param = p.scope.generateUidIdentifier('value');
-          p.replaceWith(
-            t.objectMethod(
-              'set',
-              p.node.key,
-              [param],
-              t.blockStatement([
-                t.returnStatement(
-                  t.callExpression(
-                    writeIdentifier,
-                    [
-                      t.arrowFunctionExpression(
-                        [],
-                        param,
-                      ),
-                    ],
-                  ),
-                ),
-              ]),
-            ),
-          );
-        }
-        if (trueCallee.name === GETTER_CTF) {
-          p.replaceWith(
-            t.objectMethod(
-              'get',
-              p.node.key,
-              [],
-              t.blockStatement([
-                t.returnStatement(
-                  t.callExpression(
-                    readIdentifier,
-                    [],
-                  ),
-                ),
-              ]),
-            ),
-          );
-        }
-        if (trueCallee.name === PROPERTY_CTF) {
-          const param = p.scope.generateUidIdentifier('value');
-          p.replaceWithMultiple([
-            t.objectMethod(
-              'get',
-              p.node.key,
-              [],
-              t.blockStatement([
-                t.returnStatement(
-                  t.callExpression(
-                    readIdentifier,
-                    [],
-                  ),
-                ),
-              ]),
-            ),
-            t.objectMethod(
-              'set',
-              p.node.key,
-              [param],
-              t.blockStatement([
-                t.returnStatement(
-                  t.callExpression(
-                    writeIdentifier,
-                    [
-                      t.arrowFunctionExpression(
-                        [],
-                        param,
-                      ),
-                    ],
-                  ),
-                ),
-              ]),
-            ),
-          ]);
+        if (this.current) {
+          switch (trueCallee.name) {
+            case GETTER_CTF:
+              addProtoGetter(this.current, p, currentKey, readIdentifier);
+              break;
+            case SETTER_CTF:
+              addProtoSetter(this.current, p, currentKey, writeIdentifier);
+              break;
+            case PROPERTY_CTF:
+              addProtoProperty(this.current, p, currentKey, readIdentifier, writeIdentifier);
+              break;
+            default:
+              break;
+          }
         }
       }
     },
@@ -300,5 +255,8 @@ export default function derefSignal(
         p.replaceWith(t.callExpression(writeIdentifier, [arg]));
       }
     },
+  }, {
+    prev: undefined,
+    current: undefined,
   });
 }

@@ -938,14 +938,15 @@ const obj = {
 
 ```js
 import { createSignal as _createSignal } from "solid-js";
-
-let [_count, _setcount] = _createSignal(0);
-
-const obj = {
+const _proto = {
   get count() {
-    return _count();
+    return this.__$get$count();
   }
-
+};
+let [_count, _setcount] = _createSignal(0);
+const obj = {
+  __proto__: _proto,
+  __$get$count: _count
 };
 ```
 
@@ -963,14 +964,15 @@ const obj = {
 
 ```js
 import { createSignal as _createSignal } from "solid-js";
-
-let [_count, _setcount] = _createSignal(0);
-
-const obj = {
-  set count(_value) {
-    return _setcount(() => _value);
+const _proto = {
+  set count(_param) {
+    this.__$set$count(() => _param);
   }
-
+};
+let [_count, _setcount] = _createSignal(0);
+const obj = {
+  __proto__: _proto,
+  __$set$count: _setcount
 };
 ```
 
@@ -991,24 +993,24 @@ const obj = {
 ```js
 import { createMemo as _createMemo } from "solid-js";
 import { createSignal as _createSignal } from "solid-js";
-
-let [_count, _setcount] = _createSignal(0);
-
-const _message = _createMemo(() => `Count: ${_count()}`);
-
-const obj = {
+const _proto = {
   get count() {
-    return _count();
+    return this.__$get$count();
   },
-
-  set count(_value) {
-    return _setcount(() => _value);
+  set count(_param) {
+    this.__$set$count(() => _param);
   },
-
   get message() {
-    return _message();
+    return this.__$get$message();
   }
-
+};
+let [_count, _setcount] = _createSignal(0);
+const _message = _createMemo(() => `Count: ${_count()}`);
+const obj = {
+  __proto__: _proto,
+  __$get$count: _count,
+  __$set$count: _setcount,
+  __$get$message: _message
 };
 ```
 

@@ -3,7 +3,7 @@ import * as babel from '@babel/core';
 import { describe, expect, it } from 'vitest';
 import plugin from '../src';
 
-async function compile(code: string, dev?: boolean) {
+async function compile(code: string, dev?: boolean): Promise<string> {
   const result = await babel.transformAsync(code, {
     plugins: [
       [plugin, { dev }],
