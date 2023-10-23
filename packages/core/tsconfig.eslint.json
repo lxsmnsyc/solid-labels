@@ -1,13 +1,13 @@
 {
   "exclude": ["node_modules"],
-  "include": ["src", "types"],
+  "include": ["src", "types", "test", "babel"],
   "compilerOptions": {
     "module": "ESNext",
     "lib": ["ESNext", "DOM"],
     "importHelpers": true,
     "declaration": true,
     "sourceMap": true,
-    "rootDir": "./src",
+    "rootDir": "./",
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,

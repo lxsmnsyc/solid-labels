@@ -1033,7 +1033,7 @@ These CTFs are auto-imported components from `solid-js` and `solid-js/web`. You 
 On any `d.ts` file, add a reference markup
 
 ```ts
-/// <reference types="babel-plugin-solid-labels" />
+/// <reference types="solid-labels" />
 ```
 
 All CTFs are declared globally so there's no need to import.

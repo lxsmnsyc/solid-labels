@@ -1,12 +1,6 @@
-import type * as babel from '@babel/core';
 import type * as solid from 'solid-js';
 import type * as solidWeb from 'solid-js/web';
 import type * as solidStore from 'solid-js/store';
-import type { State, Options } from './core/types';
-import transformComponents from './components';
-import transformCTF from './transform-ctf';
-import transformLabels from './transform-label';
-import transformComments from './transform-comment';
 
 declare global {
   type Accessor<T> = solid.Accessor<T>;
@@ -173,23 +167,4 @@ declare module 'solid-js' {
       'solid:no-hydration': Props<typeof solidWeb.NoHydration>;
     }
   }
-}
-
-export type { Options };
-
-export default function solidLabelsPlugin(): babel.PluginObj<State> {
-  return {
-    name: 'solid-labels',
-    pre(): void {
-      this.hooks = new Map();
-    },
-    visitor: {
-      Program(path, state): void {
-        transformComments(state, path);
-        transformLabels(state, path);
-        transformCTF(state, path);
-        transformComponents(state, path);
-      },
-    },
-  };
 }

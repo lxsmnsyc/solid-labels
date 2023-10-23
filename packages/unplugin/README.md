@@ -7,15 +7,15 @@
 ## Install
 
 ```bash
-npm install --D unplugin-solid-labels
+npm install --D solid-labels unplugin-solid-labels
 ```
 
 ```bash
-yarn add -D unplugin-solid-labels
+yarn add -D solid-labels unplugin-solid-labels
 ```
 
 ```bash
-pnpm add -D unplugin-solid-labels
+pnpm add -D solid-labels unplugin-solid-labels
 ```
 
 ## Usage

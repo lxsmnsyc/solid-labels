@@ -1,6 +1,5 @@
 import type { Accessor, JSX, Setter } from 'solid-js';
 
-// @refresh granular
 function useCounter(): [Accessor<number>, Setter<number>] {
   const count = $signal(0);
 
@@ -16,11 +15,11 @@ export default function App(): JSX.Element {
 
   const message = $memo(`Count: ${count}`);
 
-  effect: {
+  $effect(() => {
     console.log(message);
-  }
+  });
 
-  function increment() {
+  function increment(): void {
     count += 1;
   }
 

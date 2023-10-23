@@ -7,15 +7,15 @@
 ## Install
 
 ```bash
-npm install --D rollup-plugin-solid-labels
+npm install --D solid-labels rollup-plugin-solid-labels
 ```
 
 ```bash
-yarn add -D rollup-plugin-solid-labels
+yarn add -D solid-labels rollup-plugin-solid-labels
 ```
 
 ```bash
-pnpm add -D rollup-plugin-solid-labels
+pnpm add -D solid-labels rollup-plugin-solid-labels
 ```
 
 ## Usage
