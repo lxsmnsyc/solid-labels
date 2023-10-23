@@ -135,22 +135,22 @@ exports[`ctf > $component > should transform $component bindings on $getter 1`] 
 import { createEffect as _createEffect } from \\"solid-js\\";
 const _proto = {
     get b() {
-      return this.__$get$b();
+      return this.__$get__b();
     }
   },
   _proto2 = {
     get c() {
-      return this.__$get$c();
+      return this.__$get__c();
     }
   },
   _proto3 = {
     get d() {
-      return this.__$get$d();
+      return this.__$get__d();
     }
   },
   _proto4 = {
     get e() {
-      return this.__$get$e();
+      return this.__$get__e();
     }
   };
 _props => {
@@ -174,19 +174,19 @@ _props => {
   _createEffect(() => {
     console.log({
       __proto__: _proto,
-      __$get$b: _prop2
+      __$get__b: _prop2
     }, {
       __proto__: _proto2,
-      __$get$c: _prop3
+      __$get__c: _prop3
     });
   });
   _createEffect(() => {
     console.log({
       __proto__: _proto3,
-      __$get$d: _prop5
+      __$get__d: _prop5
     }, {
       __proto__: _proto4,
-      __$get$e: _prop6
+      __$get__e: _prop6
     });
   });
   _createEffect(() => {
@@ -200,22 +200,22 @@ exports[`ctf > $component > should transform $component bindings on $property 1`
 import { createEffect as _createEffect } from \\"solid-js\\";
 const _proto = {
     get b() {
-      return this.__$get$b();
+      return this.__$get__b();
     }
   },
   _proto2 = {
     get c() {
-      return this.__$get$c();
+      return this.__$get__c();
     }
   },
   _proto3 = {
     get d() {
-      return this.__$get$d();
+      return this.__$get__d();
     }
   },
   _proto4 = {
     get e() {
-      return this.__$get$e();
+      return this.__$get__e();
     }
   };
 _props => {
@@ -239,19 +239,19 @@ _props => {
   _createEffect(() => {
     console.log({
       __proto__: _proto,
-      __$get$b: _prop2
+      __$get__b: _prop2
     }, {
       __proto__: _proto2,
-      __$get$c: _prop3
+      __$get__c: _prop3
     });
   });
   _createEffect(() => {
     console.log({
       __proto__: _proto3,
-      __$get$d: _prop5
+      __$get__d: _prop5
     }, {
       __proto__: _proto4,
-      __$get$e: _prop6
+      __$get__e: _prop6
     });
   });
   _createEffect(() => {
@@ -315,26 +315,26 @@ const value = _message;"
 exports[`ctf > $derefMemo > should transform $derefMemo on $getter 1`] = `
 "const _proto = {
   get message() {
-    return this.__$get$message();
+    return this.__$get__message();
   }
 };
 const _message = () => \`Count: \${count}\`;
 const value = {
   __proto__: _proto,
-  __$get$message: _message
+  __$get__message: _message
 };"
 `;
 
 exports[`ctf > $derefMemo > should transform $derefMemo on $property 1`] = `
 "const _proto = {
   get message() {
-    return this.__$get$message();
+    return this.__$get__message();
   }
 };
 const _message = () => \`Count: \${count}\`;
 const value = {
   __proto__: _proto,
-  __$get$message: _message
+  __$get__message: _message
 };"
 `;
 
@@ -365,30 +365,30 @@ const value = _count;"
 exports[`ctf > $derefSignal > should transform $derefSignal bindings for $getter 1`] = `
 "const _proto = {
   get count() {
-    return this.__$get$count();
+    return this.__$get__count();
   }
 };
 const [_count, _setcount] = createSignal(0);
 const value = {
   __proto__: _proto,
-  __$get$count: _count
+  __$get__count: _count
 };"
 `;
 
 exports[`ctf > $derefSignal > should transform $derefSignal bindings for $property 1`] = `
 "const _proto = {
   get count() {
-    return this.__$get$count();
+    return this.__$get__count();
   },
   set count(_param) {
-    this.__$set$count(() => _param);
+    this.__$set__count(() => _param);
   }
 };
 const [_count, _setcount] = createSignal(0);
 const value = {
   __proto__: _proto,
-  __$get$count: _count,
-  __$set$count: _setcount
+  __$get__count: _count,
+  __$set__count: _setcount
 };"
 `;
 
@@ -405,13 +405,13 @@ const value = _setcount;"
 exports[`ctf > $derefSignal > should transform $derefSignal bindings for $setter 1`] = `
 "const _proto = {
   set count(_param) {
-    this.__$set$count(() => _param);
+    this.__$set__count(() => _param);
   }
 };
 const [_count, _setcount] = createSignal(0);
 const value = {
   __proto__: _proto,
-  __$set$count: _setcount
+  __$set__count: _setcount
 };"
 `;
 
@@ -542,22 +542,22 @@ exports[`ctf > $destructure > should transform $destructure bindings on $getter 
 import { createEffect as _createEffect } from \\"solid-js\\";
 const _proto = {
     get b() {
-      return this.__$get$b();
+      return this.__$get__b();
     }
   },
   _proto2 = {
     get c() {
-      return this.__$get$c();
+      return this.__$get__c();
     }
   },
   _proto3 = {
     get d() {
-      return this.__$get$d();
+      return this.__$get__d();
     }
   },
   _proto4 = {
     get e() {
-      return this.__$get$e();
+      return this.__$get__e();
     }
   };
 let _prop = () => x.a,
@@ -580,19 +580,19 @@ let _prop = () => x.a,
 _createEffect(() => {
   console.log({
     __proto__: _proto,
-    __$get$b: _prop2
+    __$get__b: _prop2
   }, {
     __proto__: _proto2,
-    __$get$c: _prop3
+    __$get__c: _prop3
   });
 });
 _createEffect(() => {
   console.log({
     __proto__: _proto3,
-    __$get$d: _prop5
+    __$get__d: _prop5
   }, {
     __proto__: _proto4,
-    __$get$e: _prop6
+    __$get__e: _prop6
   });
 });
 _createEffect(() => {
@@ -605,22 +605,22 @@ exports[`ctf > $destructure > should transform $destructure bindings on $propert
 import { createEffect as _createEffect } from \\"solid-js\\";
 const _proto = {
     get b() {
-      return this.__$get$b();
+      return this.__$get__b();
     }
   },
   _proto2 = {
     get c() {
-      return this.__$get$c();
+      return this.__$get__c();
     }
   },
   _proto3 = {
     get d() {
-      return this.__$get$d();
+      return this.__$get__d();
     }
   },
   _proto4 = {
     get e() {
-      return this.__$get$e();
+      return this.__$get__e();
     }
   };
 let _prop = () => x.a,
@@ -643,19 +643,19 @@ let _prop = () => x.a,
 _createEffect(() => {
   console.log({
     __proto__: _proto,
-    __$get$b: _prop2
+    __$get__b: _prop2
   }, {
     __proto__: _proto2,
-    __$get$c: _prop3
+    __$get__c: _prop3
   });
 });
 _createEffect(() => {
   console.log({
     __proto__: _proto3,
-    __$get$d: _prop5
+    __$get__d: _prop5
   }, {
     __proto__: _proto4,
-    __$get$e: _prop6
+    __$get__e: _prop6
   });
 });
 _createEffect(() => {
@@ -740,13 +740,13 @@ exports[`ctf > $memo > should transform $memo on $getter 1`] = `
 "import { createMemo as _createMemo } from \\"solid-js\\";
 const _proto = {
   get message() {
-    return this.__$get$message();
+    return this.__$get__message();
   }
 };
 const _message = _createMemo(() => \`Count: \${count}\`);
 const value = {
   __proto__: _proto,
-  __$get$message: _message
+  __$get__message: _message
 };"
 `;
 
@@ -754,13 +754,13 @@ exports[`ctf > $memo > should transform $memo on $property 1`] = `
 "import { createMemo as _createMemo } from \\"solid-js\\";
 const _proto = {
   get message() {
-    return this.__$get$message();
+    return this.__$get__message();
   }
 };
 const _message = _createMemo(() => \`Count: \${count}\`);
 const value = {
   __proto__: _proto,
-  __$get$message: _message
+  __$get__message: _message
 };"
 `;
 
@@ -820,13 +820,13 @@ exports[`ctf > $signal > should transform $signal bindings for $getter 1`] = `
 "import { createSignal as _createSignal } from \\"solid-js\\";
 const _proto = {
   get count() {
-    return this.__$get$count();
+    return this.__$get__count();
   }
 };
 let [_count, _setcount] = _createSignal(0);
 const value = {
   __proto__: _proto,
-  __$get$count: _count
+  __$get__count: _count
 };"
 `;
 
@@ -834,17 +834,17 @@ exports[`ctf > $signal > should transform $signal bindings for $property 1`] = `
 "import { createSignal as _createSignal } from \\"solid-js\\";
 const _proto = {
   get count() {
-    return this.__$get$count();
+    return this.__$get__count();
   },
   set count(_param) {
-    this.__$set$count(() => _param);
+    this.__$set__count(() => _param);
   }
 };
 let [_count, _setcount] = _createSignal(0);
 const value = {
   __proto__: _proto,
-  __$get$count: _count,
-  __$set$count: _setcount
+  __$get__count: _count,
+  __$set__count: _setcount
 };"
 `;
 
@@ -864,12 +864,12 @@ exports[`ctf > $signal > should transform $signal bindings for $setter 1`] = `
 "import { createSignal as _createSignal } from \\"solid-js\\";
 const _proto = {
   set count(_param) {
-    this.__$set$count(() => _param);
+    this.__$set__count(() => _param);
   }
 };
 let [_count, _setcount] = _createSignal(0);
 const value = {
   __proto__: _proto,
-  __$set$count: _setcount
+  __$set__count: _setcount
 };"
 `;

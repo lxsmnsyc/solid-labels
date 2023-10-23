@@ -31,7 +31,7 @@ export default function derefMemo(
         return;
       }
       const trueCallee = unwrapNode(p.node.callee, t.isIdentifier);
-      if (!trueCallee || p.scope.hasBinding(trueCallee.name) || !CALL_CTF.has(trueCallee.name)) {
+      if (!trueCallee || !CALL_CTF.has(trueCallee.name)) {
         return;
       }
       const rawArgs = p.node.arguments[0];

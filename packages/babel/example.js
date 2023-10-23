@@ -22,7 +22,8 @@ let bar = $signal('bar')
 
 const example = {
   foo: $property(foo),
-  'test': $property(bar),
+  bar: $property(bar),
+  baz: baz,
 };
 
 $(console.log(example.foo, example.bar));

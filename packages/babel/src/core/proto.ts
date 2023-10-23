@@ -85,11 +85,11 @@ function getNamespacedKey(
   switch (identifier.type) {
     case 'StringLiteral':
     case 'NumericLiteral':
-      return t.stringLiteral(`${ROOT_SYMBOL}${name}$${identifier.value}`);
+      return t.stringLiteral(`${ROOT_SYMBOL}${name}__${identifier.value}`);
     case 'Identifier':
-      return t.identifier(`${ROOT_SYMBOL}${name}$${identifier.name}`);
+      return t.identifier(`${ROOT_SYMBOL}${name}__${identifier.name}`);
     case 'NullLiteral':
-      return t.identifier(`${ROOT_SYMBOL}${name}$null`);
+      return t.identifier(`${ROOT_SYMBOL}${name}__null`);
     default:
       return undefined;
   }

@@ -97,7 +97,6 @@ export default function derefSignal(
         const trueCallee = unwrapNode(trueCallExpr.callee, t.isIdentifier);
         if (
           !trueCallee
-          || p.scope.hasBinding(trueCallee.name)
           || !OBJECT_PROPERTY_CTF.has(trueCallee.name)
         ) {
           return;
