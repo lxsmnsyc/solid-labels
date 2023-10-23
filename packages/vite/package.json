@@ -1,5 +1,5 @@
 {
-  "version": "0.15.1",
+  "version": "0.16.0",
   "type": "module",
   "types": "./dist/types/index.d.ts",
   "main": "./dist/cjs/production/index.cjs",
@@ -37,13 +37,13 @@
     "eslint-config-lxsmnsyc": "^0.6.5",
     "pridepack": "2.5.1",
     "rollup": "^4.0.2",
-    "solid-labels": "0.15.1",
+    "solid-labels": "0.16.0",
     "tslib": "^2.6.2",
     "typescript": "^5.2.2",
     "vite": "^4.5.0"
   },
   "dependencies": {
-    "unplugin-solid-labels": "0.15.1"
+    "unplugin-solid-labels": "0.16.0"
   },
   "peerDependencies": {
     "solid-labels": "^0.15",

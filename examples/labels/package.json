@@ -1,7 +1,7 @@
 {
   "name": "vite-example-labels",
   "type": "module",
-  "version": "0.15.1",
+  "version": "0.16.0",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -10,11 +10,11 @@
   "devDependencies": {
     "eslint": "^8.51.0",
     "eslint-config-lxsmnsyc": "^0.6.5",
+    "solid-labels": "0.16.0",
     "typescript": "^5.2.2",
-    "solid-labels": "0.15.1",
     "vite": "^4.5.0",
     "vite-plugin-solid": "^2.7.2",
-    "vite-plugin-solid-labels": "0.15.1"
+    "vite-plugin-solid-labels": "0.16.0"
   },
   "private": true,
   "publishConfig": {

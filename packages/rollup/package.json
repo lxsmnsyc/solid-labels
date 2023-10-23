@@ -1,5 +1,5 @@
 {
-  "version": "0.15.1",
+  "version": "0.16.0",
   "type": "module",
   "types": "./dist/types/index.d.ts",
   "main": "./dist/cjs/production/index.cjs",
@@ -41,11 +41,11 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "unplugin-solid-labels": "0.15.1"
+    "unplugin-solid-labels": "0.16.0"
   },
   "peerDependencies": {
-    "solid-labels": "^0.15",
-    "rollup": "^3 || ^4"
+    "rollup": "^3 || ^4",
+    "solid-labels": "^0.15"
   },
   "scripts": {
     "prepublish": "pridepack clean && pridepack build",
