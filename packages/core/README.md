@@ -63,7 +63,7 @@ pnpm add solid-labels
 }
 ```
 
-**NOTE**: You don't have to use this if you're using Vite or Rollup plugins
+[!INFO]: You don't have to use this if you're using Vite or Rollup plugins
 
 ## Integrations
 

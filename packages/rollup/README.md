@@ -44,7 +44,7 @@ solidLabels({
 })
 ```
 
-> **Note**
+> [!INFO]
 > When you are using a SolidJS Rollup plugin, make sure that solid-labels runs first.
 
 ## Sponsors
