@@ -16,16 +16,22 @@ declare global {
       equals?: false | ((prev: T, next: T) => boolean);
       name?: string;
       internal?: boolean;
-    }
+    },
   ): T;
 
   function $memo<T>(
     value: T,
-    options?: { equals?: false | ((prev: T, next: T) => boolean); name?: string }
+    options?: {
+      equals?: false | ((prev: T, next: T) => boolean);
+      name?: string;
+    },
   ): T;
   function $memo<T>(
     value: T,
-    options?: { equals?: false | ((prev: T, next: T) => boolean); name?: string }
+    options?: {
+      equals?: false | ((prev: T, next: T) => boolean);
+      name?: string;
+    },
   ): T;
 
   function $untrack<T>(value: T): T;
@@ -49,13 +55,13 @@ declare global {
   function $selector<T, U>(
     source: T,
     fn?: (a: U, b: T) => boolean,
-    options?: { name?: string }
+    options?: { name?: string },
   ): (key: U) => boolean;
 
   function $on<T, U>(
     deps: T,
     fn: (input: T, prevInput: T, prevValue?: U) => U,
-    options?: { defer?: boolean }
+    options?: { defer?: boolean },
   ): (prevValue?: U) => U;
 
   function $deferred<T>(
@@ -67,19 +73,23 @@ declare global {
     },
   ): T;
 
-  function $lazy<T extends Component<any>>(fn: Promise<{ default: T }>): T & {
+  function $lazy<T extends Component<any>>(
+    fn: Promise<{ default: T }>,
+  ): T & {
     preload: () => void;
   };
 
   function $children(value: solid.JSX.Element): solid.JSX.Element;
 
   interface Observable<T> {
-    subscribe(observer: ObservableObserver<T>): { unsubscribe(): void } | (() => void);
+    subscribe(
+      observer: ObservableObserver<T>,
+    ): { unsubscribe(): void } | (() => void);
   }
 
   function $observable<T>(value: T): Observable<T>;
   function $from<T>(observable: Observable<T>): T;
-  function $from<T>(produce: ((setter: Setter<T>) => () => void)): T;
+  function $from<T>(produce: (setter: Setter<T>) => () => void): T;
 
   function $mapArray<T, U>(
     arr: readonly T[] | undefined | null | false,
@@ -147,15 +157,15 @@ declare global {
   const HydrationScript: typeof solidWeb.HydrationScript;
   const NoHydration: typeof solidWeb.NoHydration;
 
-  function $component<P>(Comp: (props: P) => solid.JSX.Element): (props: P) => solid.JSX.Element;
+  function $component<P>(
+    Comp: (props: P) => solid.JSX.Element,
+  ): (props: P) => solid.JSX.Element;
 }
 
-type Props<T> = T extends (props: infer P) => solid.JSX.Element
-  ? P
-  : never;
+type Props<T> = T extends (props: infer P) => solid.JSX.Element ? P : never;
 
 declare module 'solid-js' {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
+  // biome-ignore lint/style/noNamespace: <explanation>
   namespace JSX {
     interface IntrinsicElements {
       'solid:error-boundary': Props<typeof ErrorBoundary>;

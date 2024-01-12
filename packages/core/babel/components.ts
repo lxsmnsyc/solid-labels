@@ -40,13 +40,16 @@ const NAMESPACE_COMPONENTS: Record<string, ComponentImport> = {
   'no-hydration': ['NoHydration', 'solid-js/web'],
 };
 
-export default function transformComponents(state: State, path: babel.NodePath): void {
+export default function transformComponents(
+  state: State,
+  path: babel.NodePath,
+): void {
   path.traverse({
     Expression(p) {
       if (
-        t.isIdentifier(p.node)
-        && !p.scope.hasBinding(p.node.name)
-        && p.node.name in COMPONENTS
+        t.isIdentifier(p.node) &&
+        !p.scope.hasBinding(p.node.name) &&
+        p.node.name in COMPONENTS
       ) {
         const [name, source] = COMPONENTS[p.node.name];
         p.replaceWith(getImportIdentifier(state, p, name, source));
@@ -57,15 +60,19 @@ export default function transformComponents(state: State, path: babel.NodePath):
       const id = openingElement.name;
       let replacement: t.JSXIdentifier | undefined;
       if (
-        t.isJSXNamespacedName(id)
-        && id.namespace.name === NAMESPACE
-        && id.name.name in NAMESPACE_COMPONENTS
+        t.isJSXNamespacedName(id) &&
+        id.namespace.name === NAMESPACE &&
+        id.name.name in NAMESPACE_COMPONENTS
       ) {
         const [name, source] = NAMESPACE_COMPONENTS[id.name.name];
         const identifier = getImportIdentifier(state, p, name, source);
         replacement = t.jsxIdentifier(identifier.name);
       }
-      if (t.isJSXIdentifier(id) && !p.scope.hasBinding(id.name) && id.name in COMPONENTS) {
+      if (
+        t.isJSXIdentifier(id) &&
+        !p.scope.hasBinding(id.name) &&
+        id.name in COMPONENTS
+      ) {
         const [name, source] = COMPONENTS[id.name];
         const identifier = getImportIdentifier(state, p, name, source);
         replacement = t.jsxIdentifier(identifier.name);

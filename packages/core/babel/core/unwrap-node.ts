@@ -1,9 +1,8 @@
 import type * as t from '@babel/types';
 
-type TypeCheck<K> =
-  K extends (node: t.Node) => node is (infer U extends t.Node)
-    ? U
-    : never;
+type TypeFilter<K extends t.Node> = (node: t.Node) => node is K;
+
+type TypeCheck<K> = K extends TypeFilter<infer U> ? U : never;
 
 type NestedExpression =
   | t.ParenthesizedExpression
@@ -29,10 +28,7 @@ function isNestedExpression(node: t.Node): node is NestedExpression {
   }
 }
 
-export default function unwrapNode<
-  K extends(
-(node: t.Node) => boolean),
->(
+export default function unwrapNode<K extends (node: t.Node) => boolean>(
   node: t.Node,
   key: K,
 ): TypeCheck<K> | undefined {
