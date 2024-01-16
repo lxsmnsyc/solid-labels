@@ -9,11 +9,7 @@ export default function derefMemoVariable(
 ): t.VariableDeclarator {
   const readIdentifier = path.scope.generateUidIdentifier(memoIdentifier.name);
 
-  derefMemo(
-    path,
-    memoIdentifier,
-    readIdentifier,
-  );
+  derefMemo(path, memoIdentifier, readIdentifier);
 
   return t.variableDeclarator(readIdentifier, stateIdentifier);
 }

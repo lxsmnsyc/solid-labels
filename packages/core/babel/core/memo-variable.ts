@@ -18,28 +18,29 @@ export default function memoVariable(
   if (state.opts.dev) {
     exprs.push(t.identifier('undefined'));
     if (optionsIdentifier) {
-      exprs.push(t.callExpression(
-        t.memberExpression(
-          t.identifier('Object'),
-          t.identifier('assign'),
+      exprs.push(
+        t.callExpression(
+          t.memberExpression(t.identifier('Object'), t.identifier('assign')),
+          [
+            t.objectExpression([
+              t.objectProperty(
+                t.identifier('name'),
+                t.stringLiteral(memoIdentifier.name),
+              ),
+            ]),
+            optionsIdentifier,
+          ],
         ),
-        [
-          t.objectExpression([
-            t.objectProperty(
-              t.identifier('name'),
-              t.stringLiteral(memoIdentifier.name),
-            ),
-          ]),
-          optionsIdentifier,
-        ],
-      ));
+      );
     } else {
-      exprs.push(t.objectExpression([
-        t.objectProperty(
-          t.identifier('name'),
-          t.stringLiteral(memoIdentifier.name),
-        ),
-      ]));
+      exprs.push(
+        t.objectExpression([
+          t.objectProperty(
+            t.identifier('name'),
+            t.stringLiteral(memoIdentifier.name),
+          ),
+        ]),
+      );
     }
   } else if (optionsIdentifier) {
     exprs.push(t.identifier('undefined'));

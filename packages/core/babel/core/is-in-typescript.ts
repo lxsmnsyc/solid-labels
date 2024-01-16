@@ -1,4 +1,5 @@
 import * as t from '@babel/types';
+import type * as babel from '@babel/core';
 
 export default function isInTypeScript(path: babel.NodePath): boolean {
   let parent = path.parentPath;

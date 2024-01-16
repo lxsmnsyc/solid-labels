@@ -15,28 +15,29 @@ export default function deferredVariable(
   const args: t.Expression[] = [normalIdentifier];
   if (state.opts.dev) {
     if (optionsIdentifier) {
-      args.push(t.callExpression(
-        t.memberExpression(
-          t.identifier('Object'),
-          t.identifier('assign'),
+      args.push(
+        t.callExpression(
+          t.memberExpression(t.identifier('Object'), t.identifier('assign')),
+          [
+            t.objectExpression([
+              t.objectProperty(
+                t.identifier('name'),
+                t.stringLiteral(deferredIdentifier.name),
+              ),
+            ]),
+            optionsIdentifier,
+          ],
         ),
-        [
-          t.objectExpression([
-            t.objectProperty(
-              t.identifier('name'),
-              t.stringLiteral(deferredIdentifier.name),
-            ),
-          ]),
-          optionsIdentifier,
-        ],
-      ));
+      );
     } else {
-      args.push(t.objectExpression([
-        t.objectProperty(
-          t.identifier('name'),
-          t.stringLiteral(deferredIdentifier.name),
-        ),
-      ]));
+      args.push(
+        t.objectExpression([
+          t.objectProperty(
+            t.identifier('name'),
+            t.stringLiteral(deferredIdentifier.name),
+          ),
+        ]),
+      );
     }
   } else if (optionsIdentifier) {
     args.push(optionsIdentifier);

@@ -46,11 +46,7 @@ function getGetterReplacement(
     'get',
     key,
     [],
-    t.blockStatement([
-      t.returnStatement(
-        t.callExpression(source, []),
-      ),
-    ]),
+    t.blockStatement([t.returnStatement(t.callExpression(source, []))]),
     computed,
   );
 }
@@ -68,10 +64,7 @@ function getSetterReplacement(
     [param],
     t.blockStatement([
       t.expressionStatement(
-        t.callExpression(
-          source,
-          [t.arrowFunctionExpression([], param)],
-        ),
+        t.callExpression(source, [t.arrowFunctionExpression([], param)]),
       ),
     ]),
     computed,
@@ -221,12 +214,7 @@ function addUnoptimizedProperty(
         readSource,
         isComputed,
       ),
-      getSetterReplacement(
-        property,
-        tmp,
-        writeSource,
-        isComputed,
-      ),
+      getSetterReplacement(property, tmp, writeSource, isComputed),
     ]);
   }
 }

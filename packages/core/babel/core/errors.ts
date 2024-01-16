@@ -5,12 +5,12 @@ export function unexpectedType<T>(
   received: string,
   expected: string,
 ): Error {
-  return path.buildCodeFrameError(`Unexpected '${received}' (Expected: ${expected})`);
+  return path.buildCodeFrameError(
+    `Unexpected '${received}' (Expected: ${expected})`,
+  );
 }
 
-export function unexpectedMissingParent<T>(
-  path: babel.NodePath<T>,
-): Error {
+export function unexpectedMissingParent<T>(path: babel.NodePath<T>): Error {
   return path.buildCodeFrameError('Unexpected missing parent.');
 }
 
@@ -19,7 +19,9 @@ export function unexpectedArgumentLength<T>(
   received: number,
   expected: number,
 ): Error {
-  return path.buildCodeFrameError(`Unexpected argument length of ${received} (Expected: ${expected})`);
+  return path.buildCodeFrameError(
+    `Unexpected argument length of ${received} (Expected: ${expected})`,
+  );
 }
 
 export function unexpectedAssignmentOperator<T>(
@@ -27,5 +29,7 @@ export function unexpectedAssignmentOperator<T>(
   received: string,
   expected: string,
 ): Error {
-  return path.buildCodeFrameError(`Unexpected assignment operator '${received}' (Expected: ${expected})`);
+  return path.buildCodeFrameError(
+    `Unexpected assignment operator '${received}' (Expected: ${expected})`,
+  );
 }

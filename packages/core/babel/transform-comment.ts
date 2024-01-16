@@ -31,7 +31,10 @@ const CALLBACK_LABEL: Record<string, CallbackLabel> = {
   '@transition': ['startTransition', 'solid-js', false],
 };
 
-export default function transformComments(state: State, path: babel.NodePath): void {
+export default function transformComments(
+  state: State,
+  path: babel.NodePath,
+): void {
   path.traverse({
     VariableDeclaration(p) {
       const comments = p.node.leadingComments;
@@ -40,7 +43,10 @@ export default function transformComments(state: State, path: babel.NodePath): v
         for (let i = 0, len = comments.length; i < len; i++) {
           const comment = comments[i];
           const value: string = comment.value.trim();
-          if (value in VARIABLE_LABEL && !state.opts.disabled?.pragma?.[value]) {
+          if (
+            value in VARIABLE_LABEL &&
+            !state.opts.disabled?.pragma?.[value]
+          ) {
             preference = value;
             comment.value = '';
           }
@@ -89,15 +95,19 @@ export default function transformComments(state: State, path: babel.NodePath): v
                 break;
               case '@destructure':
                 if (
-                  (t.isObjectPattern(declarator.id) || t.isArrayPattern(declarator.id))
-                  && declarator.init
+                  (t.isObjectPattern(declarator.id) ||
+                    t.isArrayPattern(declarator.id)) &&
+                  declarator.init
                 ) {
-                  declarators = [...declarators, ...destructureVariable(
-                    state,
-                    p,
-                    declarator.init,
-                    declarator.id,
-                  )];
+                  declarators = [
+                    ...declarators,
+                    ...destructureVariable(
+                      state,
+                      p,
+                      declarator.init,
+                      declarator.id,
+                    ),
+                  ];
                 }
                 break;
               case '@children':
@@ -122,21 +132,12 @@ export default function transformComments(state: State, path: babel.NodePath): v
             }
           }
 
-          p.replaceWith(
-            t.variableDeclaration(
-              'const',
-              declarators,
-            ),
-          );
+          p.replaceWith(t.variableDeclaration('const', declarators));
         }
       }
     },
     BlockStatement(p) {
-      if (
-        !(
-          t.isBlockStatement(p.parent)
-        )
-      ) {
+      if (!t.isBlockStatement(p.parent)) {
         return;
       }
       const comments = p.node.leadingComments;
@@ -148,7 +149,10 @@ export default function transformComments(state: State, path: babel.NodePath): v
           const value: string = comment.value.trim();
           if (/^@\w+( .*)?$/.test(value)) {
             const [tag, ...debugName] = value.split(' ');
-            if (tag in CALLBACK_LABEL && !state.opts.disabled?.pragma?.[value]) {
+            if (
+              tag in CALLBACK_LABEL &&
+              !state.opts.disabled?.pragma?.[value]
+            ) {
               preference = tag;
               nameOption = debugName.join(' ');
               comment.value = '';
@@ -157,10 +161,7 @@ export default function transformComments(state: State, path: babel.NodePath): v
         }
         if (preference) {
           const [name, source, named] = CALLBACK_LABEL[preference];
-          const callback = t.arrowFunctionExpression(
-            [],
-            p.node,
-          );
+          const callback = t.arrowFunctionExpression([], p.node);
           const args: t.Expression[] = [callback];
           if (named && nameOption) {
             args.push(
@@ -174,10 +175,7 @@ export default function transformComments(state: State, path: babel.NodePath): v
             );
           }
           p.replaceWith(
-            t.callExpression(
-              getImportIdentifier(state, p, name, source),
-              args,
-            ),
+            t.callExpression(getImportIdentifier(state, p, name, source), args),
           );
         }
       }
@@ -192,7 +190,10 @@ export default function transformComments(state: State, path: babel.NodePath): v
           const value: string = comment.value.trim();
           if (/^@\w+( .*)?$/.test(value)) {
             const [tag, ...debugName] = value.split(' ');
-            if (tag in CALLBACK_LABEL && !state.opts.disabled?.pragma?.[value]) {
+            if (
+              tag in CALLBACK_LABEL &&
+              !state.opts.disabled?.pragma?.[value]
+            ) {
               preference = tag;
               nameOption = debugName.join(' ');
               comment.value = '';
@@ -201,10 +202,7 @@ export default function transformComments(state: State, path: babel.NodePath): v
         }
         if (preference) {
           const [name, source, named] = CALLBACK_LABEL[preference];
-          const callback = t.arrowFunctionExpression(
-            [],
-            p.node.expression,
-          );
+          const callback = t.arrowFunctionExpression([], p.node.expression);
           const args: t.Expression[] = [callback];
           if (named && nameOption) {
             args.push(
@@ -218,10 +216,7 @@ export default function transformComments(state: State, path: babel.NodePath): v
             );
           }
           p.replaceWith(
-            t.callExpression(
-              getImportIdentifier(state, p, name, source),
-              args,
-            ),
+            t.callExpression(getImportIdentifier(state, p, name, source), args),
           );
         }
       }
