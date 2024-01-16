@@ -1,12 +1,12 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`ctf > $component > should transform $component 1`] = `
-"import { splitProps as _splitProps } from \\"solid-js\\";
+"import { splitProps as _splitProps } from "solid-js";
 _props => {
   const _prop = () => _props.a,
     _prop2 = () => _prop().b,
     _prop3 = () => _prop().c,
-    _other2 = _splitProps(_prop(), [\\"b\\", \\"c\\"])[1],
+    _other2 = _splitProps(_prop(), ["b", "c"])[1],
     _prop4 = () => _props.b,
     _def = defaultD,
     _prop5 = () => {
@@ -18,19 +18,19 @@ _props => {
       const _value2 = _prop4().e;
       return _value2 === undefined ? _def2 : _value2;
     },
-    _other3 = _splitProps(_prop4(), [\\"d\\", \\"e\\"])[1],
-    _other = _splitProps(_props, [\\"a\\", \\"b\\"])[1];
+    _other3 = _splitProps(_prop4(), ["d", "e"])[1],
+    _other = _splitProps(_props, ["a", "b"])[1];
 };"
 `;
 
 exports[`ctf > $component > should transform $component bindings 1`] = `
-"import { splitProps as _splitProps } from \\"solid-js\\";
-import { createEffect as _createEffect } from \\"solid-js\\";
+"import { splitProps as _splitProps } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
 _props => {
   const _prop = () => _props.a,
     _prop2 = () => _prop().b,
     _prop3 = () => _prop().c,
-    _other2 = _splitProps(_prop(), [\\"b\\", \\"c\\"])[1],
+    _other2 = _splitProps(_prop(), ["b", "c"])[1],
     _prop4 = () => _props.b,
     _def = defaultD,
     _prop5 = () => {
@@ -42,8 +42,8 @@ _props => {
       const _value2 = _prop4().e;
       return _value2 === undefined ? _def2 : _value2;
     },
-    _other3 = _splitProps(_prop4(), [\\"d\\", \\"e\\"])[1],
-    _other = _splitProps(_props, [\\"a\\", \\"b\\"])[1];
+    _other3 = _splitProps(_prop4(), ["d", "e"])[1],
+    _other = _splitProps(_props, ["a", "b"])[1];
   _createEffect(() => {
     console.log(_prop2(), _prop3());
   });
@@ -57,13 +57,13 @@ _props => {
 `;
 
 exports[`ctf > $component > should transform $component bindings 2`] = `
-"import { splitProps as _splitProps } from \\"solid-js\\";
-import { createEffect as _createEffect } from \\"solid-js\\";
+"import { splitProps as _splitProps } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
 _props => {
   const _prop = () => _props.a,
     _prop2 = () => _prop().b,
     _prop3 = () => _prop().c,
-    _other2 = _splitProps(_prop(), [\\"b\\", \\"c\\"])[1],
+    _other2 = _splitProps(_prop(), ["b", "c"])[1],
     _prop4 = () => _props.b,
     _def = defaultD,
     _prop5 = () => {
@@ -75,8 +75,8 @@ _props => {
       const _value2 = _prop4().e;
       return _value2 === undefined ? _def2 : _value2;
     },
-    _other3 = _splitProps(_prop4(), [\\"d\\", \\"e\\"])[1],
-    _other = _splitProps(_props, [\\"a\\", \\"b\\"])[1];
+    _other3 = _splitProps(_prop4(), ["d", "e"])[1],
+    _other = _splitProps(_props, ["a", "b"])[1];
   _createEffect(() => {
     console.log({
       b: _prop2()
@@ -98,13 +98,13 @@ _props => {
 `;
 
 exports[`ctf > $component > should transform $component bindings on $get 1`] = `
-"import { splitProps as _splitProps } from \\"solid-js\\";
-import { createEffect as _createEffect } from \\"solid-js\\";
+"import { splitProps as _splitProps } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
 _props => {
   const _prop = () => _props.a,
     _prop2 = () => _prop().b,
     _prop3 = () => _prop().c,
-    _other2 = _splitProps(_prop(), [\\"b\\", \\"c\\"])[1],
+    _other2 = _splitProps(_prop(), ["b", "c"])[1],
     _prop4 = () => _props.b,
     _def = defaultD,
     _prop5 = () => {
@@ -116,8 +116,8 @@ _props => {
       const _value2 = _prop4().e;
       return _value2 === undefined ? _def2 : _value2;
     },
-    _other3 = _splitProps(_prop4(), [\\"d\\", \\"e\\"])[1],
-    _other = _splitProps(_props, [\\"a\\", \\"b\\"])[1];
+    _other3 = _splitProps(_prop4(), ["d", "e"])[1],
+    _other = _splitProps(_props, ["a", "b"])[1];
   _createEffect(() => {
     console.log(_prop2, _prop3);
   });
@@ -131,8 +131,8 @@ _props => {
 `;
 
 exports[`ctf > $component > should transform $component bindings on $getter 1`] = `
-"import { splitProps as _splitProps } from \\"solid-js\\";
-import { createEffect as _createEffect } from \\"solid-js\\";
+"import { splitProps as _splitProps } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
 const _proto = {
     get b() {
       return this.__$get__b();
@@ -157,7 +157,7 @@ _props => {
   const _prop = () => _props.a,
     _prop2 = () => _prop().b,
     _prop3 = () => _prop().c,
-    _other2 = _splitProps(_prop(), [\\"b\\", \\"c\\"])[1],
+    _other2 = _splitProps(_prop(), ["b", "c"])[1],
     _prop4 = () => _props.b,
     _def = defaultD,
     _prop5 = () => {
@@ -169,8 +169,8 @@ _props => {
       const _value2 = _prop4().e;
       return _value2 === undefined ? _def2 : _value2;
     },
-    _other3 = _splitProps(_prop4(), [\\"d\\", \\"e\\"])[1],
-    _other = _splitProps(_props, [\\"a\\", \\"b\\"])[1];
+    _other3 = _splitProps(_prop4(), ["d", "e"])[1],
+    _other = _splitProps(_props, ["a", "b"])[1];
   _createEffect(() => {
     console.log({
       __proto__: _proto,
@@ -196,8 +196,8 @@ _props => {
 `;
 
 exports[`ctf > $component > should transform $component bindings on $property 1`] = `
-"import { splitProps as _splitProps } from \\"solid-js\\";
-import { createEffect as _createEffect } from \\"solid-js\\";
+"import { splitProps as _splitProps } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
 const _proto = {
     get b() {
       return this.__$get__b();
@@ -222,7 +222,7 @@ _props => {
   const _prop = () => _props.a,
     _prop2 = () => _prop().b,
     _prop3 = () => _prop().c,
-    _other2 = _splitProps(_prop(), [\\"b\\", \\"c\\"])[1],
+    _other2 = _splitProps(_prop(), ["b", "c"])[1],
     _prop4 = () => _props.b,
     _def = defaultD,
     _prop5 = () => {
@@ -234,8 +234,8 @@ _props => {
       const _value2 = _prop4().e;
       return _value2 === undefined ? _def2 : _value2;
     },
-    _other3 = _splitProps(_prop4(), [\\"d\\", \\"e\\"])[1],
-    _other = _splitProps(_props, [\\"a\\", \\"b\\"])[1];
+    _other3 = _splitProps(_prop4(), ["d", "e"])[1],
+    _other = _splitProps(_props, ["a", "b"])[1];
   _createEffect(() => {
     console.log({
       __proto__: _proto,
@@ -261,13 +261,13 @@ _props => {
 `;
 
 exports[`ctf > $component > should transform $component bindings on $refMemo 1`] = `
-"import { splitProps as _splitProps } from \\"solid-js\\";
-import { createEffect as _createEffect } from \\"solid-js\\";
+"import { splitProps as _splitProps } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
 _props => {
   const _prop = () => _props.a,
     _prop2 = () => _prop().b,
     _prop3 = () => _prop().c,
-    _other2 = _splitProps(_prop(), [\\"b\\", \\"c\\"])[1],
+    _other2 = _splitProps(_prop(), ["b", "c"])[1],
     _prop4 = () => _props.b,
     _def = defaultD,
     _prop5 = () => {
@@ -279,8 +279,8 @@ _props => {
       const _value2 = _prop4().e;
       return _value2 === undefined ? _def2 : _value2;
     },
-    _other3 = _splitProps(_prop4(), [\\"d\\", \\"e\\"])[1],
-    _other = _splitProps(_props, [\\"a\\", \\"b\\"])[1];
+    _other3 = _splitProps(_prop4(), ["d", "e"])[1],
+    _other = _splitProps(_props, ["a", "b"])[1];
   _createEffect(() => {
     console.log(_prop2, _prop3);
   });
@@ -416,11 +416,11 @@ const value = {
 `;
 
 exports[`ctf > $destructure > should transform $destructure 1`] = `
-"import { splitProps as _splitProps } from \\"solid-js\\";
+"import { splitProps as _splitProps } from "solid-js";
 let _prop = () => x.a,
   _prop2 = () => _prop().b,
   _prop3 = () => _prop().c,
-  _other2 = _splitProps(_prop(), [\\"b\\", \\"c\\"])[1],
+  _other2 = _splitProps(_prop(), ["b", "c"])[1],
   _prop4 = () => x.b,
   _def = defaultD,
   _prop5 = () => {
@@ -432,17 +432,17 @@ let _prop = () => x.a,
     const _value2 = _prop4().e;
     return _value2 === undefined ? _def2 : _value2;
   },
-  _other3 = _splitProps(_prop4(), [\\"d\\", \\"e\\"])[1],
-  _other = _splitProps(x, [\\"a\\", \\"b\\"])[1];"
+  _other3 = _splitProps(_prop4(), ["d", "e"])[1],
+  _other = _splitProps(x, ["a", "b"])[1];"
 `;
 
 exports[`ctf > $destructure > should transform $destructure bindings 1`] = `
-"import { splitProps as _splitProps } from \\"solid-js\\";
-import { createEffect as _createEffect } from \\"solid-js\\";
+"import { splitProps as _splitProps } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
 let _prop = () => x.a,
   _prop2 = () => _prop().b,
   _prop3 = () => _prop().c,
-  _other2 = _splitProps(_prop(), [\\"b\\", \\"c\\"])[1],
+  _other2 = _splitProps(_prop(), ["b", "c"])[1],
   _prop4 = () => x.b,
   _def = defaultD,
   _prop5 = () => {
@@ -454,8 +454,8 @@ let _prop = () => x.a,
     const _value2 = _prop4().e;
     return _value2 === undefined ? _def2 : _value2;
   },
-  _other3 = _splitProps(_prop4(), [\\"d\\", \\"e\\"])[1],
-  _other = _splitProps(x, [\\"a\\", \\"b\\"])[1];
+  _other3 = _splitProps(_prop4(), ["d", "e"])[1],
+  _other = _splitProps(x, ["a", "b"])[1];
 _createEffect(() => {
   console.log(_prop2(), _prop3());
 });
@@ -468,12 +468,12 @@ _createEffect(() => {
 `;
 
 exports[`ctf > $destructure > should transform $destructure bindings 2`] = `
-"import { splitProps as _splitProps } from \\"solid-js\\";
-import { createEffect as _createEffect } from \\"solid-js\\";
+"import { splitProps as _splitProps } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
 let _prop = () => x.a,
   _prop2 = () => _prop().b,
   _prop3 = () => _prop().c,
-  _other2 = _splitProps(_prop(), [\\"b\\", \\"c\\"])[1],
+  _other2 = _splitProps(_prop(), ["b", "c"])[1],
   _prop4 = () => x.b,
   _def = defaultD,
   _prop5 = () => {
@@ -485,8 +485,8 @@ let _prop = () => x.a,
     const _value2 = _prop4().e;
     return _value2 === undefined ? _def2 : _value2;
   },
-  _other3 = _splitProps(_prop4(), [\\"d\\", \\"e\\"])[1],
-  _other = _splitProps(x, [\\"a\\", \\"b\\"])[1];
+  _other3 = _splitProps(_prop4(), ["d", "e"])[1],
+  _other = _splitProps(x, ["a", "b"])[1];
 _createEffect(() => {
   console.log({
     b: _prop2()
@@ -507,12 +507,12 @@ _createEffect(() => {
 `;
 
 exports[`ctf > $destructure > should transform $destructure bindings on $get 1`] = `
-"import { splitProps as _splitProps } from \\"solid-js\\";
-import { createEffect as _createEffect } from \\"solid-js\\";
+"import { splitProps as _splitProps } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
 let _prop = () => x.a,
   _prop2 = () => _prop().b,
   _prop3 = () => _prop().c,
-  _other2 = _splitProps(_prop(), [\\"b\\", \\"c\\"])[1],
+  _other2 = _splitProps(_prop(), ["b", "c"])[1],
   _prop4 = () => x.b,
   _def = defaultD,
   _prop5 = () => {
@@ -524,8 +524,8 @@ let _prop = () => x.a,
     const _value2 = _prop4().e;
     return _value2 === undefined ? _def2 : _value2;
   },
-  _other3 = _splitProps(_prop4(), [\\"d\\", \\"e\\"])[1],
-  _other = _splitProps(x, [\\"a\\", \\"b\\"])[1];
+  _other3 = _splitProps(_prop4(), ["d", "e"])[1],
+  _other = _splitProps(x, ["a", "b"])[1];
 _createEffect(() => {
   console.log(_prop2, _prop3);
 });
@@ -538,8 +538,8 @@ _createEffect(() => {
 `;
 
 exports[`ctf > $destructure > should transform $destructure bindings on $getter 1`] = `
-"import { splitProps as _splitProps } from \\"solid-js\\";
-import { createEffect as _createEffect } from \\"solid-js\\";
+"import { splitProps as _splitProps } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
 const _proto = {
     get b() {
       return this.__$get__b();
@@ -563,7 +563,7 @@ const _proto = {
 let _prop = () => x.a,
   _prop2 = () => _prop().b,
   _prop3 = () => _prop().c,
-  _other2 = _splitProps(_prop(), [\\"b\\", \\"c\\"])[1],
+  _other2 = _splitProps(_prop(), ["b", "c"])[1],
   _prop4 = () => x.b,
   _def = defaultD,
   _prop5 = () => {
@@ -575,8 +575,8 @@ let _prop = () => x.a,
     const _value2 = _prop4().e;
     return _value2 === undefined ? _def2 : _value2;
   },
-  _other3 = _splitProps(_prop4(), [\\"d\\", \\"e\\"])[1],
-  _other = _splitProps(x, [\\"a\\", \\"b\\"])[1];
+  _other3 = _splitProps(_prop4(), ["d", "e"])[1],
+  _other = _splitProps(x, ["a", "b"])[1];
 _createEffect(() => {
   console.log({
     __proto__: _proto,
@@ -601,8 +601,8 @@ _createEffect(() => {
 `;
 
 exports[`ctf > $destructure > should transform $destructure bindings on $property 1`] = `
-"import { splitProps as _splitProps } from \\"solid-js\\";
-import { createEffect as _createEffect } from \\"solid-js\\";
+"import { splitProps as _splitProps } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
 const _proto = {
     get b() {
       return this.__$get__b();
@@ -626,7 +626,7 @@ const _proto = {
 let _prop = () => x.a,
   _prop2 = () => _prop().b,
   _prop3 = () => _prop().c,
-  _other2 = _splitProps(_prop(), [\\"b\\", \\"c\\"])[1],
+  _other2 = _splitProps(_prop(), ["b", "c"])[1],
   _prop4 = () => x.b,
   _def = defaultD,
   _prop5 = () => {
@@ -638,8 +638,8 @@ let _prop = () => x.a,
     const _value2 = _prop4().e;
     return _value2 === undefined ? _def2 : _value2;
   },
-  _other3 = _splitProps(_prop4(), [\\"d\\", \\"e\\"])[1],
-  _other = _splitProps(x, [\\"a\\", \\"b\\"])[1];
+  _other3 = _splitProps(_prop4(), ["d", "e"])[1],
+  _other = _splitProps(x, ["a", "b"])[1];
 _createEffect(() => {
   console.log({
     __proto__: _proto,
@@ -664,12 +664,12 @@ _createEffect(() => {
 `;
 
 exports[`ctf > $destructure > should transform $destructure bindings on $refMemo 1`] = `
-"import { splitProps as _splitProps } from \\"solid-js\\";
-import { createEffect as _createEffect } from \\"solid-js\\";
+"import { splitProps as _splitProps } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
 let _prop = () => x.a,
   _prop2 = () => _prop().b,
   _prop3 = () => _prop().c,
-  _other2 = _splitProps(_prop(), [\\"b\\", \\"c\\"])[1],
+  _other2 = _splitProps(_prop(), ["b", "c"])[1],
   _prop4 = () => x.b,
   _def = defaultD,
   _prop5 = () => {
@@ -681,8 +681,8 @@ let _prop = () => x.a,
     const _value2 = _prop4().e;
     return _value2 === undefined ? _def2 : _value2;
   },
-  _other3 = _splitProps(_prop4(), [\\"d\\", \\"e\\"])[1],
-  _other = _splitProps(x, [\\"a\\", \\"b\\"])[1];
+  _other3 = _splitProps(_prop4(), ["d", "e"])[1],
+  _other = _splitProps(x, ["a", "b"])[1];
 _createEffect(() => {
   console.log(_prop2, _prop3);
 });
@@ -695,10 +695,10 @@ _createEffect(() => {
 `;
 
 exports[`ctf > $effect, $renderEffect, $computed > should transform $effect, $renderEffect, $computed 1`] = `
-"import { createRenderEffect as _createRenderEffect } from \\"solid-js\\";
-import { createComputed as _createComputed } from \\"solid-js\\";
-import { createEffect as _createEffect } from \\"solid-js\\";
-import { createSignal as _createSignal } from \\"solid-js\\";
+"import { createRenderEffect as _createRenderEffect } from "solid-js";
+import { createComputed as _createComputed } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
+import { createSignal as _createSignal } from "solid-js";
 let [_x, _setx] = _createSignal(0);
 _createEffect(() => {
   console.log('Count', _x());
@@ -712,18 +712,18 @@ _createRenderEffect(() => {
 `;
 
 exports[`ctf > $memo > should transform $memo 1`] = `
-"import { createMemo as _createMemo } from \\"solid-js\\";
+"import { createMemo as _createMemo } from "solid-js";
 const _message = _createMemo(() => \`Count: \${count}\`);"
 `;
 
 exports[`ctf > $memo > should transform $memo bindings 1`] = `
-"import { createMemo as _createMemo } from \\"solid-js\\";
+"import { createMemo as _createMemo } from "solid-js";
 const _message = _createMemo(() => \`Count: \${count}\`);
 const value = _message();"
 `;
 
 exports[`ctf > $memo > should transform $memo bindings 2`] = `
-"import { createMemo as _createMemo } from \\"solid-js\\";
+"import { createMemo as _createMemo } from "solid-js";
 const _message = _createMemo(() => \`Count: \${count}\`);
 const value = {
   message: _message()
@@ -731,13 +731,13 @@ const value = {
 `;
 
 exports[`ctf > $memo > should transform $memo on $get 1`] = `
-"import { createMemo as _createMemo } from \\"solid-js\\";
+"import { createMemo as _createMemo } from "solid-js";
 const _message = _createMemo(() => \`Count: \${count}\`);
 const value = _message;"
 `;
 
 exports[`ctf > $memo > should transform $memo on $getter 1`] = `
-"import { createMemo as _createMemo } from \\"solid-js\\";
+"import { createMemo as _createMemo } from "solid-js";
 const _proto = {
   get message() {
     return this.__$get__message();
@@ -751,7 +751,7 @@ const value = {
 `;
 
 exports[`ctf > $memo > should transform $memo on $property 1`] = `
-"import { createMemo as _createMemo } from \\"solid-js\\";
+"import { createMemo as _createMemo } from "solid-js";
 const _proto = {
   get message() {
     return this.__$get__message();
@@ -765,24 +765,24 @@ const value = {
 `;
 
 exports[`ctf > $memo > should transform $memo on $refMemo 1`] = `
-"import { createMemo as _createMemo } from \\"solid-js\\";
+"import { createMemo as _createMemo } from "solid-js";
 const _message = _createMemo(() => \`Count: \${count}\`);
 const value = _message;"
 `;
 
 exports[`ctf > $signal > should transform $signal 1`] = `
-"import { createSignal as _createSignal } from \\"solid-js\\";
+"import { createSignal as _createSignal } from "solid-js";
 let [_count, _setcount] = _createSignal(0);"
 `;
 
 exports[`ctf > $signal > should transform $signal bindings 1`] = `
-"import { createSignal as _createSignal } from \\"solid-js\\";
+"import { createSignal as _createSignal } from "solid-js";
 let [_count, _setcount] = _createSignal(0);
 const value = _count();"
 `;
 
 exports[`ctf > $signal > should transform $signal bindings 2`] = `
-"import { createSignal as _createSignal } from \\"solid-js\\";
+"import { createSignal as _createSignal } from "solid-js";
 let [_count, _setcount] = _createSignal(0);
 const value = {
   count: _count()
@@ -790,7 +790,7 @@ const value = {
 `;
 
 exports[`ctf > $signal > should transform $signal bindings 3`] = `
-"import { createSignal as _createSignal } from \\"solid-js\\";
+"import { createSignal as _createSignal } from "solid-js";
 let [_count, _setcount] = _createSignal(0);
 async function exampleA() {
   const _tmp = await asyncValue();
@@ -811,13 +811,13 @@ const example = async () => {
 `;
 
 exports[`ctf > $signal > should transform $signal bindings for $get 1`] = `
-"import { createSignal as _createSignal } from \\"solid-js\\";
+"import { createSignal as _createSignal } from "solid-js";
 let [_count, _setcount] = _createSignal(0);
 const value = _count;"
 `;
 
 exports[`ctf > $signal > should transform $signal bindings for $getter 1`] = `
-"import { createSignal as _createSignal } from \\"solid-js\\";
+"import { createSignal as _createSignal } from "solid-js";
 const _proto = {
   get count() {
     return this.__$get__count();
@@ -831,7 +831,7 @@ const value = {
 `;
 
 exports[`ctf > $signal > should transform $signal bindings for $property 1`] = `
-"import { createSignal as _createSignal } from \\"solid-js\\";
+"import { createSignal as _createSignal } from "solid-js";
 const _proto = {
   get count() {
     return this.__$get__count();
@@ -849,19 +849,19 @@ const value = {
 `;
 
 exports[`ctf > $signal > should transform $signal bindings for $refSignal 1`] = `
-"import { createSignal as _createSignal } from \\"solid-js\\";
+"import { createSignal as _createSignal } from "solid-js";
 let [_count, _setcount] = _createSignal(0);
 const value = [_count, _setcount];"
 `;
 
 exports[`ctf > $signal > should transform $signal bindings for $set 1`] = `
-"import { createSignal as _createSignal } from \\"solid-js\\";
+"import { createSignal as _createSignal } from "solid-js";
 let [_count, _setcount] = _createSignal(0);
 const value = _setcount;"
 `;
 
 exports[`ctf > $signal > should transform $signal bindings for $setter 1`] = `
-"import { createSignal as _createSignal } from \\"solid-js\\";
+"import { createSignal as _createSignal } from "solid-js";
 const _proto = {
   set count(_param) {
     this.__$set__count(() => _param);
