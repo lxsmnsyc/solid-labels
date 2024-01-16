@@ -24,7 +24,7 @@
   "name": "vite-plugin-solid-labels",
   "devDependencies": {
     "@types/node": "^20.11.0",
-    "pridepack": "2.5.1",
+    "pridepack": "2.6.0",
     "rollup": "^4.9.5",
     "solid-labels": "0.16.0",
     "tslib": "^2.6.2",
