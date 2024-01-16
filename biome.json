@@ -116,7 +116,7 @@
         "noArguments": "error",
         "noCommaOperator": "off",
         "noDefaultExport": "off",
-        "noImplicitBoolean": "error",
+        "noImplicitBoolean": "off",
         "noInferrableTypes": "error",
         "noNamespace": "error",
         "noNegationElse": "error",
