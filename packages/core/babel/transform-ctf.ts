@@ -89,303 +89,305 @@ const SPECIAL_CTF = new Set([
   COMPONENT_CTF,
 ]);
 
-export default function transformCTF(state: State, path: babel.NodePath): void {
-  path.traverse({
-    CallExpression(p) {
-      const trueIdentifier = unwrapNode(p.node.callee, t.isIdentifier);
-      if (
-        trueIdentifier &&
-        !p.scope.hasBinding(trueIdentifier.name) &&
-        !state.opts.disabled?.ctf?.[trueIdentifier.name]
-      ) {
-        // Transform Auto Arrow CTFs
-        if (trueIdentifier.name in AUTO_ARROW_CTF) {
-          const [name, source, limit] = AUTO_ARROW_CTF[trueIdentifier.name];
-          const args = p.node.arguments;
-          assert(
-            args.length <= limit,
-            unexpectedArgumentLength(p, args.length, limit),
-          );
-          const [argument, ...rest] = args;
-          assert(
-            t.isExpression(argument),
-            unexpectedType(p, argument.type, 'Expression'),
-          );
-          p.replaceWith(
-            t.callExpression(getImportIdentifier(state, p, name, source), [
-              t.isArrowFunctionExpression(argument) ||
-              t.isFunctionExpression(argument)
-                ? argument
-                : t.arrowFunctionExpression([], argument),
-              ...rest,
-            ]),
-          );
-        }
-        if (trueIdentifier.name === COMPONENT_CTF) {
-          const args = p.node.arguments;
-          assert(
-            args.length === 1,
-            unexpectedArgumentLength(p, args.length, 1),
-          );
-          const argument = args[0];
-          assert(
-            t.isFunctionExpression(argument) ||
-              t.isArrowFunctionExpression(argument),
-            unexpectedType(
-              p,
-              argument.type,
-              'FunctionExpression | ArrowFunctionExpression',
-            ),
-          );
-          if (argument.params.length > 0) {
-            const params = argument.params[0];
-            if (t.isObjectPattern(params)) {
-              // Generate uid for props
-              const props = generateUniqueName(p, 'props');
-              // Replace params with props
-              argument.params[0] = props;
-              const declaration = t.variableDeclaration('const', [
-                t.variableDeclarator(
-                  params,
-                  t.callExpression(t.identifier('$destructure'), [props]),
-                ),
+const CTF_TRAVERSE: babel.Visitor<State> = {
+  CallExpression(path, state) {
+    const trueIdentifier = unwrapNode(path.node.callee, t.isIdentifier);
+    if (
+      trueIdentifier &&
+      !path.scope.hasBinding(trueIdentifier.name) &&
+      !state.opts.disabled?.ctf?.[trueIdentifier.name]
+    ) {
+      // Transform Auto Arrow CTFs
+      if (trueIdentifier.name in AUTO_ARROW_CTF) {
+        const [name, source, limit] = AUTO_ARROW_CTF[trueIdentifier.name];
+        const args = path.node.arguments;
+        assert(
+          args.length <= limit,
+          unexpectedArgumentLength(path, args.length, limit),
+        );
+        const [argument, ...rest] = args;
+        assert(
+          t.isExpression(argument),
+          unexpectedType(path, argument.type, 'Expression'),
+        );
+        path.replaceWith(
+          t.callExpression(getImportIdentifier(state, path, name, source), [
+            t.isArrowFunctionExpression(argument) ||
+            t.isFunctionExpression(argument)
+              ? argument
+              : t.arrowFunctionExpression([], argument),
+            ...rest,
+          ]),
+        );
+      }
+      if (trueIdentifier.name === COMPONENT_CTF) {
+        const args = path.node.arguments;
+        assert(
+          args.length === 1,
+          unexpectedArgumentLength(path, args.length, 1),
+        );
+        const argument = args[0];
+        assert(
+          t.isFunctionExpression(argument) ||
+            t.isArrowFunctionExpression(argument),
+          unexpectedType(
+            path,
+            argument.type,
+            'FunctionExpression | ArrowFunctionExpression',
+          ),
+        );
+        if (argument.params.length > 0) {
+          const params = argument.params[0];
+          if (t.isObjectPattern(params)) {
+            // Generate uid for props
+            const props = generateUniqueName(path, 'props');
+            // Replace params with props
+            argument.params[0] = props;
+            const declaration = t.variableDeclaration('const', [
+              t.variableDeclarator(
+                params,
+                t.callExpression(t.identifier('$destructure'), [props]),
+              ),
+            ]);
+            if (t.isExpression(argument.body)) {
+              argument.body = t.blockStatement([
+                declaration,
+                t.returnStatement(argument.body),
               ]);
-              if (t.isExpression(argument.body)) {
-                argument.body = t.blockStatement([
-                  declaration,
-                  t.returnStatement(argument.body),
-                ]);
-              } else {
-                argument.body.body.unshift(declaration);
-              }
+            } else {
+              argument.body.body.unshift(declaration);
             }
           }
-          p.replaceWith(argument);
         }
+        path.replaceWith(argument);
       }
-    },
-    Expression(p) {
-      if (t.isIdentifier(p.node) && !p.scope.hasBinding(p.node.name)) {
-        if (
-          p.node.name in AUTO_IMPORT_ALIAS_CTF &&
-          !state.opts.disabled?.ctf?.[p.node.name]
-        ) {
-          const [name, source] = AUTO_IMPORT_ALIAS_CTF[p.node.name];
-          p.replaceWith(getImportIdentifier(state, p, name, source));
-        }
+    }
+  },
+  Expression(path, state) {
+    if (t.isIdentifier(path.node) && !path.scope.hasBinding(path.node.name)) {
+      if (
+        path.node.name in AUTO_IMPORT_ALIAS_CTF &&
+        !state.opts.disabled?.ctf?.[path.node.name]
+      ) {
+        const [name, source] = AUTO_IMPORT_ALIAS_CTF[path.node.name];
+        path.replaceWith(getImportIdentifier(state, path, name, source));
       }
-    },
-    VariableDeclarator(p) {
-      const { id, init } = p.node;
-      if (init) {
-        const trueCallExpr = unwrapNode(init, t.isCallExpression);
-        if (trueCallExpr) {
-          const trueCallee = unwrapNode(trueCallExpr.callee, t.isIdentifier);
-          if (
-            trueCallee &&
-            !p.scope.hasBinding(trueCallee.name) &&
-            (SPECIAL_CTF.has(trueCallee.name) ||
-              trueCallee.name in AUTO_ACCESSOR_CTF) &&
-            !state.opts.disabled?.ctf?.[trueCallee.name]
-          ) {
-            if (t.isIdentifier(id)) {
-              // Transform CTFs with auto-accessor
-              if (trueCallee.name in AUTO_ACCESSOR_CTF) {
-                const [name, source, limit, arrow] =
-                  AUTO_ACCESSOR_CTF[trueCallee.name];
-                const args = trueCallExpr.arguments;
-                assert(
-                  args.length <= limit,
-                  unexpectedArgumentLength(p, args.length, limit),
-                );
-                const [argument, ...rest] = args;
-                assert(
-                  t.isExpression(argument),
-                  unexpectedType(p, argument.type, 'Expression'),
-                );
-                p.replaceWith(
-                  accessorVariable(
-                    p,
-                    id,
-                    getImportIdentifier(state, p, name, source),
-                    [
-                      arrow
-                        ? t.arrowFunctionExpression([], argument)
-                        : argument,
-                      ...rest,
-                    ],
-                  ),
-                );
-              } else if (trueCallee.name === SIGNAL_CTF) {
-                // Transform $signal
-                const args = trueCallExpr.arguments;
-                assert(
-                  args.length <= 2,
-                  unexpectedArgumentLength(p, args.length, 2),
-                );
-                let argument: t.Expression | undefined;
-                let options: t.Expression | undefined;
-                if (trueCallExpr.arguments.length > 0) {
-                  const initialState = trueCallExpr.arguments[0];
-                  assert(
-                    t.isExpression(initialState),
-                    unexpectedType(p, initialState.type, 'Expression'),
-                  );
-                  argument = initialState;
-                  if (trueCallExpr.arguments.length > 1) {
-                    const optionsValue = trueCallExpr.arguments[1];
-                    assert(
-                      t.isExpression(optionsValue),
-                      unexpectedType(p, optionsValue.type, 'Expression'),
-                    );
-                    options = optionsValue;
-                  }
-                }
-                p.replaceWith(
-                  signalVariable(
-                    state,
-                    p,
-                    id,
-                    argument || t.identifier('undefined'),
-                    options,
-                  ),
-                );
-              } else if (
-                trueCallee.name === MEMO_CTF ||
-                trueCallee.name === REACTIVE_CTF
-              ) {
-                // Transform $memo
-                const args = trueCallExpr.arguments;
-                assert(
-                  args.length <= 2,
-                  unexpectedArgumentLength(p, args.length, 2),
-                );
-                const argument = args[0];
-                assert(
-                  t.isExpression(argument),
-                  unexpectedType(p, argument.type, 'Expression'),
-                );
-                let options: t.Expression | undefined;
-                if (args.length > 1) {
-                  const optionsValue = args[1];
-                  assert(
-                    t.isExpression(optionsValue),
-                    unexpectedType(p, optionsValue.type, 'Expression'),
-                  );
-                  options = optionsValue;
-                }
-                p.replaceWith(memoVariable(state, p, id, argument, options));
-              } else if (trueCallee.name === DEREF_SIGNAL_CTF) {
-                // Transform $derefSignal
-                const args = trueCallExpr.arguments;
-                assert(
-                  args.length === 1,
-                  unexpectedArgumentLength(p, args.length, 1),
-                );
-                const argument = args[0];
-                assert(
-                  t.isExpression(argument),
-                  unexpectedType(p, argument.type, 'Expression'),
-                );
-                p.replaceWith(derefSignalVariable(p, id, argument));
-              } else if (trueCallee.name === DEREF_MEMO_CTF) {
-                // Transform $derefMemo
-                const args = trueCallExpr.arguments;
-                assert(
-                  args.length === 1,
-                  unexpectedArgumentLength(p, args.length, 1),
-                );
-                const argument = args[0];
-                assert(
-                  t.isExpression(argument),
-                  unexpectedType(p, argument.type, 'Expression'),
-                );
-                p.replaceWith(derefMemoVariable(p, id, argument));
-              } else if (trueCallee.name === DEFERRED_CTF) {
-                // Transform $deferred
-                const args = trueCallExpr.arguments;
-                assert(
-                  args.length <= 2,
-                  unexpectedArgumentLength(p, args.length, 2),
-                );
-                let argument: t.Expression | undefined;
-                let options: t.Expression | undefined;
-                if (args.length > 0) {
-                  const initialState = args[0];
-                  assert(
-                    t.isExpression(initialState),
-                    unexpectedType(p, initialState.type, 'Expression'),
-                  );
-                  argument = initialState;
-                  if (args.length > 1) {
-                    const optionsValue = args[1];
-                    assert(
-                      t.isExpression(optionsValue),
-                      unexpectedType(p, optionsValue.type, 'Expression'),
-                    );
-                    options = optionsValue;
-                  }
-                }
-                p.replaceWith(
-                  deferredVariable(state, p, id, argument, options),
-                );
-              }
-            } else if (trueCallee.name === DESTRUCTURE_CTF) {
-              const args = trueCallExpr.arguments;
-              assert(
-                args.length === 1,
-                unexpectedArgumentLength(p, args.length, 1),
-              );
-              const argument = args[0];
-              assert(
-                t.isExpression(argument),
-                unexpectedType(p, argument.type, 'Expression'),
-              );
-              assert(
-                t.isObjectPattern(id) || t.isArrayPattern(id),
-                unexpectedType(p, id.type, 'ArrayPattern | ObjectPattern'),
-              );
-              p.replaceWithMultiple(
-                destructureVariable(state, p, argument, id),
-              );
-            }
-            p.scope.crawl();
-          }
-        }
-      }
-    },
-    ExpressionStatement(p) {
-      const trueCallExpr = unwrapNode(p.node.expression, t.isCallExpression);
+    }
+  },
+  VariableDeclarator(path, state) {
+    const { id, init } = path.node;
+    if (init) {
+      const trueCallExpr = unwrapNode(init, t.isCallExpression);
       if (trueCallExpr) {
         const trueCallee = unwrapNode(trueCallExpr.callee, t.isIdentifier);
         if (
           trueCallee &&
-          !p.scope.hasBinding(trueCallee.name) &&
+          !path.scope.hasBinding(trueCallee.name) &&
+          (SPECIAL_CTF.has(trueCallee.name) ||
+            trueCallee.name in AUTO_ACCESSOR_CTF) &&
           !state.opts.disabled?.ctf?.[trueCallee.name]
         ) {
-          // Transform $
-          if (trueCallee.name === REACTIVE_CTF) {
+          if (t.isIdentifier(id)) {
+            // Transform CTFs with auto-accessor
+            if (trueCallee.name in AUTO_ACCESSOR_CTF) {
+              const [name, source, limit, arrow] =
+                AUTO_ACCESSOR_CTF[trueCallee.name];
+              const args = trueCallExpr.arguments;
+              assert(
+                args.length <= limit,
+                unexpectedArgumentLength(path, args.length, limit),
+              );
+              const [argument, ...rest] = args;
+              assert(
+                t.isExpression(argument),
+                unexpectedType(path, argument.type, 'Expression'),
+              );
+              path.replaceWith(
+                accessorVariable(
+                  path,
+                  id,
+                  getImportIdentifier(state, path, name, source),
+                  [
+                    arrow
+                      ? t.arrowFunctionExpression([], argument)
+                      : argument,
+                    ...rest,
+                  ],
+                ),
+              );
+            } else if (trueCallee.name === SIGNAL_CTF) {
+              // Transform $signal
+              const args = trueCallExpr.arguments;
+              assert(
+                args.length <= 2,
+                unexpectedArgumentLength(path, args.length, 2),
+              );
+              let argument: t.Expression | undefined;
+              let options: t.Expression | undefined;
+              if (trueCallExpr.arguments.length > 0) {
+                const initialState = trueCallExpr.arguments[0];
+                assert(
+                  t.isExpression(initialState),
+                  unexpectedType(path, initialState.type, 'Expression'),
+                );
+                argument = initialState;
+                if (trueCallExpr.arguments.length > 1) {
+                  const optionsValue = trueCallExpr.arguments[1];
+                  assert(
+                    t.isExpression(optionsValue),
+                    unexpectedType(path, optionsValue.type, 'Expression'),
+                  );
+                  options = optionsValue;
+                }
+              }
+              path.replaceWith(
+                signalVariable(
+                  state,
+                  path,
+                  id,
+                  argument || t.identifier('undefined'),
+                  options,
+                ),
+              );
+            } else if (
+              trueCallee.name === MEMO_CTF ||
+              trueCallee.name === REACTIVE_CTF
+            ) {
+              // Transform $memo
+              const args = trueCallExpr.arguments;
+              assert(
+                args.length <= 2,
+                unexpectedArgumentLength(path, args.length, 2),
+              );
+              const argument = args[0];
+              assert(
+                t.isExpression(argument),
+                unexpectedType(path, argument.type, 'Expression'),
+              );
+              let options: t.Expression | undefined;
+              if (args.length > 1) {
+                const optionsValue = args[1];
+                assert(
+                  t.isExpression(optionsValue),
+                  unexpectedType(path, optionsValue.type, 'Expression'),
+                );
+                options = optionsValue;
+              }
+              path.replaceWith(memoVariable(state, path, id, argument, options));
+            } else if (trueCallee.name === DEREF_SIGNAL_CTF) {
+              // Transform $derefSignal
+              const args = trueCallExpr.arguments;
+              assert(
+                args.length === 1,
+                unexpectedArgumentLength(path, args.length, 1),
+              );
+              const argument = args[0];
+              assert(
+                t.isExpression(argument),
+                unexpectedType(path, argument.type, 'Expression'),
+              );
+              path.replaceWith(derefSignalVariable(path, id, argument));
+            } else if (trueCallee.name === DEREF_MEMO_CTF) {
+              // Transform $derefMemo
+              const args = trueCallExpr.arguments;
+              assert(
+                args.length === 1,
+                unexpectedArgumentLength(path, args.length, 1),
+              );
+              const argument = args[0];
+              assert(
+                t.isExpression(argument),
+                unexpectedType(path, argument.type, 'Expression'),
+              );
+              path.replaceWith(derefMemoVariable(path, id, argument));
+            } else if (trueCallee.name === DEFERRED_CTF) {
+              // Transform $deferred
+              const args = trueCallExpr.arguments;
+              assert(
+                args.length <= 2,
+                unexpectedArgumentLength(path, args.length, 2),
+              );
+              let argument: t.Expression | undefined;
+              let options: t.Expression | undefined;
+              if (args.length > 0) {
+                const initialState = args[0];
+                assert(
+                  t.isExpression(initialState),
+                  unexpectedType(path, initialState.type, 'Expression'),
+                );
+                argument = initialState;
+                if (args.length > 1) {
+                  const optionsValue = args[1];
+                  assert(
+                    t.isExpression(optionsValue),
+                    unexpectedType(path, optionsValue.type, 'Expression'),
+                  );
+                  options = optionsValue;
+                }
+              }
+              path.replaceWith(
+                deferredVariable(state, path, id, argument, options),
+              );
+            }
+          } else if (trueCallee.name === DESTRUCTURE_CTF) {
             const args = trueCallExpr.arguments;
             assert(
               args.length === 1,
-              unexpectedArgumentLength(p, args.length, 1),
+              unexpectedArgumentLength(path, args.length, 1),
             );
             const argument = args[0];
             assert(
               t.isExpression(argument),
-              unexpectedType(p, argument.type, 'Expression'),
+              unexpectedType(path, argument.type, 'Expression'),
             );
-            p.replaceWith(
-              t.expressionStatement(
-                t.callExpression(
-                  getImportIdentifier(state, p, 'createEffect', 'solid-js'),
-                  [t.arrowFunctionExpression([], argument)],
-                ),
-              ),
+            assert(
+              t.isObjectPattern(id) || t.isArrayPattern(id),
+              unexpectedType(path, id.type, 'ArrayPattern | ObjectPattern'),
+            );
+            path.replaceWithMultiple(
+              destructureVariable(state, path, argument, id),
             );
           }
+          path.scope.crawl();
         }
       }
-    },
-  });
+    }
+  },
+  ExpressionStatement(path, state) {
+    const trueCallExpr = unwrapNode(path.node.expression, t.isCallExpression);
+    if (trueCallExpr) {
+      const trueCallee = unwrapNode(trueCallExpr.callee, t.isIdentifier);
+      if (
+        trueCallee &&
+        !path.scope.hasBinding(trueCallee.name) &&
+        !state.opts.disabled?.ctf?.[trueCallee.name]
+      ) {
+        // Transform $
+        if (trueCallee.name === REACTIVE_CTF) {
+          const args = trueCallExpr.arguments;
+          assert(
+            args.length === 1,
+            unexpectedArgumentLength(path, args.length, 1),
+          );
+          const argument = args[0];
+          assert(
+            t.isExpression(argument),
+            unexpectedType(path, argument.type, 'Expression'),
+          );
+          path.replaceWith(
+            t.expressionStatement(
+              t.callExpression(
+                getImportIdentifier(state, path, 'createEffect', 'solid-js'),
+                [t.arrowFunctionExpression([], argument)],
+              ),
+            ),
+          );
+        }
+      }
+    }
+  },
+};
+
+export default function transformCTF(state: State, path: babel.NodePath): void {
+  path.traverse(CTF_TRAVERSE, state);
 }

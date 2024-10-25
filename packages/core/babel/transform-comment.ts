@@ -155,11 +155,11 @@ const COMMENT_TRAVERSE: babel.Visitor<State> = {
       }
     }
   },
-  BlockStatement(p, state) {
-    if (!t.isBlockStatement(p.parent)) {
+  BlockStatement(path, state) {
+    if (!t.isBlockStatement(path.parent)) {
       return;
     }
-    const comments = p.node.leadingComments;
+    const comments = path.node.leadingComments;
     if (comments) {
       const [preference, nameOption] = getCallbackLabelPreference(
         state,
@@ -167,7 +167,7 @@ const COMMENT_TRAVERSE: babel.Visitor<State> = {
       );
       if (preference) {
         const [name, source, named] = CALLBACK_LABEL[preference];
-        const callback = t.arrowFunctionExpression([], p.node);
+        const callback = t.arrowFunctionExpression([], path.node);
         const args: t.Expression[] = [callback];
         if (named && nameOption) {
           args.push(
@@ -180,14 +180,17 @@ const COMMENT_TRAVERSE: babel.Visitor<State> = {
             ]),
           );
         }
-        p.replaceWith(
-          t.callExpression(getImportIdentifier(state, p, name, source), args),
+        path.replaceWith(
+          t.callExpression(
+            getImportIdentifier(state, path, name, source),
+            args,
+          ),
         );
       }
     }
   },
-  ExpressionStatement(p, state) {
-    const comments = p.node.leadingComments;
+  ExpressionStatement(path, state) {
+    const comments = path.node.leadingComments;
     if (comments) {
       const [preference, nameOption] = getCallbackLabelPreference(
         state,
@@ -195,7 +198,7 @@ const COMMENT_TRAVERSE: babel.Visitor<State> = {
       );
       if (preference) {
         const [name, source, named] = CALLBACK_LABEL[preference];
-        const callback = t.arrowFunctionExpression([], p.node.expression);
+        const callback = t.arrowFunctionExpression([], path.node.expression);
         const args: t.Expression[] = [callback];
         if (named && nameOption) {
           args.push(
@@ -208,8 +211,11 @@ const COMMENT_TRAVERSE: babel.Visitor<State> = {
             ]),
           );
         }
-        p.replaceWith(
-          t.callExpression(getImportIdentifier(state, p, name, source), args),
+        path.replaceWith(
+          t.callExpression(
+            getImportIdentifier(state, path, name, source),
+            args,
+          ),
         );
       }
     }
