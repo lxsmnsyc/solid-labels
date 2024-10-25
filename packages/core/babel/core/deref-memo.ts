@@ -78,6 +78,10 @@ export default function derefMemo(
   }
   for (const ref of binding.referencePaths) {
     if (transformReferencePath(ref, readIdentifier)) {
+      assert(
+        t.isIdentifier(ref.node),
+        unexpectedType(ref, ref.node.type, 'Identifier'),
+      );
       ref.replaceWith(t.callExpression(readIdentifier, []));
     }
   }

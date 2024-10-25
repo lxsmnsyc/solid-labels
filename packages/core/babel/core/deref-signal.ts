@@ -236,6 +236,10 @@ export default function derefSignal(
   // Transform all reads
   for (const ref of binding.referencePaths) {
     if (transformSignalRead(ref, readIdentifier, writeIdentifier)) {
+      assert(
+        t.isIdentifier(ref.node),
+        unexpectedType(ref, ref.node.type, 'Identifier'),
+      );
       ref.replaceWith(t.callExpression(readIdentifier, []));
     }
   }
