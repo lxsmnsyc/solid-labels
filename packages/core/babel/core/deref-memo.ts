@@ -24,7 +24,7 @@ function transformGetter(
   const key = propertyParent.node.key;
   assert(
     t.isExpression(key),
-    unexpectedType(propertyParent, key.type, 'Identifier'),
+    unexpectedType(propertyParent.get('key'), key.type, 'Identifier'),
   );
   const objectParent = getProperParentPath(
     propertyParent,
@@ -47,9 +47,9 @@ function transformReferencePath(
     if (!(trueCallee && CALL_CTF.has(trueCallee.name))) {
       return true;
     }
-    const rawArgs = parent.node.arguments[0];
-    const arg = unwrapNode(rawArgs, t.isIdentifier);
-    assert(arg, unexpectedType(parent, rawArgs.type, 'Identifier'));
+    const rawArgs = parent.get('arguments')[0];
+    const arg = unwrapNode(rawArgs.node, t.isIdentifier);
+    assert(arg, unexpectedType(rawArgs, rawArgs.type, 'Identifier'));
     if (arg !== ref.node) {
       return true;
     }
