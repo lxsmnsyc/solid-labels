@@ -1,16 +1,16 @@
 import type * as babel from '@babel/core';
 import * as t from '@babel/types';
 import derefSignal from './deref-signal';
+import { generateUniqueName } from './generate-unique-name';
 
 export default function derefSignalVariable(
   path: babel.NodePath,
   signalIdentifier: t.Identifier,
   stateIdentifier: t.Expression,
 ): t.VariableDeclarator {
-  const readIdentifier = path.scope.generateUidIdentifier(
-    signalIdentifier.name,
-  );
-  const writeIdentifier = path.scope.generateUidIdentifier(
+  const readIdentifier = generateUniqueName(path, signalIdentifier.name);
+  const writeIdentifier = generateUniqueName(
+    path,
     `set${signalIdentifier.name}`,
   );
   derefSignal(path, signalIdentifier, readIdentifier, writeIdentifier);

@@ -2,6 +2,7 @@ import type * as babel from '@babel/core';
 import * as t from '@babel/types';
 import assert from './assert';
 import { unexpectedType } from './errors';
+import { generateUniqueName } from './generate-unique-name';
 import isAwaited from './is-awaited';
 import isYielded from './is-yielded';
 import { addProtoGetter, addProtoProperty, addProtoSetter } from './proto';
@@ -115,9 +116,9 @@ function transformUpdateExpression(
   ref: babel.NodePath<t.UpdateExpression>,
   writeIdentifier: t.Identifier,
 ): void {
-  const param = ref.scope.generateUidIdentifier('current');
+  const param = generateUniqueName(ref, 'current');
   if (ref.node.prefix) {
-    const tmp = ref.scope.generateUidIdentifier('tmp');
+    const tmp = generateUniqueName(ref, 'tmp');
     ref.replaceWith(
       t.callExpression(
         t.arrowFunctionExpression(
@@ -171,7 +172,7 @@ function transformAssignmentExpression(
     const statement = ref.getStatementParent();
     const functionParent = ref.getFunctionParent();
     if (statement) {
-      const awaitedID = statement.scope.generateUidIdentifier('tmp');
+      const awaitedID = generateUniqueName(statement, 'tmp');
       const declaration = t.variableDeclaration('const', [
         t.variableDeclarator(awaitedID, expression),
       ]);
@@ -196,7 +197,7 @@ function transformAssignmentExpression(
   if (ref.node.operator === '=') {
     arg = t.arrowFunctionExpression([], expression);
   } else {
-    const param = ref.scope.generateUidIdentifier('current');
+    const param = generateUniqueName(ref, 'current');
     arg = t.arrowFunctionExpression(
       [param],
       t.assignmentExpression(ref.node.operator, param, expression),
@@ -243,5 +244,4 @@ export default function derefSignal(
       ref.replaceWith(t.callExpression(readIdentifier, []));
     }
   }
-  path.scope.crawl();
 }

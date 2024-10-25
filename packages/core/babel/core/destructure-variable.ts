@@ -2,6 +2,7 @@ import type * as babel from '@babel/core';
 import * as t from '@babel/types';
 import derefMemo from './deref-memo';
 import { unexpectedType } from './errors';
+import { generateUniqueName } from './generate-unique-name';
 import getImportIdentifier from './get-import-identifier';
 import isStatic from './is-static';
 import type { State } from './types';
@@ -14,7 +15,7 @@ export default function destructureVariable(
   pattern: t.ObjectPattern | t.ArrayPattern,
   defaultValue?: t.Expression,
 ): t.VariableDeclarator[] {
-  const otherIdentifier = path.scope.generateUidIdentifier('other');
+  const otherIdentifier = generateUniqueName(path, 'other');
   let declarators: t.VariableDeclarator[] = [];
   const properties: t.Expression[] = [];
   let restIdentifier: t.Identifier | undefined;
@@ -38,7 +39,7 @@ export default function destructureVariable(
         }
 
         // Create a new identifier for the destructure variable
-        const newIdentifier = path.scope.generateUidIdentifier('prop');
+        const newIdentifier = generateUniqueName(path, 'prop');
         let access: t.Expression | t.BlockStatement = t.memberExpression(
           target,
           key,
@@ -46,7 +47,7 @@ export default function destructureVariable(
         );
         let defaultIdentifier: t.Identifier | undefined;
         if (t.isAssignmentPattern(value)) {
-          defaultIdentifier = path.scope.generateUidIdentifier('def');
+          defaultIdentifier = generateUniqueName(path, 'def');
           const isStaticValue = isStatic(value.right);
           const defValue = isStaticValue
             ? value.right
@@ -55,7 +56,7 @@ export default function destructureVariable(
                 [t.arrowFunctionExpression([], value.right)],
               );
           declarators.push(t.variableDeclarator(defaultIdentifier, defValue));
-          const valueIdentifier = path.scope.generateUidIdentifier('value');
+          const valueIdentifier = generateUniqueName(path, 'value');
           access = t.blockStatement([
             t.variableDeclaration('const', [
               t.variableDeclarator(valueIdentifier, access),
@@ -143,7 +144,7 @@ export default function destructureVariable(
       if (property) {
         const keyExpr = t.numericLiteral(i);
 
-        const newIdentifier = path.scope.generateUidIdentifier('prop');
+        const newIdentifier = generateUniqueName(path, 'prop');
         let access: t.Expression | t.BlockStatement = t.memberExpression(
           target,
           keyExpr,
@@ -151,7 +152,7 @@ export default function destructureVariable(
         );
         let defaultIdentifier: t.Identifier | undefined;
         if (t.isAssignmentPattern(property)) {
-          defaultIdentifier = path.scope.generateUidIdentifier('def');
+          defaultIdentifier = generateUniqueName(path, 'def');
           const isStaticValue = isStatic(property.right);
           const defValue = isStaticValue
             ? property.right
@@ -160,7 +161,7 @@ export default function destructureVariable(
                 [t.arrowFunctionExpression([], property.right)],
               );
           declarators.push(t.variableDeclarator(defaultIdentifier, defValue));
-          const valueIdentifier = path.scope.generateUidIdentifier('value');
+          const valueIdentifier = generateUniqueName(path, 'value');
           access = t.blockStatement([
             t.variableDeclaration('const', [
               t.variableDeclarator(valueIdentifier, access),

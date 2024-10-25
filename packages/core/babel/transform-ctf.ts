@@ -1,17 +1,18 @@
 import type * as babel from '@babel/core';
 import * as t from '@babel/types';
-import derefSignalVariable from './core/deref-signal-variable';
 import accessorVariable from './core/accessor-variable';
+import assert from './core/assert';
 import deferredVariable from './core/deferred-variable';
 import derefMemoVariable from './core/deref-memo-variable';
+import derefSignalVariable from './core/deref-signal-variable';
 import destructureVariable from './core/destructure-variable';
 import { unexpectedArgumentLength, unexpectedType } from './core/errors';
+import { generateUniqueName } from './core/generate-unique-name';
 import getImportIdentifier from './core/get-import-identifier';
 import memoVariable from './core/memo-variable';
 import signalVariable from './core/signal-variable';
 import type { State } from './core/types';
 import unwrapNode from './core/unwrap-node';
-import assert from './core/assert';
 
 type AutoArrowCTF = [name: string, source: string, arguments: number];
 
@@ -140,7 +141,7 @@ export default function transformCTF(state: State, path: babel.NodePath): void {
             const params = argument.params[0];
             if (t.isObjectPattern(params)) {
               // Generate uid for props
-              const props = p.scope.generateUidIdentifier('props');
+              const props = generateUniqueName(p, 'props');
               // Replace params with props
               argument.params[0] = props;
               const declaration = t.variableDeclaration('const', [
