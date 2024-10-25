@@ -39,7 +39,7 @@ const CALLBACK_LABEL: Record<string, CallbackLabel> = {
 
 function transformReactiveLabel(
   state: State,
-  p: babel.NodePath,
+  path: babel.NodePath,
   body: t.Statement,
 ): void {
   let target: t.Expression | t.BlockStatement;
@@ -48,11 +48,15 @@ function transformReactiveLabel(
   } else if (t.isBlockStatement(body)) {
     target = body;
   } else {
-    throw unexpectedType(p, body.type, 'ExpressionStatement | BlockStatement');
+    throw unexpectedType(
+      path,
+      body.type,
+      'ExpressionStatement | BlockStatement',
+    );
   }
-  p.replaceWith(
+  path.replaceWith(
     t.callExpression(
-      getImportIdentifier(state, p, 'createEffect', 'solid-js'),
+      getImportIdentifier(state, path, 'createEffect', 'solid-js'),
       [t.arrowFunctionExpression([], target)],
     ),
   );
@@ -60,7 +64,7 @@ function transformReactiveLabel(
 
 function transformDeclaratorFromVariableLabel(
   state: State,
-  p: babel.NodePath,
+  path: babel.NodePath,
   labelName: keyof typeof VARIABLE_LABEL,
   declarator: t.VariableDeclarator,
 ): t.VariableDeclarator[] {
@@ -68,7 +72,7 @@ function transformDeclaratorFromVariableLabel(
     return [
       signalVariable(
         state,
-        p,
+        path,
         declarator.id,
         declarator.init ?? t.identifier('undefined'),
       ),
@@ -78,7 +82,7 @@ function transformDeclaratorFromVariableLabel(
     return [
       memoVariable(
         state,
-        p,
+        path,
         declarator.id,
         declarator.init ?? t.identifier('undefined'),
       ),
@@ -88,7 +92,7 @@ function transformDeclaratorFromVariableLabel(
     return [
       deferredVariable(
         state,
-        p,
+        path,
         declarator.id,
         declarator.init ?? t.identifier('undefined'),
       ),
@@ -99,14 +103,14 @@ function transformDeclaratorFromVariableLabel(
     (t.isObjectPattern(declarator.id) || t.isArrayPattern(declarator.id)) &&
     declarator.init
   ) {
-    return destructureVariable(state, p, declarator.init, declarator.id);
+    return destructureVariable(state, path, declarator.init, declarator.id);
   }
   if (labelName === 'children' && t.isIdentifier(declarator.id)) {
     return [
       accessorVariable(
-        p,
+        path,
         declarator.id,
-        getImportIdentifier(state, p, 'children', 'solid-js'),
+        getImportIdentifier(state, path, 'children', 'solid-js'),
         [
           t.arrowFunctionExpression(
             [],
@@ -121,13 +125,13 @@ function transformDeclaratorFromVariableLabel(
 
 function transformVariableLabel(
   state: State,
-  p: babel.NodePath,
+  path: babel.NodePath,
   labelName: keyof typeof VARIABLE_LABEL,
   body: t.Statement,
 ): void {
   assert(
     t.isVariableDeclaration(body),
-    unexpectedType(p, p.node.type, 'VariableDeclaration'),
+    unexpectedType(path, path.node.type, 'VariableDeclaration'),
   );
 
   const declarators: t.VariableDeclarator[] = [];
@@ -137,19 +141,19 @@ function transformVariableLabel(
       declarators,
       transformDeclaratorFromVariableLabel(
         state,
-        p,
+        path,
         labelName,
         body.declarations[i],
       ),
     );
   }
 
-  p.replaceWith(t.variableDeclaration('const', declarators));
+  path.replaceWith(t.variableDeclaration('const', declarators));
 }
 
 function transformCallbackLabel(
   state: State,
-  p: babel.NodePath,
+  path: babel.NodePath,
   labelName: string,
   body: t.Statement,
 ): void {
@@ -165,7 +169,11 @@ function transformCallbackLabel(
   } else if (t.isExpressionStatement(body)) {
     callback = body.expression;
   } else {
-    throw unexpectedType(p, body.type, 'BlockStatement | ExpressionStatement');
+    throw unexpectedType(
+      path,
+      body.type,
+      'BlockStatement | ExpressionStatement',
+    );
   }
   const args: t.Expression[] = [callback];
   if (named && nameOption) {
@@ -176,38 +184,40 @@ function transformCallbackLabel(
       ]),
     );
   }
-  p.replaceWith(
-    t.callExpression(getImportIdentifier(state, p, name, source), args),
+  path.replaceWith(
+    t.callExpression(getImportIdentifier(state, path, name, source), args),
   );
 }
+
+const LABEL_TRAVERSE: babel.Visitor<State> = {
+  LabeledStatement(path, state) {
+    const labelName = path.node.label.name;
+    const { body } = path.node;
+    if (
+      (SPECIAL_LABELS.has(labelName) ||
+        labelName in VARIABLE_LABEL ||
+        labelName in CALLBACK_LABEL) &&
+      !state.opts.disabled?.label?.[labelName]
+    ) {
+      if (labelName === REACTIVE_LABEL) {
+        transformReactiveLabel(state, path, body);
+      } else if (labelName in VARIABLE_LABEL) {
+        transformVariableLabel(
+          state,
+          path,
+          labelName as keyof typeof VARIABLE_LABEL,
+          body,
+        );
+      } else if (labelName in CALLBACK_LABEL) {
+        transformCallbackLabel(state, path, labelName, body);
+      }
+    }
+  },
+};
 
 export default function transformLabels(
   state: State,
   path: babel.NodePath,
 ): void {
-  path.traverse({
-    LabeledStatement(p) {
-      const labelName = p.node.label.name;
-      const { body } = p.node;
-      if (
-        (SPECIAL_LABELS.has(labelName) ||
-          labelName in VARIABLE_LABEL ||
-          labelName in CALLBACK_LABEL) &&
-        !state.opts.disabled?.label?.[labelName]
-      ) {
-        if (labelName === REACTIVE_LABEL) {
-          transformReactiveLabel(state, p, body);
-        } else if (labelName in VARIABLE_LABEL) {
-          transformVariableLabel(
-            state,
-            p,
-            labelName as keyof typeof VARIABLE_LABEL,
-            body,
-          );
-        } else if (labelName in CALLBACK_LABEL) {
-          transformCallbackLabel(state, p, labelName, body);
-        }
-      }
-    },
-  });
+  path.traverse(LABEL_TRAVERSE, state);
 }
