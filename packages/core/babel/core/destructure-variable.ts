@@ -257,31 +257,12 @@ export default function destructureVariable(
   declarators.push(expr);
 
   if (restIdentifier) {
-    const targetName = restIdentifier.name;
-    const rest = restIdentifier;
-    path.scope.path.traverse({
-      ObjectProperty(p) {
-        if (
-          !(p.scope !== path.scope && p.scope.hasOwnBinding(targetName)) &&
-          p.node.shorthand &&
-          t.isIdentifier(p.node.key) &&
-          p.node.key.name === targetName &&
-          t.isIdentifier(p.node.value) &&
-          p.node.value.name === targetName
-        ) {
-          p.replaceWith(t.objectProperty(rest, otherIdentifier));
-        }
-      },
-      Expression(p) {
-        if (
-          t.isIdentifier(p.node) &&
-          p.node.name === targetName &&
-          !(p.scope !== path.scope && p.scope.hasOwnBinding(targetName))
-        ) {
-          p.replaceWith(otherIdentifier);
-        }
-      },
-    });
+    const binding = path.scope.getBinding(restIdentifier.name);
+    if (binding) {
+      for (const ref of binding.referencePaths) {
+        ref.replaceWith(otherIdentifier);
+      }
+    }
   }
 
   return declarators;
