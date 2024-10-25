@@ -1,3 +1,4 @@
+import type { NodePath } from '@babel/traverse';
 import type * as t from '@babel/types';
 
 type TypeFilter<K extends t.Node> = (node: t.Node) => node is K;
@@ -28,6 +29,13 @@ function isNestedExpression(node: t.Node): node is NestedExpression {
   }
 }
 
+export function isPathValid<V extends t.Node>(
+  path: unknown,
+  key: TypeFilter<V>,
+): path is NodePath<V> {
+  return key((path as NodePath).node);
+}
+
 export default function unwrapNode<K extends (node: t.Node) => boolean>(
   node: t.Node,
   key: K,
@@ -38,5 +46,24 @@ export default function unwrapNode<K extends (node: t.Node) => boolean>(
   if (isNestedExpression(node)) {
     return unwrapNode(node.expression, key);
   }
+  return undefined;
+}
+
+export function getProperParentPath<K extends (node: t.Node) => boolean>(
+  path: NodePath,
+  key: K,
+): NodePath<TypeCheck<K>> | undefined {
+  let parent = path.parentPath;
+
+  while (parent) {
+    if (isNestedExpression(parent.node)) {
+      parent = parent.parentPath;
+    } else if (key(parent.node)) {
+      return parent as NodePath<TypeCheck<K>>;
+    } else {
+      return undefined;
+    }
+  }
+
   return undefined;
 }
