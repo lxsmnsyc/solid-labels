@@ -1,5 +1,5 @@
 import * as babel from '@babel/core';
-import plugin from './dist/esm/development/index.mjs';
+import plugin from './dist/esm/development/babel.mjs';
 
 async function compile(code, dev) {
   const result = await babel.transformAsync(code, {
@@ -16,10 +16,11 @@ console.log(
   await compile(`
 let foo = $signal('foo');
 let bar = $signal('bar')
+let baz = $memo('baz');
 
 const example = {
   foo: $property(foo),
-  bar: $property(bar),
+  [baz]: $property(bar),
   baz: baz,
 };
 
