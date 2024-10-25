@@ -85,4 +85,5 @@ export default function derefMemo(
       ref.replaceWith(t.callExpression(readIdentifier, []));
     }
   }
+  path.scope.crawl();
 }

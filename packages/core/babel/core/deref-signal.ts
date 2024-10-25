@@ -243,4 +243,5 @@ export default function derefSignal(
       ref.replaceWith(t.callExpression(readIdentifier, []));
     }
   }
+  path.scope.crawl();
 }
