@@ -23,11 +23,11 @@
   "keywords": ["pridepack", "babel", "solid-js", "labels", "reactivity"],
   "name": "rollup-plugin-solid-labels",
   "devDependencies": {
-    "@types/node": "^20.11.0",
-    "pridepack": "2.6.0",
-    "rollup": "^4.1.4",
-    "tslib": "^2.6.2",
-    "typescript": "^5.3.3"
+    "@types/node": "^22.7.9",
+    "pridepack": "2.6.1",
+    "rollup": "^4.24.0",
+    "tslib": "^2.8.0",
+    "typescript": "^5.6.3"
   },
   "dependencies": {
     "unplugin-solid-labels": "0.16.1"

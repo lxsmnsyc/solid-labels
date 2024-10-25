@@ -23,13 +23,13 @@
   "keywords": ["pridepack", "babel", "solid-js", "labels", "reactivity"],
   "name": "vite-plugin-solid-labels",
   "devDependencies": {
-    "@types/node": "^20.11.0",
+    "@types/node": "^22.7.9",
     "pridepack": "2.6.0",
     "rollup": "^4.9.5",
     "solid-labels": "0.16.0",
-    "tslib": "^2.6.2",
-    "typescript": "^5.3.3",
-    "vite": "^5.0.11"
+    "tslib": "^2.8.0",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10"
   },
   "dependencies": {
     "unplugin-solid-labels": "0.16.1"
