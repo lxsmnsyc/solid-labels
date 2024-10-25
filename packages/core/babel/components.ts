@@ -1,6 +1,7 @@
+import type { NodePath, Visitor } from '@babel/traverse';
 import * as t from '@babel/types';
-import type { State } from './core/types';
 import getImportIdentifier from './core/get-import-identifier';
+import type { State } from './core/types';
 
 type ComponentImport = [name: string, source: string];
 
@@ -40,50 +41,52 @@ const NAMESPACE_COMPONENTS: Record<string, ComponentImport> = {
   'no-hydration': ['NoHydration', 'solid-js/web'],
 };
 
+const COMPONENT_TRAVERSE: Visitor<State> = {
+  Expression(p, state) {
+    if (
+      t.isIdentifier(p.node) &&
+      !p.scope.hasBinding(p.node.name) &&
+      p.node.name in COMPONENTS
+    ) {
+      const [name, source] = COMPONENTS[p.node.name];
+      p.replaceWith(getImportIdentifier(state, p, name, source));
+    }
+  },
+  JSXElement(p, state) {
+    const { openingElement, closingElement } = p.node;
+    const id = openingElement.name;
+    let replacement: t.JSXIdentifier | undefined;
+    if (
+      t.isJSXNamespacedName(id) &&
+      id.namespace.name === NAMESPACE &&
+      id.name.name in NAMESPACE_COMPONENTS
+    ) {
+      const [name, source] = NAMESPACE_COMPONENTS[id.name.name];
+      const identifier = getImportIdentifier(state, p, name, source);
+      replacement = t.jsxIdentifier(identifier.name);
+    }
+    if (
+      t.isJSXIdentifier(id) &&
+      !p.scope.hasBinding(id.name) &&
+      id.name in COMPONENTS
+    ) {
+      const [name, source] = COMPONENTS[id.name];
+      const identifier = getImportIdentifier(state, p, name, source);
+      replacement = t.jsxIdentifier(identifier.name);
+    }
+
+    if (replacement) {
+      openingElement.name = replacement;
+      if (closingElement) {
+        closingElement.name = replacement;
+      }
+    }
+  },
+};
+
 export default function transformComponents(
   state: State,
-  path: babel.NodePath,
+  path: NodePath,
 ): void {
-  path.traverse({
-    Expression(p) {
-      if (
-        t.isIdentifier(p.node) &&
-        !p.scope.hasBinding(p.node.name) &&
-        p.node.name in COMPONENTS
-      ) {
-        const [name, source] = COMPONENTS[p.node.name];
-        p.replaceWith(getImportIdentifier(state, p, name, source));
-      }
-    },
-    JSXElement(p) {
-      const { openingElement, closingElement } = p.node;
-      const id = openingElement.name;
-      let replacement: t.JSXIdentifier | undefined;
-      if (
-        t.isJSXNamespacedName(id) &&
-        id.namespace.name === NAMESPACE &&
-        id.name.name in NAMESPACE_COMPONENTS
-      ) {
-        const [name, source] = NAMESPACE_COMPONENTS[id.name.name];
-        const identifier = getImportIdentifier(state, p, name, source);
-        replacement = t.jsxIdentifier(identifier.name);
-      }
-      if (
-        t.isJSXIdentifier(id) &&
-        !p.scope.hasBinding(id.name) &&
-        id.name in COMPONENTS
-      ) {
-        const [name, source] = COMPONENTS[id.name];
-        const identifier = getImportIdentifier(state, p, name, source);
-        replacement = t.jsxIdentifier(identifier.name);
-      }
-
-      if (replacement) {
-        openingElement.name = replacement;
-        if (closingElement) {
-          closingElement.name = replacement;
-        }
-      }
-    },
-  });
+  path.traverse(COMPONENT_TRAVERSE, state);
 }
