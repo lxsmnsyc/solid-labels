@@ -50,9 +50,10 @@ export default function isStatic(
   if (
     t.isIdentifier(node) ||
     t.isArrowFunctionExpression(node) ||
-    t.isFunctionExpression(node) ||
-    t.isJSXElement(node) ||
-    t.isJSXFragment(node)
+    t.isFunctionExpression(node)
+    // ||
+    // t.isJSXElement(node) ||
+    // t.isJSXFragment(node)
   ) {
     return true;
   }
