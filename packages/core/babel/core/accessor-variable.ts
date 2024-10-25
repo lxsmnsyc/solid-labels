@@ -6,9 +6,7 @@ export default function accessorVariable(
   path: babel.NodePath,
   accessorIdentifier: t.Identifier,
   callee: t.Identifier,
-  replacement: Array<
-    t.Expression | t.SpreadElement | t.JSXNamespacedName | t.ArgumentPlaceholder
-  >,
+  replacement: Array<t.Expression | t.SpreadElement | t.ArgumentPlaceholder>,
 ): t.VariableDeclarator {
   const readIdentifier = path.scope.generateUidIdentifier(
     accessorIdentifier.name,
