@@ -349,6 +349,7 @@ export default function transformCTF(state: State, path: babel.NodePath): void {
                 destructureVariable(state, p, argument, id),
               );
             }
+            p.scope.crawl();
           }
         }
       }
