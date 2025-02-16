@@ -24,8 +24,7 @@ _props => {
 `;
 
 exports[`ctf > $component > should transform $component bindings 1`] = `
-"import { splitProps as _splitProps } from \\"solid-js\\";
-import { createEffect as _createEffect } from \\"solid-js\\";
+"import { createEffect as _createEffect, splitProps as _splitProps } from \\"solid-js\\";
 _props => {
   const _prop = () => _props.a,
     _prop2 = () => _prop().b,
@@ -57,8 +56,7 @@ _props => {
 `;
 
 exports[`ctf > $component > should transform $component bindings 2`] = `
-"import { splitProps as _splitProps } from \\"solid-js\\";
-import { createEffect as _createEffect } from \\"solid-js\\";
+"import { createEffect as _createEffect, splitProps as _splitProps } from \\"solid-js\\";
 _props => {
   const _prop = () => _props.a,
     _prop2 = () => _prop().b,
@@ -98,8 +96,7 @@ _props => {
 `;
 
 exports[`ctf > $component > should transform $component bindings on $get 1`] = `
-"import { splitProps as _splitProps } from \\"solid-js\\";
-import { createEffect as _createEffect } from \\"solid-js\\";
+"import { createEffect as _createEffect, splitProps as _splitProps } from \\"solid-js\\";
 _props => {
   const _prop = () => _props.a,
     _prop2 = () => _prop().b,
@@ -131,8 +128,7 @@ _props => {
 `;
 
 exports[`ctf > $component > should transform $component bindings on $getter 1`] = `
-"import { splitProps as _splitProps } from \\"solid-js\\";
-import { createEffect as _createEffect } from \\"solid-js\\";
+"import { createEffect as _createEffect, splitProps as _splitProps } from \\"solid-js\\";
 const _proto = {
     get b() {
       return this.__$get__b();
@@ -196,8 +192,7 @@ _props => {
 `;
 
 exports[`ctf > $component > should transform $component bindings on $property 1`] = `
-"import { splitProps as _splitProps } from \\"solid-js\\";
-import { createEffect as _createEffect } from \\"solid-js\\";
+"import { createEffect as _createEffect, splitProps as _splitProps } from \\"solid-js\\";
 const _proto = {
     get b() {
       return this.__$get__b();
@@ -261,8 +256,7 @@ _props => {
 `;
 
 exports[`ctf > $component > should transform $component bindings on $refMemo 1`] = `
-"import { splitProps as _splitProps } from \\"solid-js\\";
-import { createEffect as _createEffect } from \\"solid-js\\";
+"import { createEffect as _createEffect, splitProps as _splitProps } from \\"solid-js\\";
 _props => {
   const _prop = () => _props.a,
     _prop2 = () => _prop().b,
@@ -437,8 +431,7 @@ let _prop = () => x.a,
 `;
 
 exports[`ctf > $destructure > should transform $destructure bindings 1`] = `
-"import { splitProps as _splitProps } from \\"solid-js\\";
-import { createEffect as _createEffect } from \\"solid-js\\";
+"import { createEffect as _createEffect, splitProps as _splitProps } from \\"solid-js\\";
 let _prop = () => x.a,
   _prop2 = () => _prop().b,
   _prop3 = () => _prop().c,
@@ -468,8 +461,7 @@ _createEffect(() => {
 `;
 
 exports[`ctf > $destructure > should transform $destructure bindings 2`] = `
-"import { splitProps as _splitProps } from \\"solid-js\\";
-import { createEffect as _createEffect } from \\"solid-js\\";
+"import { createEffect as _createEffect, splitProps as _splitProps } from \\"solid-js\\";
 let _prop = () => x.a,
   _prop2 = () => _prop().b,
   _prop3 = () => _prop().c,
@@ -507,8 +499,7 @@ _createEffect(() => {
 `;
 
 exports[`ctf > $destructure > should transform $destructure bindings on $get 1`] = `
-"import { splitProps as _splitProps } from \\"solid-js\\";
-import { createEffect as _createEffect } from \\"solid-js\\";
+"import { createEffect as _createEffect, splitProps as _splitProps } from \\"solid-js\\";
 let _prop = () => x.a,
   _prop2 = () => _prop().b,
   _prop3 = () => _prop().c,
@@ -538,8 +529,7 @@ _createEffect(() => {
 `;
 
 exports[`ctf > $destructure > should transform $destructure bindings on $getter 1`] = `
-"import { splitProps as _splitProps } from \\"solid-js\\";
-import { createEffect as _createEffect } from \\"solid-js\\";
+"import { createEffect as _createEffect, splitProps as _splitProps } from \\"solid-js\\";
 const _proto = {
     get b() {
       return this.__$get__b();
@@ -601,8 +591,7 @@ _createEffect(() => {
 `;
 
 exports[`ctf > $destructure > should transform $destructure bindings on $property 1`] = `
-"import { splitProps as _splitProps } from \\"solid-js\\";
-import { createEffect as _createEffect } from \\"solid-js\\";
+"import { createEffect as _createEffect, splitProps as _splitProps } from \\"solid-js\\";
 const _proto = {
     get b() {
       return this.__$get__b();
@@ -664,8 +653,7 @@ _createEffect(() => {
 `;
 
 exports[`ctf > $destructure > should transform $destructure bindings on $refMemo 1`] = `
-"import { splitProps as _splitProps } from \\"solid-js\\";
-import { createEffect as _createEffect } from \\"solid-js\\";
+"import { createEffect as _createEffect, splitProps as _splitProps } from \\"solid-js\\";
 let _prop = () => x.a,
   _prop2 = () => _prop().b,
   _prop3 = () => _prop().c,
@@ -695,10 +683,7 @@ _createEffect(() => {
 `;
 
 exports[`ctf > $effect, $renderEffect, $computed > should transform $effect, $renderEffect, $computed 1`] = `
-"import { createRenderEffect as _createRenderEffect } from \\"solid-js\\";
-import { createComputed as _createComputed } from \\"solid-js\\";
-import { createEffect as _createEffect } from \\"solid-js\\";
-import { createSignal as _createSignal } from \\"solid-js\\";
+"import { createSignal as _createSignal, createEffect as _createEffect, createComputed as _createComputed, createRenderEffect as _createRenderEffect } from \\"solid-js\\";
 let [_x, _setx] = _createSignal(0);
 _createEffect(() => {
   console.log('Count', _x());
@@ -872,4 +857,23 @@ const value = {
   __proto__: _proto,
   __$set__count: _setcount
 };"
+`;
+
+exports[`ctf > variable shadowing > should respect variable shadowing 1`] = `
+"import { createSignal as _createSignal } from \\"solid-js\\";
+const [_selected, _setselected] = _createSignal('root');
+{
+  const selected = 'local';
+  console.log(selected); // 'local'
+  {
+    console.log('local'); // 'local'
+    {
+      const [_selected2, _setselected2] = _createSignal('inner');
+      console.log(_selected2()); // 'inner'
+      {
+        console.log(_selected2()); // 'inner'
+      }
+    }
+  }
+}"
 `;

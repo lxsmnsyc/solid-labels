@@ -473,4 +473,27 @@ describe('ctf', () => {
       expect(await compile(code)).toMatchSnapshot();
     });
   });
+
+  describe('variable shadowing', () => {
+    it('should respect variable shadowing', async () => {
+      const code = `
+        const selected = $signal('root');
+        {
+          const selected = 'local';
+          console.log(selected); // 'local'
+          {
+            console.log(selected); // 'local'
+            {
+              const selected = $signal('inner');
+              console.log(selected); // 'inner'
+              {
+                console.log(selected); // 'inner'
+              }
+            }   
+          }
+        }
+      `;
+      expect(await compile(code)).toMatchSnapshot();
+    });
+  });
 });
