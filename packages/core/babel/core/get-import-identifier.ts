@@ -1,20 +1,31 @@
-import type * as t from '@babel/types';
 import type * as babel from '@babel/core';
-import { addNamed } from '@babel/helper-module-imports';
+import * as t from '@babel/types';
 import type { State } from './types';
 
-export default function getImportIdentifier(
+export function getImportIdentifier(
   state: State,
   path: babel.NodePath,
   name: string,
   source: string,
 ): t.Identifier {
-  const id = `${source}[${name}]`;
-  const current = state.hooks.get(id);
+  const target = `${source}[${name}]`;
+  const current = state.hooks.get(target);
   if (current) {
     return current;
   }
-  const newID = addNamed(path, name, source);
-  state.hooks.set(id, newID);
-  return newID;
+  const programParent = path.scope.getProgramParent();
+  const uid = programParent.generateUidIdentifier(name);
+  const newPath = (
+    programParent.path as babel.NodePath<t.Program>
+  ).unshiftContainer(
+    'body',
+    t.importDeclaration(
+      [t.importSpecifier(uid, t.identifier(name))
+      ],
+      t.stringLiteral(source),
+    ),
+  )[0];
+  programParent.registerDeclaration(newPath);
+  state.hooks.set(target, uid);
+  return uid;
 }
