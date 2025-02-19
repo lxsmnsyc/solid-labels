@@ -1,8 +1,6 @@
 import * as t from '@babel/types';
 
-export default function isYielded(
-  node: t.Expression | t.SpreadElement,
-): boolean {
+export function isYielded(node: t.Expression | t.SpreadElement): boolean {
   // Default
   if (t.isYieldExpression(node)) {
     return true;

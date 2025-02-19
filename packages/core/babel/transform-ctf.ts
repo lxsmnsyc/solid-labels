@@ -1,18 +1,18 @@
 import type * as babel from '@babel/core';
 import * as t from '@babel/types';
-import accessorVariable from './core/accessor-variable';
-import assert from './core/assert';
-import deferredVariable from './core/deferred-variable';
-import derefMemoVariable from './core/deref-memo-variable';
-import derefSignalVariable from './core/deref-signal-variable';
-import destructureVariable from './core/destructure-variable';
+import { accessorVariable } from './core/accessor-variable';
+import { assert } from './core/assert';
+import { deferredVariable } from './core/deferred-variable';
+import { derefMemoVariable } from './core/deref-memo-variable';
+import { derefSignalVariable } from './core/deref-signal-variable';
+import { destructureVariable } from './core/destructure-variable';
 import { unexpectedArgumentLength, unexpectedType } from './core/errors';
 import { generateUniqueName } from './core/generate-unique-name';
-import getImportIdentifier from './core/get-import-identifier';
-import memoVariable from './core/memo-variable';
-import signalVariable from './core/signal-variable';
+import { getImportIdentifier } from './core/get-import-identifier';
+import { memoVariable } from './core/memo-variable';
+import { signalVariable } from './core/signal-variable';
 import type { State } from './core/types';
-import unwrapNode from './core/unwrap-node';
+import { unwrapNode } from './core/unwrap-node';
 
 type AutoArrowCTF = [name: string, source: string, arguments: number];
 
@@ -208,9 +208,7 @@ const CTF_TRAVERSE: babel.Visitor<State> = {
                   id,
                   getImportIdentifier(state, path, name, source),
                   [
-                    arrow
-                      ? t.arrowFunctionExpression([], argument)
-                      : argument,
+                    arrow ? t.arrowFunctionExpression([], argument) : argument,
                     ...rest,
                   ],
                 ),
@@ -273,7 +271,9 @@ const CTF_TRAVERSE: babel.Visitor<State> = {
                 );
                 options = optionsValue;
               }
-              path.replaceWith(memoVariable(state, path, id, argument, options));
+              path.replaceWith(
+                memoVariable(state, path, id, argument, options),
+              );
             } else if (trueCallee.name === DEREF_SIGNAL_CTF) {
               // Transform $derefSignal
               const args = trueCallExpr.arguments;
@@ -388,6 +388,6 @@ const CTF_TRAVERSE: babel.Visitor<State> = {
   },
 };
 
-export default function transformCTF(state: State, path: babel.NodePath): void {
+export function transformCTF(state: State, path: babel.NodePath): void {
   path.traverse(CTF_TRAVERSE, state);
 }

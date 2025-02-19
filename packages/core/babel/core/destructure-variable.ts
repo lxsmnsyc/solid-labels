@@ -1,14 +1,14 @@
 import type * as babel from '@babel/core';
 import * as t from '@babel/types';
-import derefMemo from './deref-memo';
+import { derefMemo } from './deref-memo';
 import { unexpectedType } from './errors';
 import { generateUniqueName } from './generate-unique-name';
-import getImportIdentifier from './get-import-identifier';
-import isStatic from './is-static';
+import { getImportIdentifier } from './get-import-identifier';
+import { isStatic } from './is-static';
 import type { State } from './types';
-import unwrapNode from './unwrap-node';
+import { unwrapNode } from './unwrap-node';
 
-export default function destructureVariable(
+export function destructureVariable(
   state: State,
   path: babel.NodePath,
   target: t.Expression,

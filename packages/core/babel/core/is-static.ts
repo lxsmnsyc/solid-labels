@@ -1,6 +1,6 @@
 import * as t from '@babel/types';
 
-export default function isStatic(
+export function isStatic(
   node:
     | t.Expression
     | t.SpreadElement

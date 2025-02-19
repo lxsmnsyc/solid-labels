@@ -1,8 +1,6 @@
 import * as t from '@babel/types';
 
-export default function isAwaited(
-  node: t.Expression | t.SpreadElement,
-): boolean {
+export function isAwaited(node: t.Expression | t.SpreadElement): boolean {
   // Default
   if (t.isAwaitExpression(node)) {
     return true;

@@ -1,10 +1,10 @@
 import type * as babel from '@babel/core';
 import * as t from '@babel/types';
-import accessorVariable from './accessor-variable';
-import getImportIdentifier from './get-import-identifier';
+import { accessorVariable } from './accessor-variable';
+import { getImportIdentifier } from './get-import-identifier';
 import type { State } from './types';
 
-export default function deferredVariable(
+export function deferredVariable(
   state: State,
   path: babel.NodePath,
   deferredIdentifier: t.Identifier,

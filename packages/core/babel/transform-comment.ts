@@ -1,11 +1,11 @@
 import type * as babel from '@babel/core';
 import * as t from '@babel/types';
-import accessorVariable from './core/accessor-variable';
-import deferredVariable from './core/deferred-variable';
-import destructureVariable from './core/destructure-variable';
-import getImportIdentifier from './core/get-import-identifier';
-import memoVariable from './core/memo-variable';
-import signalVariable from './core/signal-variable';
+import { accessorVariable } from './core/accessor-variable';
+import { deferredVariable } from './core/deferred-variable';
+import { destructureVariable } from './core/destructure-variable';
+import { getImportIdentifier } from './core/get-import-identifier';
+import { memoVariable } from './core/memo-variable';
+import { signalVariable } from './core/signal-variable';
 import type { State } from './core/types';
 
 const VARIABLE_LABEL = {
@@ -222,9 +222,6 @@ const COMMENT_TRAVERSE: babel.Visitor<State> = {
   },
 };
 
-export default function transformComments(
-  state: State,
-  path: babel.NodePath,
-): void {
+export function transformComments(state: State, path: babel.NodePath): void {
   path.traverse(COMMENT_TRAVERSE, state);
 }

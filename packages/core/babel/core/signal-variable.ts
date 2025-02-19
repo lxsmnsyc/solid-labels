@@ -1,11 +1,11 @@
 import type * as babel from '@babel/core';
 import * as t from '@babel/types';
-import derefSignal from './deref-signal';
+import { derefSignal } from './deref-signal';
 import { generateUniqueName } from './generate-unique-name';
-import getImportIdentifier from './get-import-identifier';
+import { getImportIdentifier } from './get-import-identifier';
 import type { State } from './types';
 
-export default function signalVariable(
+export function signalVariable(
   state: State,
   path: babel.NodePath,
   signalIdentifier: t.Identifier,

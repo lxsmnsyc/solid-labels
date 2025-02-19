@@ -1,9 +1,9 @@
 import type * as babel from '@babel/core';
 import * as t from '@babel/types';
-import derefMemo from './deref-memo';
+import { derefMemo } from './deref-memo';
 import { generateUniqueName } from './generate-unique-name';
 
-export default function accessorVariable(
+export function accessorVariable(
   path: babel.NodePath,
   accessorIdentifier: t.Identifier,
   callee: t.Identifier,

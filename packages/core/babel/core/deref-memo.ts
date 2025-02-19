@@ -1,9 +1,9 @@
 import type * as babel from '@babel/core';
 import * as t from '@babel/types';
-import assert from './assert';
+import { assert } from './assert';
 import { unexpectedType } from './errors';
 import { addProtoGetter } from './proto';
-import unwrapNode, { getProperParentPath } from './unwrap-node';
+import { getProperParentPath, unwrapNode } from './unwrap-node';
 
 const REF_MEMO_CTF = '$refMemo';
 const GET_CTF = '$get';
@@ -67,7 +67,7 @@ function transformReferencePath(
   return true;
 }
 
-export default function derefMemo(
+export function derefMemo(
   path: babel.NodePath,
   memoIdentifier: t.Identifier,
   readIdentifier: t.Identifier,

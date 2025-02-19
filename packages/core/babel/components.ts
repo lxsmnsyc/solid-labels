@@ -1,6 +1,6 @@
 import type { NodePath, Visitor } from '@babel/traverse';
 import * as t from '@babel/types';
-import getImportIdentifier from './core/get-import-identifier';
+import { getImportIdentifier } from './core/get-import-identifier';
 import type { State } from './core/types';
 
 type ComponentImport = [name: string, source: string];
@@ -84,7 +84,7 @@ const COMPONENT_TRAVERSE: Visitor<State> = {
   },
 };
 
-export default function transformComponents(
+export function transformComponents(
   state: State,
   path: NodePath,
 ): void {

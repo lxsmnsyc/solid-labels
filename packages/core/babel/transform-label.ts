@@ -1,13 +1,13 @@
 import type * as babel from '@babel/core';
 import * as t from '@babel/types';
-import accessorVariable from './core/accessor-variable';
-import assert from './core/assert';
-import deferredVariable from './core/deferred-variable';
-import destructureVariable from './core/destructure-variable';
+import { accessorVariable } from './core/accessor-variable';
+import { assert } from './core/assert';
+import { deferredVariable } from './core/deferred-variable';
+import { destructureVariable } from './core/destructure-variable';
 import { unexpectedType } from './core/errors';
-import getImportIdentifier from './core/get-import-identifier';
-import memoVariable from './core/memo-variable';
-import signalVariable from './core/signal-variable';
+import { getImportIdentifier } from './core/get-import-identifier';
+import { memoVariable } from './core/memo-variable';
+import { signalVariable } from './core/signal-variable';
 import type { State } from './core/types';
 
 const REACTIVE_LABEL = '$';
@@ -215,9 +215,6 @@ const LABEL_TRAVERSE: babel.Visitor<State> = {
   },
 };
 
-export default function transformLabels(
-  state: State,
-  path: babel.NodePath,
-): void {
+export function transformLabels(state: State, path: babel.NodePath): void {
   path.traverse(LABEL_TRAVERSE, state);
 }

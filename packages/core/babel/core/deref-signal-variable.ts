@@ -1,9 +1,9 @@
 import type * as babel from '@babel/core';
 import * as t from '@babel/types';
-import derefSignal from './deref-signal';
+import { derefSignal } from './deref-signal';
 import { generateUniqueName } from './generate-unique-name';
 
-export default function derefSignalVariable(
+export function derefSignalVariable(
   path: babel.NodePath,
   signalIdentifier: t.Identifier,
   stateIdentifier: t.Expression,

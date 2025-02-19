@@ -1,13 +1,12 @@
 import type * as babel from '@babel/core';
 import * as t from '@babel/types';
-import assert from './assert';
+import { assert } from './assert';
 import { unexpectedType } from './errors';
 import { generateUniqueName } from './generate-unique-name';
-import isAwaited from './is-awaited';
-import isYielded from './is-yielded';
+import { isAwaited } from './is-awaited';
+import { isYielded } from './is-yielded';
 import { addProtoGetter, addProtoProperty, addProtoSetter } from './proto';
-// import isInTypeScript from './is-in-typescript';
-import unwrapNode, { getProperParentPath, isPathValid } from './unwrap-node';
+import { getProperParentPath, isPathValid, unwrapNode } from './unwrap-node';
 
 const REF_SIGNAL_CTF = '$refSignal';
 const GET_CTF = '$get';
@@ -220,7 +219,7 @@ function transformSignalWrite(
   }
 }
 
-export default function derefSignal(
+export function derefSignal(
   path: babel.NodePath,
   signalIdentifier: t.Identifier,
   readIdentifier: t.Identifier,

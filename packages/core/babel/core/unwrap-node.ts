@@ -36,7 +36,7 @@ export function isPathValid<V extends t.Node>(
   return key((path as NodePath).node);
 }
 
-export default function unwrapNode<K extends (node: t.Node) => boolean>(
+export function unwrapNode<K extends (node: t.Node) => boolean>(
   node: t.Node,
   key: K,
 ): TypeCheck<K> | undefined {
