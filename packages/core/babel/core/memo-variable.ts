@@ -11,7 +11,11 @@ export function memoVariable(
   stateIdentifier: t.Expression,
   optionsIdentifier?: t.Expression,
 ): t.VariableDeclarator {
-  const normalIdentifier = t.arrowFunctionExpression([], stateIdentifier);
+  const normalIdentifier =
+    t.isArrowFunctionExpression(stateIdentifier) ||
+    t.isFunctionExpression(stateIdentifier)
+      ? stateIdentifier
+      : t.arrowFunctionExpression([], stateIdentifier);
 
   const exprs: t.Expression[] = [normalIdentifier];
 

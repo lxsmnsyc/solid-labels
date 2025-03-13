@@ -378,7 +378,12 @@ const CTF_TRAVERSE: babel.Visitor<State> = {
             t.expressionStatement(
               t.callExpression(
                 getImportIdentifier(state, path, 'createEffect', 'solid-js'),
-                [t.arrowFunctionExpression([], argument)],
+                [
+                  t.isArrowFunctionExpression(argument) ||
+                  t.isFunctionExpression(argument)
+                    ? argument
+                    : t.arrowFunctionExpression([], argument),
+                ],
               ),
             ),
           );
