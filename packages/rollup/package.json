@@ -1,5 +1,5 @@
 {
-  "version": "0.16.1",
+  "version": "0.17.0",
   "type": "module",
   "types": "./dist/types/index.d.ts",
   "main": "./dist/cjs/production/index.cjs",
@@ -15,12 +15,21 @@
       "types": "./dist/types/index.d.ts"
     }
   },
-  "files": ["dist", "src"],
+  "files": [
+    "dist",
+    "src"
+  ],
   "engines": {
     "node": ">=10"
   },
   "license": "MIT",
-  "keywords": ["pridepack", "babel", "solid-js", "labels", "reactivity"],
+  "keywords": [
+    "pridepack",
+    "babel",
+    "solid-js",
+    "labels",
+    "reactivity"
+  ],
   "name": "rollup-plugin-solid-labels",
   "devDependencies": {
     "@types/node": "^22.13.4",
@@ -30,7 +39,7 @@
     "typescript": "^5.8.2"
   },
   "dependencies": {
-    "unplugin-solid-labels": "0.16.1"
+    "unplugin-solid-labels": "0.17.0"
   },
   "peerDependencies": {
     "rollup": "^3 || ^4",

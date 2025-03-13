@@ -1,19 +1,25 @@
 {
   "name": "unplugin-solid-labels",
-  "version": "0.16.1",
+  "version": "0.17.0",
   "type": "module",
-  "files": ["dist", "babel", "core"],
+  "files": [
+    "dist",
+    "babel",
+    "core"
+  ],
   "engines": {
     "node": ">=10"
   },
   "license": "MIT",
-  "keywords": ["pridepack"],
+  "keywords": [
+    "pridepack"
+  ],
   "devDependencies": {
     "@types/babel__core": "^7.20.5",
     "@types/node": "^22.13.4",
     "pridepack": "2.6.1",
     "rollup": "^4.34.8",
-    "solid-labels": "0.16.0",
+    "solid-labels": "0.17.0",
     "tslib": "^2.8.1",
     "typescript": "^5.8.2",
     "vite": "^6.1.1"
