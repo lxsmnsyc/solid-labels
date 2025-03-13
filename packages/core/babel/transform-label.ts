@@ -9,6 +9,7 @@ import { getImportIdentifier } from './core/get-import-identifier';
 import { memoVariable } from './core/memo-variable';
 import { signalVariable } from './core/signal-variable';
 import type { State } from './core/types';
+import { UNDEFINED } from './constants';
 
 const REACTIVE_LABEL = '$';
 
@@ -70,22 +71,12 @@ function transformDeclaratorFromVariableLabel(
 ): t.VariableDeclarator[] {
   if (labelName === 'signal' && t.isIdentifier(declarator.id)) {
     return [
-      signalVariable(
-        state,
-        path,
-        declarator.id,
-        declarator.init ?? t.identifier('undefined'),
-      ),
+      signalVariable(state, path, declarator.id, declarator.init ?? UNDEFINED),
     ];
   }
   if (labelName === 'memo' && t.isIdentifier(declarator.id)) {
     return [
-      memoVariable(
-        state,
-        path,
-        declarator.id,
-        declarator.init ?? t.identifier('undefined'),
-      ),
+      memoVariable(state, path, declarator.id, declarator.init ?? UNDEFINED),
     ];
   }
   if (labelName === 'deferred' && t.isIdentifier(declarator.id)) {
@@ -94,7 +85,7 @@ function transformDeclaratorFromVariableLabel(
         state,
         path,
         declarator.id,
-        declarator.init ?? t.identifier('undefined'),
+        declarator.init ?? UNDEFINED,
       ),
     ];
   }
@@ -111,12 +102,7 @@ function transformDeclaratorFromVariableLabel(
         path,
         declarator.id,
         getImportIdentifier(state, path, 'children', 'solid-js'),
-        [
-          t.arrowFunctionExpression(
-            [],
-            declarator.init ?? t.identifier('undefined'),
-          ),
-        ],
+        [t.arrowFunctionExpression([], declarator.init ?? UNDEFINED)],
       ),
     ];
   }
@@ -179,7 +165,7 @@ function transformCallbackLabel(
   const args: t.Expression[] = [callback];
   if (named && nameOption) {
     args.push(
-      t.identifier('undefined'),
+      UNDEFINED,
       t.objectExpression([
         t.objectProperty(t.identifier('name'), t.stringLiteral(nameOption)),
       ]),

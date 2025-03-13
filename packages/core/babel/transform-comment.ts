@@ -7,6 +7,7 @@ import { getImportIdentifier } from './core/get-import-identifier';
 import { memoVariable } from './core/memo-variable';
 import { signalVariable } from './core/signal-variable';
 import type { State } from './core/types';
+import { UNDEFINED } from './constants';
 
 const VARIABLE_LABEL = {
   '@signal': true,
@@ -85,7 +86,7 @@ const COMMENT_TRAVERSE: babel.Visitor<State> = {
                     state,
                     path,
                     declarator.id,
-                    declarator.init ?? t.identifier('undefined'),
+                    declarator.init ?? UNDEFINED,
                   ),
                 );
               }
@@ -97,7 +98,7 @@ const COMMENT_TRAVERSE: babel.Visitor<State> = {
                     state,
                     path,
                     declarator.id,
-                    declarator.init ?? t.identifier('undefined'),
+                    declarator.init ?? UNDEFINED,
                   ),
                 );
               }
@@ -109,7 +110,7 @@ const COMMENT_TRAVERSE: babel.Visitor<State> = {
                     state,
                     path,
                     declarator.id,
-                    declarator.init ?? t.identifier('undefined'),
+                    declarator.init ?? UNDEFINED,
                   ),
                 );
               }
@@ -141,7 +142,7 @@ const COMMENT_TRAVERSE: babel.Visitor<State> = {
                     [
                       t.arrowFunctionExpression(
                         [],
-                        declarator.init ?? t.identifier('undefined'),
+                        declarator.init ?? UNDEFINED,
                       ),
                     ],
                   ),
@@ -173,7 +174,7 @@ const COMMENT_TRAVERSE: babel.Visitor<State> = {
         const args: t.Expression[] = [callback];
         if (named && nameOption) {
           args.push(
-            t.identifier('undefined'),
+            t.unaryExpression('void', t.numericLiteral(0)),
             t.objectExpression([
               t.objectProperty(
                 t.identifier('name'),
@@ -204,7 +205,7 @@ const COMMENT_TRAVERSE: babel.Visitor<State> = {
         const args: t.Expression[] = [callback];
         if (named && nameOption) {
           args.push(
-            t.identifier('undefined'),
+            UNDEFINED,
             t.objectExpression([
               t.objectProperty(
                 t.identifier('name'),

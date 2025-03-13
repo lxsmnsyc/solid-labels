@@ -13,6 +13,7 @@ import { memoVariable } from './core/memo-variable';
 import { signalVariable } from './core/signal-variable';
 import type { State } from './core/types';
 import { unwrapNode } from './core/unwrap-node';
+import { UNDEFINED } from './constants';
 
 type AutoArrowCTF = [name: string, source: string, arguments: number];
 
@@ -239,13 +240,7 @@ const CTF_TRAVERSE: babel.Visitor<State> = {
                 }
               }
               path.replaceWith(
-                signalVariable(
-                  state,
-                  path,
-                  id,
-                  argument || t.identifier('undefined'),
-                  options,
-                ),
+                signalVariable(state, path, id, argument || UNDEFINED, options),
               );
             } else if (
               trueCallee.name === MEMO_CTF ||

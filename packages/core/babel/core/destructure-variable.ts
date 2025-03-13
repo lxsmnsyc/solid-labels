@@ -7,6 +7,7 @@ import { getImportIdentifier } from './get-import-identifier';
 import { isStatic } from './is-static';
 import type { State } from './types';
 import { unwrapNode } from './unwrap-node';
+import { UNDEFINED } from '../constants';
 
 export function destructureVariable(
   state: State,
@@ -63,11 +64,7 @@ export function destructureVariable(
             ]),
             t.returnStatement(
               t.conditionalExpression(
-                t.binaryExpression(
-                  '===',
-                  valueIdentifier,
-                  t.identifier('undefined'),
-                ),
+                t.binaryExpression('===', valueIdentifier, UNDEFINED),
                 isStaticValue
                   ? defaultIdentifier
                   : t.callExpression(defaultIdentifier, []),
@@ -168,11 +165,7 @@ export function destructureVariable(
             ]),
             t.returnStatement(
               t.conditionalExpression(
-                t.binaryExpression(
-                  '===',
-                  valueIdentifier,
-                  t.identifier('undefined'),
-                ),
+                t.binaryExpression('===', valueIdentifier, UNDEFINED),
                 isStaticValue
                   ? defaultIdentifier
                   : t.callExpression(defaultIdentifier, []),

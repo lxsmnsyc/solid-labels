@@ -3,12 +3,13 @@ import * as t from '@babel/types';
 import { accessorVariable } from './accessor-variable';
 import { getImportIdentifier } from './get-import-identifier';
 import type { State } from './types';
+import { UNDEFINED } from '../constants';
 
 export function deferredVariable(
   state: State,
   path: babel.NodePath,
   deferredIdentifier: t.Identifier,
-  stateIdentifier: t.Expression = t.identifier('undefined'),
+  stateIdentifier: t.Expression = UNDEFINED,
   optionsIdentifier: t.Expression | undefined = undefined,
 ): t.VariableDeclarator {
   const normalIdentifier = t.arrowFunctionExpression([], stateIdentifier);
