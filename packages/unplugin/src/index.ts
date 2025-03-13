@@ -1,12 +1,12 @@
-import type { Options } from 'solid-labels/babel';
-import solidLabelsBabel from 'solid-labels/babel';
 import * as babel from '@babel/core';
-import type { Plugin } from 'vite';
 import type { FilterPattern } from '@rollup/pluginutils';
 import { createFilter } from '@rollup/pluginutils';
+import path from 'node:path';
+import type { Options } from 'solid-labels/babel';
+import solidLabelsBabel from 'solid-labels/babel';
 import type { TransformResult } from 'unplugin';
 import { createUnplugin } from 'unplugin';
-import path from 'node:path';
+import type { Plugin } from 'vite';
 
 export interface SolidLabelsPluginFilter {
   include?: FilterPattern;
@@ -27,7 +27,7 @@ function repushPlugin(
 
   let baseIndex = -1;
   let targetIndex = -1;
-  let targetPlugin: Plugin;
+  let targetPlugin: Plugin | undefined;
   for (let i = 0, len = plugins.length; i < len; i += 1) {
     const current = plugins[i];
     if (namesSet.has(current.name) && baseIndex === -1) {
@@ -38,14 +38,21 @@ function repushPlugin(
       targetPlugin = current;
     }
   }
-  if (baseIndex !== -1 && targetIndex !== -1 && baseIndex < targetIndex) {
+  if (
+    targetPlugin &&
+    baseIndex !== -1 &&
+    targetIndex !== -1 &&
+    baseIndex < targetIndex
+  ) {
     plugins.splice(targetIndex, 1);
-    plugins.splice(baseIndex, 0, targetPlugin!);
+    plugins.splice(baseIndex, 0, targetPlugin);
   }
 }
 
 const DEFAULT_INCLUDE = 'src/**/*.{jsx,tsx,ts,js,mjs,cjs}';
 const DEFAULT_EXCLUDE = 'node_modules/**/*.{jsx,tsx,ts,js,mjs,cjs}';
+
+const FILE_FILTER = /\.[mc]?tsx?$/i;
 
 const solidLabelsPlugin = createUnplugin(
   (options: SolidLabelsPluginOptions = {}) => {
@@ -65,7 +72,7 @@ const solidLabelsPlugin = createUnplugin(
         const plugins: NonNullable<
           NonNullable<babel.TransformOptions['parserOpts']>['plugins']
         > = ['jsx'];
-        if (/\.[mc]?tsx?$/i.test(id)) {
+        if (FILE_FILTER.test(id)) {
           plugins.push('typescript');
         }
         const result = await babel.transformAsync(code, {

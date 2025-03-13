@@ -160,18 +160,19 @@ function transformCallbackLabel(
   const [name, source, named] = CALLBACK_LABEL[labelName];
   let nameOption: string | undefined;
   let callback: t.Expression;
-  if (named && t.isLabeledStatement(body)) {
-    nameOption = body.label.name;
-    body = body.body;
+  let currentBody = body;
+  if (named && t.isLabeledStatement(currentBody)) {
+    nameOption = currentBody.label.name;
+    currentBody = currentBody.body;
   }
-  if (t.isBlockStatement(body)) {
-    callback = t.arrowFunctionExpression([], body);
-  } else if (t.isExpressionStatement(body)) {
-    callback = body.expression;
+  if (t.isBlockStatement(currentBody)) {
+    callback = t.arrowFunctionExpression([], currentBody);
+  } else if (t.isExpressionStatement(currentBody)) {
+    callback = currentBody.expression;
   } else {
     throw unexpectedType(
       path,
-      body.type,
+      currentBody.type,
       'BlockStatement | ExpressionStatement',
     );
   }

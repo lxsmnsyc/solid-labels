@@ -1,13 +1,13 @@
 import type * as solid from 'solid-js';
-import type * as solidWeb from 'solid-js/web';
 import type * as solidStore from 'solid-js/store';
+import type * as solidWeb from 'solid-js/web';
 
 declare global {
   type Accessor<T> = solid.Accessor<T>;
   type Setter<T> = solid.Setter<T>;
   type Context<T> = solid.Context<T>;
   type ObservableObserver<T> = solid.ObservableObserver<T>;
-  type Component<T> = solid.Component<T>;
+  type Component<T extends Record<string, any> = {}> = solid.Component<T>;
 
   function $signal<T>(): T | undefined;
   function $signal<T>(

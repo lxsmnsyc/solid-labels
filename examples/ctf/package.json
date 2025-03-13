@@ -9,7 +9,7 @@
   },
   "devDependencies": {
     "solid-labels": "0.16.0",
-    "typescript": "^5.7.3",
+    "typescript": "^5.8.2",
     "vite": "^6.1.1",
     "vite-plugin-solid": "^2.11.2",
     "vite-plugin-solid-labels": "0.16.1"

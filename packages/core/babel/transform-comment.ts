@@ -47,13 +47,15 @@ function getVariableLabelPreference(
   return preference;
 }
 
+const LABEL_PATTERN = /^@\w+( .*)?$/;
+
 function getCallbackLabelPreference(state: State, comments: t.Comment[]) {
   let preference: string | undefined;
   let nameOption: string | undefined;
   for (let i = 0, len = comments.length; i < len; i++) {
     const comment = comments[i];
     const value: string = comment.value.trim();
-    if (/^@\w+( .*)?$/.test(value)) {
+    if (LABEL_PATTERN.test(value)) {
       const [tag, ...debugName] = value.split(' ');
       if (tag in CALLBACK_LABEL && !state.opts.disabled?.pragma?.[value]) {
         preference = tag;

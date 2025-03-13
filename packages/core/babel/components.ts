@@ -84,9 +84,6 @@ const COMPONENT_TRAVERSE: Visitor<State> = {
   },
 };
 
-export function transformComponents(
-  state: State,
-  path: NodePath,
-): void {
+export function transformComponents(state: State, path: NodePath): void {
   path.traverse(COMPONENT_TRAVERSE, state);
 }

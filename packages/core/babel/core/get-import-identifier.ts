@@ -20,8 +20,7 @@ export function getImportIdentifier(
   ).unshiftContainer(
     'body',
     t.importDeclaration(
-      [t.importSpecifier(uid, t.identifier(name))
-      ],
+      [t.importSpecifier(uid, t.identifier(name))],
       t.stringLiteral(source),
     ),
   )[0];
