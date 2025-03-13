@@ -8,12 +8,10 @@
     "serve": "vite preview"
   },
   "devDependencies": {
-    "eslint": "^8.51.0",
-    "eslint-config-lxsmnsyc": "^0.6.5",
     "solid-labels": "0.16.0",
-    "typescript": "^5.2.2",
-    "vite": "^4.5.0",
-    "vite-plugin-solid": "^2.7.2",
+    "typescript": "^5.8.2",
+    "vite": "^6.1.1",
+    "vite-plugin-solid": "^2.11.2",
     "vite-plugin-solid-labels": "0.16.1"
   },
   "private": true,
@@ -21,6 +19,6 @@
     "access": "restricted"
   },
   "dependencies": {
-    "solid-js": "^1.8.0"
+    "solid-js": "^1.9.3"
   }
 }

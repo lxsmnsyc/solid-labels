@@ -1,14 +1,10 @@
 {
   "name": "root",
   "private": true,
-  "workspaces": [
-    "packages/*",
-    "examples/*"
-  ],
+  "workspaces": ["packages/*", "examples/*"],
   "devDependencies": {
-    "eslint": "^8.51.0",
-    "eslint-config-lxsmnsyc": "^0.6.5",
-    "lerna": "^7.3.0",
-    "typescript": "^5.2.2"
+    "@biomejs/biome": "^1.9.4",
+    "lerna": "^8.2.1",
+    "typescript": "^5.8.2"
   }
 }

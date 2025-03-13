@@ -1,5 +1,5 @@
-import type * as t from '@babel/types';
 import type * as babel from '@babel/core';
+import type * as t from '@babel/types';
 
 export interface Options {
   dev?: boolean;

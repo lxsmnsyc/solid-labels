@@ -1,5 +1,6 @@
 import type * as babel from '@babel/core';
 import * as t from '@babel/types';
+import { generateUniqueName } from './generate-unique-name';
 
 interface ProtoObjectState {
   root: t.ObjectExpression;
@@ -19,7 +20,7 @@ function getProtoState(
   if (current) {
     return current;
   }
-  const protoID = path.scope.generateUidIdentifier('proto');
+  const protoID = generateUniqueName(path, 'proto');
   const proto = t.objectExpression([]);
   path.scope.getProgramParent().push({
     id: protoID,
@@ -46,11 +47,7 @@ function getGetterReplacement(
     'get',
     key,
     [],
-    t.blockStatement([
-      t.returnStatement(
-        t.callExpression(source, []),
-      ),
-    ]),
+    t.blockStatement([t.returnStatement(t.callExpression(source, []))]),
     computed,
   );
 }
@@ -61,17 +58,14 @@ function getSetterReplacement(
   source: t.Expression,
   computed: boolean,
 ): t.ObjectMethod {
-  const param = path.scope.generateUidIdentifier('param');
+  const param = generateUniqueName(path, 'param');
   return t.objectMethod(
     'set',
     key,
     [param],
     t.blockStatement([
       t.expressionStatement(
-        t.callExpression(
-          source,
-          [t.arrowFunctionExpression([], param)],
-        ),
+        t.callExpression(source, [t.arrowFunctionExpression([], param)]),
       ),
     ]),
     computed,
@@ -212,7 +206,7 @@ function addUnoptimizedProperty(
   writeSource: t.Identifier,
 ): void {
   if (!t.isPrivateName(key)) {
-    const tmp = property.scope.generateUidIdentifier('tmp');
+    const tmp = generateUniqueName(property, 'tmp');
     property.scope.push({ id: tmp, kind: 'let' });
     const isComputed = property.node.computed;
     property.replaceWithMultiple([
@@ -221,12 +215,7 @@ function addUnoptimizedProperty(
         readSource,
         isComputed,
       ),
-      getSetterReplacement(
-        property,
-        tmp,
-        writeSource,
-        isComputed,
-      ),
+      getSetterReplacement(property, tmp, writeSource, isComputed),
     ]);
   }
 }

@@ -1,0 +1,147 @@
+{
+  "$schema": "https://unpkg.com/@biomejs/biome/configuration_schema.json",
+  "files": {
+    "ignore": ["node_modules/**/*"]
+  },
+  "vcs": {
+    "useIgnoreFile": true
+  },
+  "linter": {
+    "enabled": true,
+    "ignore": ["node_modules/**/*"],
+    "rules": {
+      "recommended": true,
+      "a11y": {
+        "noAriaHiddenOnFocusable": "off",
+        "useIframeTitle": "warn",
+        "useKeyWithClickEvents": "warn",
+        "useKeyWithMouseEvents": "warn"
+      },
+      "complexity": {
+        "noForEach": "error",
+        "noVoid": "off",
+        "useOptionalChain": "warn",
+        "useSimplifiedLogicExpression": "error"
+      },
+      "correctness": {
+        "noConstantMathMinMaxClamp": "error",
+        "noInvalidNewBuiltin": "error",
+        "noNewSymbol": "error",
+        "noNodejsModules": "off",
+        "noUndeclaredDependencies": "off",
+        "noUndeclaredVariables": "error",
+        "noUnusedFunctionParameters": "error",
+        "noUnusedImports": "error",
+        "noUnusedPrivateClassMembers": "error",
+        "noUnusedVariables": "error",
+        "useArrayLiterals": "error"
+      },
+      "performance": {
+        "noAccumulatingSpread": "error",
+        "useTopLevelRegex": "error"
+      },
+      "security": {
+        "noGlobalEval": "off"
+      },
+      "style": {
+        "noArguments": "error",
+        "noImplicitBoolean": "error",
+        "noInferrableTypes": "error",
+        "noNamespace": "error",
+        "noNegationElse": "error",
+        "noRestrictedGlobals": "error",
+        "noShoutyConstants": "error",
+        "noUnusedTemplateLiteral": "error",
+        "noUselessElse": "error",
+        "noVar": "error",
+        "noYodaExpression": "error",
+        "useAsConstAssertion": "error",
+        "useBlockStatements": "error",
+        "useCollapsedElseIf": "error",
+        "useConsistentArrayType": "error",
+        "useConsistentBuiltinInstantiation": "error",
+        "useConst": "error",
+        "useDefaultParameterLast": "error",
+        "useEnumInitializers": "error",
+        "useExponentiationOperator": "error",
+        "useExportType": "error",
+        "useFragmentSyntax": "error",
+        "useForOf": "warn",
+        "useImportType": "error",
+        "useLiteralEnumMembers": "error",
+        "useNodejsImportProtocol": "warn",
+        "useNumberNamespace": "error",
+        "useNumericLiterals": "error",
+        "useSelfClosingElements": "error",
+        "useShorthandArrayType": "error",
+        "useShorthandAssign": "error",
+        "useShorthandFunctionType": "warn",
+        "useSingleCaseStatement": "error",
+        "useSingleVarDeclarator": "error",
+        "useTemplate": "off",
+        "useWhile": "error"
+      },
+      "suspicious": {
+        "noConsoleLog": "warn",
+        "noConstEnum": "off",
+        "noDebugger": "off",
+        "noEmptyBlockStatements": "error",
+        "noExplicitAny": "warn",
+        "noImplicitAnyLet": "off",
+        "noMisrefactoredShorthandAssign": "off",
+        "noSelfCompare": "off",
+        "noSparseArray": "off",
+        "noThenProperty": "warn",
+        "useAwait": "error",
+        "useErrorMessage": "error"
+      }
+    }
+  },
+  "formatter": {
+    "enabled": true,
+    "ignore": ["node_modules/**/*"],
+    "formatWithErrors": false,
+    "indentWidth": 2,
+    "indentStyle": "space",
+    "lineEnding": "lf",
+    "lineWidth": 80
+  },
+  "organizeImports": {
+    "enabled": true,
+    "ignore": ["node_modules/**/*"]
+  },
+  "javascript": {
+    "formatter": {
+      "enabled": true,
+      "arrowParentheses": "asNeeded",
+      "bracketSameLine": false,
+      "bracketSpacing": true,
+      "indentWidth": 2,
+      "indentStyle": "space",
+      "jsxQuoteStyle": "double",
+      "lineEnding": "lf",
+      "lineWidth": 80,
+      "quoteProperties": "asNeeded",
+      "quoteStyle": "single",
+      "semicolons": "always",
+      "trailingCommas": "all"
+    },
+    "globals": [],
+    "parser": {
+      "unsafeParameterDecoratorsEnabled": true
+    }
+  },
+  "json": {
+    "formatter": {
+      "enabled": true,
+      "indentWidth": 2,
+      "indentStyle": "space",
+      "lineEnding": "lf",
+      "lineWidth": 80
+    },
+    "parser": {
+      "allowComments": false,
+      "allowTrailingCommas": false
+    }
+  }
+}

@@ -1,30 +1,29 @@
 import * as babel from '@babel/core';
-import plugin from './dist/esm/development/index.mjs';
+import plugin from './dist/esm/development/babel.mjs';
 
 async function compile(code, dev) {
   const result = await babel.transformAsync(code, {
-    plugins: [
-      [plugin, { dev }],
-    ],
+    plugins: [[plugin, { dev }]],
     parserOpts: {
-      plugins: [
-        'jsx',
-      ],
+      plugins: ['jsx'],
     },
   });
 
   return result?.code ?? '';
 }
 
-console.log(await compile(`
+console.log(
+  await compile(`
 let foo = $signal('foo');
 let bar = $signal('bar')
+let baz = $memo('baz');
 
 const example = {
   foo: $property(foo),
-  bar: $property(bar),
+  [baz]: $property(bar),
   baz: baz,
 };
 
 $(console.log(example.foo, example.bar));
-`));
+`),
+);

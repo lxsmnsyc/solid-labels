@@ -1,20 +1,22 @@
 import type * as babel from '@babel/core';
 import * as t from '@babel/types';
-import derefMemo from './deref-memo';
+import { derefMemo } from './deref-memo';
 import { unexpectedType } from './errors';
-import getImportIdentifier from './get-import-identifier';
-import isStatic from './is-static';
+import { generateUniqueName } from './generate-unique-name';
+import { getImportIdentifier } from './get-import-identifier';
+import { isStatic } from './is-static';
 import type { State } from './types';
-import unwrapNode from './unwrap-node';
+import { unwrapNode } from './unwrap-node';
+import { UNDEFINED } from '../constants';
 
-export default function destructureVariable(
+export function destructureVariable(
   state: State,
   path: babel.NodePath,
   target: t.Expression,
   pattern: t.ObjectPattern | t.ArrayPattern,
   defaultValue?: t.Expression,
 ): t.VariableDeclarator[] {
-  const otherIdentifier = path.scope.generateUidIdentifier('other');
+  const otherIdentifier = generateUniqueName(path, 'other');
   let declarators: t.VariableDeclarator[] = [];
   const properties: t.Expression[] = [];
   let restIdentifier: t.Identifier | undefined;
@@ -38,65 +40,43 @@ export default function destructureVariable(
         }
 
         // Create a new identifier for the destructure variable
-        const newIdentifier = path.scope.generateUidIdentifier('prop');
-        let access: t.Expression | t.BlockStatement = (
-          t.memberExpression(
-            target,
-            key,
-            property.computed,
-          )
+        const newIdentifier = generateUniqueName(path, 'prop');
+        let access: t.Expression | t.BlockStatement = t.memberExpression(
+          target,
+          key,
+          property.computed,
         );
         let defaultIdentifier: t.Identifier | undefined;
         if (t.isAssignmentPattern(value)) {
-          defaultIdentifier = path.scope.generateUidIdentifier('def');
+          defaultIdentifier = generateUniqueName(path, 'def');
           const isStaticValue = isStatic(value.right);
           const defValue = isStaticValue
             ? value.right
             : t.callExpression(
-              getImportIdentifier(state, path, 'createMemo', 'solid-js'),
-              [t.arrowFunctionExpression([], value.right)],
-            );
-          declarators.push(
-            t.variableDeclarator(
-              defaultIdentifier,
-              defValue,
+                getImportIdentifier(state, path, 'createMemo', 'solid-js'),
+                [t.arrowFunctionExpression([], value.right)],
+              );
+          declarators.push(t.variableDeclarator(defaultIdentifier, defValue));
+          const valueIdentifier = generateUniqueName(path, 'value');
+          access = t.blockStatement([
+            t.variableDeclaration('const', [
+              t.variableDeclarator(valueIdentifier, access),
+            ]),
+            t.returnStatement(
+              t.conditionalExpression(
+                t.binaryExpression('===', valueIdentifier, UNDEFINED),
+                isStaticValue
+                  ? defaultIdentifier
+                  : t.callExpression(defaultIdentifier, []),
+                valueIdentifier,
+              ),
             ),
-          );
-          const valueIdentifier = path.scope.generateUidIdentifier('value');
-          access = (
-            t.blockStatement([
-              t.variableDeclaration(
-                'const',
-                [
-                  t.variableDeclarator(
-                    valueIdentifier,
-                    access,
-                  ),
-                ],
-              ),
-              t.returnStatement(
-                t.conditionalExpression(
-                  t.binaryExpression(
-                    '===',
-                    valueIdentifier,
-                    t.identifier('undefined'),
-                  ),
-                  isStaticValue
-                    ? defaultIdentifier
-                    : t.callExpression(defaultIdentifier, []),
-                  valueIdentifier,
-                ),
-              ),
-            ])
-          );
+          ]);
         }
         declarators.push(
           t.variableDeclarator(
             newIdentifier,
-            t.arrowFunctionExpression(
-              [],
-              access,
-            ),
+            t.arrowFunctionExpression([], access),
           ),
         );
 
@@ -104,41 +84,46 @@ export default function destructureVariable(
         // destructure that value again
         // e.g. { x: { y, z }} = w;
         if (t.isObjectPattern(value) || t.isArrayPattern(value)) {
-          declarators = [...declarators, ...destructureVariable(
-            state,
-            path,
-            t.callExpression(newIdentifier, []),
-            value,
-          )];
+          declarators = [
+            ...declarators,
+            ...destructureVariable(
+              state,
+              path,
+              t.callExpression(newIdentifier, []),
+              value,
+            ),
+          ];
         } else if (t.isIdentifier(value)) {
           // If the value is just a normal identifier
           // e.g. { x: y } = w;
           // normalize bindings
-          derefMemo(
-            path,
-            value,
-            newIdentifier,
-          );
+          derefMemo(path, value, newIdentifier);
         } else if (t.isAssignmentPattern(value)) {
           if (t.isIdentifier(value.left)) {
             // If the value has a default value
-            derefMemo(
-              path,
-              value.left,
-              newIdentifier,
-            );
-          } else if (t.isArrayPattern(value.left) || t.isObjectPattern(value.left)) {
+            derefMemo(path, value.left, newIdentifier);
+          } else if (
+            t.isArrayPattern(value.left) ||
+            t.isObjectPattern(value.left)
+          ) {
             // Otherwise it's just another array/object
-            declarators = [...declarators, ...destructureVariable(
-              state,
-              path,
-              t.callExpression(newIdentifier, []),
-              value.left,
-              defaultIdentifier,
-            )];
+            declarators = [
+              ...declarators,
+              ...destructureVariable(
+                state,
+                path,
+                t.callExpression(newIdentifier, []),
+                value.left,
+                defaultIdentifier,
+              ),
+            ];
           }
         } else {
-          throw unexpectedType(path, value.type, 'Identifier | ObjectPattern | ArrayPattern');
+          throw unexpectedType(
+            path,
+            value.type,
+            'Identifier | ObjectPattern | ArrayPattern',
+          );
         }
       } else {
         // or it's a rest element
@@ -156,101 +141,80 @@ export default function destructureVariable(
       if (property) {
         const keyExpr = t.numericLiteral(i);
 
-        const newIdentifier = path.scope.generateUidIdentifier('prop');
-        let access: t.Expression | t.BlockStatement = (
-          t.memberExpression(
-            target,
-            keyExpr,
-            true,
-          )
+        const newIdentifier = generateUniqueName(path, 'prop');
+        let access: t.Expression | t.BlockStatement = t.memberExpression(
+          target,
+          keyExpr,
+          true,
         );
         let defaultIdentifier: t.Identifier | undefined;
         if (t.isAssignmentPattern(property)) {
-          defaultIdentifier = path.scope.generateUidIdentifier('def');
+          defaultIdentifier = generateUniqueName(path, 'def');
           const isStaticValue = isStatic(property.right);
           const defValue = isStaticValue
             ? property.right
             : t.callExpression(
-              getImportIdentifier(state, path, 'createMemo', 'solid-js'),
-              [t.arrowFunctionExpression([], property.right)],
-            );
-          declarators.push(
-            t.variableDeclarator(
-              defaultIdentifier,
-              defValue,
+                getImportIdentifier(state, path, 'createMemo', 'solid-js'),
+                [t.arrowFunctionExpression([], property.right)],
+              );
+          declarators.push(t.variableDeclarator(defaultIdentifier, defValue));
+          const valueIdentifier = generateUniqueName(path, 'value');
+          access = t.blockStatement([
+            t.variableDeclaration('const', [
+              t.variableDeclarator(valueIdentifier, access),
+            ]),
+            t.returnStatement(
+              t.conditionalExpression(
+                t.binaryExpression('===', valueIdentifier, UNDEFINED),
+                isStaticValue
+                  ? defaultIdentifier
+                  : t.callExpression(defaultIdentifier, []),
+                valueIdentifier,
+              ),
             ),
-          );
-          const valueIdentifier = path.scope.generateUidIdentifier('value');
-          access = (
-            t.blockStatement([
-              t.variableDeclaration(
-                'const',
-                [
-                  t.variableDeclarator(
-                    valueIdentifier,
-                    access,
-                  ),
-                ],
-              ),
-              t.returnStatement(
-                t.conditionalExpression(
-                  t.binaryExpression(
-                    '===',
-                    valueIdentifier,
-                    t.identifier('undefined'),
-                  ),
-                  isStaticValue
-                    ? defaultIdentifier
-                    : t.callExpression(defaultIdentifier, []),
-                  valueIdentifier,
-                ),
-              ),
-            ])
-          );
+          ]);
         }
         declarators.push(
           t.variableDeclarator(
             newIdentifier,
-            t.arrowFunctionExpression(
-              [],
-              access,
-            ),
+            t.arrowFunctionExpression([], access),
           ),
         );
 
         properties.push(keyExpr);
 
         if (t.isIdentifier(property)) {
-          derefMemo(
-            path,
-            property,
-            newIdentifier,
-          );
+          derefMemo(path, property, newIdentifier);
         } else if (t.isAssignmentPattern(property)) {
           if (t.isIdentifier(property.left)) {
-            derefMemo(
-              path,
-              property.left,
-              newIdentifier,
-            );
-          } else if (t.isArrayPattern(property.left) || t.isObjectPattern(property.left)) {
+            derefMemo(path, property.left, newIdentifier);
+          } else if (
+            t.isArrayPattern(property.left) ||
+            t.isObjectPattern(property.left)
+          ) {
             // Otherwise it's just another array/object
-            declarators = [...declarators, ...destructureVariable(
-              state,
-              path,
-              t.callExpression(newIdentifier, []),
-              property.left,
-              defaultIdentifier,
-            )];
+            declarators = [
+              ...declarators,
+              ...destructureVariable(
+                state,
+                path,
+                t.callExpression(newIdentifier, []),
+                property.left,
+                defaultIdentifier,
+              ),
+            ];
           }
         } else if (t.isArrayPattern(property) || t.isObjectPattern(property)) {
           // Otherwise it's just another array/object
-          declarators = [...declarators, ...destructureVariable(
-            state,
-            path,
-            t.callExpression(newIdentifier, []),
-            property,
-          )];
+          declarators = [
+            ...declarators,
+            ...destructureVariable(
+              state,
+              path,
+              t.callExpression(newIdentifier, []),
+              property,
+            ),
+          ];
         } else if (t.isRestElement(property)) {
           const trueIdentifier = unwrapNode(property.argument, t.isIdentifier);
           if (trueIdentifier) {
@@ -263,63 +227,35 @@ export default function destructureVariable(
 
   const expr = t.variableDeclarator(
     otherIdentifier,
-    (
-      properties.length
-        ? (
-          t.memberExpression(
-            t.callExpression(
-              getImportIdentifier(state, path, 'splitProps', 'solid-js'),
-              [
-                defaultValue != null
-                  ? t.callExpression(
+    properties.length
+      ? t.memberExpression(
+          t.callExpression(
+            getImportIdentifier(state, path, 'splitProps', 'solid-js'),
+            [
+              defaultValue != null
+                ? t.callExpression(
                     getImportIdentifier(state, path, 'mergeProps', 'solid-js'),
                     [target, defaultValue],
                   )
-                  : target,
-                t.arrayExpression(properties),
-              ],
-            ),
-            t.numericLiteral(1),
-            true,
-          )
+                : target,
+              t.arrayExpression(properties),
+            ],
+          ),
+          t.numericLiteral(1),
+          true,
         )
-        : target
-    ),
+      : target,
   );
 
   declarators.push(expr);
 
   if (restIdentifier) {
-    const targetName = restIdentifier.name;
-    const rest = restIdentifier;
-    path.scope.path.traverse({
-      ObjectProperty(p) {
-        if (
-          !(p.scope !== path.scope && p.scope.hasOwnBinding(targetName))
-          && p.node.shorthand
-          && t.isIdentifier(p.node.key)
-          && p.node.key.name === targetName
-          && t.isIdentifier(p.node.value)
-          && p.node.value.name === targetName
-        ) {
-          p.replaceWith(
-            t.objectProperty(
-              rest,
-              otherIdentifier,
-            ),
-          );
-        }
-      },
-      Expression(p) {
-        if (
-          t.isIdentifier(p.node)
-          && p.node.name === targetName
-          && !(p.scope !== path.scope && p.scope.hasOwnBinding(targetName))
-        ) {
-          p.replaceWith(otherIdentifier);
-        }
-      },
-    });
+    const binding = path.scope.getBinding(restIdentifier.name);
+    if (binding) {
+      for (const ref of binding.referencePaths) {
+        ref.replaceWith(otherIdentifier);
+      }
+    }
   }
 
   return declarators;

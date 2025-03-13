@@ -1,7 +1,8 @@
 import * as t from '@babel/types';
 
-export default function isStatic(
-  node: t.Expression
+export function isStatic(
+  node:
+    | t.Expression
     | t.SpreadElement
     | t.AssignmentPattern
     | t.ArrayPattern
@@ -10,21 +11,21 @@ export default function isStatic(
 ): boolean {
   // The following types are singular nested expressions
   if (
-    t.isParenthesizedExpression(node)
-    || t.isTypeCastExpression(node)
-    || t.isTSAsExpression(node)
-    || t.isTSSatisfiesExpression(node)
-    || t.isTSNonNullExpression(node)
-    || t.isTSTypeAssertion(node)
-    || t.isTSInstantiationExpression(node)
+    t.isParenthesizedExpression(node) ||
+    t.isTypeCastExpression(node) ||
+    t.isTSAsExpression(node) ||
+    t.isTSSatisfiesExpression(node) ||
+    t.isTSNonNullExpression(node) ||
+    t.isTSTypeAssertion(node) ||
+    t.isTSInstantiationExpression(node)
   ) {
     return isStatic(node.expression);
   }
   // Same as above
   if (
-    t.isUnaryExpression(node)
-    || t.isUpdateExpression(node)
-    || t.isSpreadElement(node)
+    t.isUnaryExpression(node) ||
+    t.isUpdateExpression(node) ||
+    t.isSpreadElement(node)
   ) {
     return isStatic(node.argument);
   }
@@ -36,7 +37,7 @@ export default function isStatic(
   }
   if (t.isLiteral(node)) {
     if (t.isTemplateLiteral(node)) {
-      return node.expressions.every((expr) => {
+      return node.expressions.every(expr => {
         if (t.isExpression(expr)) {
           return isStatic(expr);
         }
@@ -47,20 +48,18 @@ export default function isStatic(
   }
   // The following types are always static
   if (
-    t.isIdentifier(node)
-    || t.isArrowFunctionExpression(node)
-    || t.isFunctionExpression(node)
-    || t.isJSXElement(node)
-    || t.isJSXFragment(node)
+    t.isIdentifier(node) ||
+    t.isArrowFunctionExpression(node) ||
+    t.isFunctionExpression(node)
+    // ||
+    // t.isJSXElement(node) ||
+    // t.isJSXFragment(node)
   ) {
     return true;
   }
   // Arrays and tuples might have static values
-  if (
-    t.isArrayExpression(node)
-    || t.isTupleExpression(node)
-  ) {
-    return node.elements.every((el) => {
+  if (t.isArrayExpression(node) || t.isTupleExpression(node)) {
+    return node.elements.every(el => {
       if (el) {
         return isStatic(el);
       }
@@ -68,7 +67,7 @@ export default function isStatic(
     });
   }
   if (t.isArrayPattern(node)) {
-    return node.elements.every((el) => {
+    return node.elements.every(el => {
       if (t.isTSParameterProperty(el)) {
         return false;
       }
@@ -79,7 +78,7 @@ export default function isStatic(
     });
   }
   if (t.isObjectExpression(node) || t.isRecordExpression(node)) {
-    return node.properties.every((prop) => {
+    return node.properties.every(prop => {
       if (t.isObjectProperty(prop)) {
         if (t.isExpression(prop.value) && isStatic(prop.value)) {
           return true;
@@ -97,7 +96,7 @@ export default function isStatic(
     });
   }
   if (t.isObjectPattern(node)) {
-    return node.properties.every((prop) => {
+    return node.properties.every(prop => {
       if (t.isObjectProperty(prop)) {
         if (!t.isTSTypeParameter(prop.value) && isStatic(prop.value)) {
           return true;
@@ -127,9 +126,11 @@ export default function isStatic(
     return node.expressions.every(isStatic);
   }
   if (t.isConditionalExpression(node)) {
-    return isStatic(node.test)
-      || isStatic(node.consequent)
-      || isStatic(node.alternate);
+    return (
+      isStatic(node.test) ||
+      isStatic(node.consequent) ||
+      isStatic(node.alternate)
+    );
   }
   if (t.isBinaryExpression(node)) {
     if (t.isExpression(node.left)) {

@@ -1,9 +1,9 @@
 import type * as babel from '@babel/core';
-import type { State, Options } from './core/types';
-import transformComponents from './components';
-import transformCTF from './transform-ctf';
-import transformLabels from './transform-label';
-import transformComments from './transform-comment';
+import { transformComponents } from './components';
+import type { Options, State } from './core/types';
+import { transformComments } from './transform-comment';
+import { transformCTF } from './transform-ctf';
+import { transformLabels } from './transform-label';
 
 export type { Options };
 

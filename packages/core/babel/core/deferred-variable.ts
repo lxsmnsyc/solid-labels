@@ -1,42 +1,44 @@
 import type * as babel from '@babel/core';
 import * as t from '@babel/types';
-import accessorVariable from './accessor-variable';
-import getImportIdentifier from './get-import-identifier';
+import { accessorVariable } from './accessor-variable';
+import { getImportIdentifier } from './get-import-identifier';
 import type { State } from './types';
+import { UNDEFINED } from '../constants';
 
-export default function deferredVariable(
+export function deferredVariable(
   state: State,
   path: babel.NodePath,
   deferredIdentifier: t.Identifier,
-  stateIdentifier: t.Expression = t.identifier('undefined'),
+  stateIdentifier: t.Expression = UNDEFINED,
   optionsIdentifier: t.Expression | undefined = undefined,
 ): t.VariableDeclarator {
   const normalIdentifier = t.arrowFunctionExpression([], stateIdentifier);
   const args: t.Expression[] = [normalIdentifier];
   if (state.opts.dev) {
     if (optionsIdentifier) {
-      args.push(t.callExpression(
-        t.memberExpression(
-          t.identifier('Object'),
-          t.identifier('assign'),
+      args.push(
+        t.callExpression(
+          t.memberExpression(t.identifier('Object'), t.identifier('assign')),
+          [
+            t.objectExpression([
+              t.objectProperty(
+                t.identifier('name'),
+                t.stringLiteral(deferredIdentifier.name),
+              ),
+            ]),
+            optionsIdentifier,
+          ],
         ),
-        [
-          t.objectExpression([
-            t.objectProperty(
-              t.identifier('name'),
-              t.stringLiteral(deferredIdentifier.name),
-            ),
-          ]),
-          optionsIdentifier,
-        ],
-      ));
+      );
     } else {
-      args.push(t.objectExpression([
-        t.objectProperty(
-          t.identifier('name'),
-          t.stringLiteral(deferredIdentifier.name),
-        ),
-      ]));
+      args.push(
+        t.objectExpression([
+          t.objectProperty(
+            t.identifier('name'),
+            t.stringLiteral(deferredIdentifier.name),
+          ),
+        ]),
+      );
     }
   } else if (optionsIdentifier) {
     args.push(optionsIdentifier);
