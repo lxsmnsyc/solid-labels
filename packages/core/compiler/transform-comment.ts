@@ -1,7 +1,6 @@
 import type * as babel from '@babel/core';
 import * as t from '@babel/types';
 import { accessorVariable } from './core/accessor-variable';
-import { deferredVariable } from './core/deferred-variable';
 import { destructureVariable } from './core/destructure-variable';
 import { getImportIdentifier } from './core/get-import-identifier';
 import { memoVariable } from './core/memo-variable';
@@ -95,18 +94,6 @@ const COMMENT_TRAVERSE: babel.Visitor<State> = {
               if (t.isIdentifier(declarator.id)) {
                 declarators.push(
                   memoVariable(
-                    state,
-                    path,
-                    declarator.id,
-                    declarator.init ?? UNDEFINED,
-                  ),
-                );
-              }
-              break;
-            case '@deferred':
-              if (t.isIdentifier(declarator.id)) {
-                declarators.push(
-                  deferredVariable(
                     state,
                     path,
                     declarator.id,

@@ -2,7 +2,6 @@ import type * as babel from '@babel/core';
 import * as t from '@babel/types';
 import { accessorVariable } from './core/accessor-variable';
 import { assert } from './core/assert';
-import { deferredVariable } from './core/deferred-variable';
 import { destructureVariable } from './core/destructure-variable';
 import { unexpectedType } from './core/errors';
 import { getImportIdentifier } from './core/get-import-identifier';
@@ -77,16 +76,6 @@ function transformDeclaratorFromVariableLabel(
   if (labelName === 'memo' && t.isIdentifier(declarator.id)) {
     return [
       memoVariable(state, path, declarator.id, declarator.init ?? UNDEFINED),
-    ];
-  }
-  if (labelName === 'deferred' && t.isIdentifier(declarator.id)) {
-    return [
-      deferredVariable(
-        state,
-        path,
-        declarator.id,
-        declarator.init ?? UNDEFINED,
-      ),
     ];
   }
   if (

@@ -2,7 +2,6 @@ import type * as babel from '@babel/core';
 import * as t from '@babel/types';
 import { accessorVariable } from './core/accessor-variable';
 import { assert } from './core/assert';
-import { deferredVariable } from './core/deferred-variable';
 import { derefMemoVariable } from './core/deref-memo-variable';
 import { derefSignalVariable } from './core/deref-signal-variable';
 import { destructureVariable } from './core/destructure-variable';
@@ -295,34 +294,6 @@ const CTF_TRAVERSE: babel.Visitor<State> = {
                 unexpectedType(path, argument.type, 'Expression'),
               );
               path.replaceWith(derefMemoVariable(path, id, argument));
-            } else if (trueCallee.name === DEFERRED_CTF) {
-              // Transform $deferred
-              const args = trueCallExpr.arguments;
-              assert(
-                args.length <= 2,
-                unexpectedArgumentLength(path, args.length, 2),
-              );
-              let argument: t.Expression | undefined;
-              let options: t.Expression | undefined;
-              if (args.length > 0) {
-                const initialState = args[0];
-                assert(
-                  t.isExpression(initialState),
-                  unexpectedType(path, initialState.type, 'Expression'),
-                );
-                argument = initialState;
-                if (args.length > 1) {
-                  const optionsValue = args[1];
-                  assert(
-                    t.isExpression(optionsValue),
-                    unexpectedType(path, optionsValue.type, 'Expression'),
-                  );
-                  options = optionsValue;
-                }
-              }
-              path.replaceWith(
-                deferredVariable(state, path, id, argument, options),
-              );
             }
           } else if (trueCallee.name === DESTRUCTURE_CTF) {
             const args = trueCallExpr.arguments;
