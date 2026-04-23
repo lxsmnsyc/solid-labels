@@ -1,11 +1,9 @@
 import type * as babel from '@babel/core';
 import { transformComponents } from './components';
-import type { Options, State } from './core/types';
+import type { State } from './core/types';
 import { transformComments } from './transform-comment';
 import { transformCTF } from './transform-ctf';
 import { transformLabels } from './transform-label';
-
-export type { Options };
 
 export default function solidLabelsPlugin(): babel.PluginObj<State> {
   return {
