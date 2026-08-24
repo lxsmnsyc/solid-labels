@@ -9,6 +9,7 @@ import type { CompileOutput, Options } from './types';
 export type { CompileOutput, Options };
 export { CompileError };
 
+/** Infers the parser language from the file extension (query suffix ignored). */
 const TSX_FILE = /\.tsx$/i;
 const TS_FILE = /\.[mc]?ts$/i;
 
@@ -23,6 +24,11 @@ function languageOf(filename: string): 'js' | 'jsx' | 'ts' | 'tsx' {
   return 'jsx';
 }
 
+/**
+ * Compiles a module: parse with oxc, analyze scopes (`analyze`), apply all
+ * transforms (`transformProgram`) as span edits over a MagicString, and
+ * return the code plus a hires source map.
+ */
 export function compile(id: string, code: string, options: Options = {}): CompileOutput {
   const result = parseSync(id.split('?')[0], code, {
     lang: languageOf(id),

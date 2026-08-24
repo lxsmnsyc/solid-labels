@@ -19,6 +19,7 @@ import {
   transformSignal,
 } from './variables';
 
+/** True when the call is the entire expression statement — the `$(expr);` form. */
 function isStatementCall(ref: Ref, call: Node): boolean {
   const parents = ref.parents;
   const maybeStatement = parents[parents.length - 2];
@@ -27,6 +28,10 @@ function isStatementCall(ref: Ref, call: Node): boolean {
   );
 }
 
+/**
+ * Replaces a bare identifier CTF (or component name) with its auto-imported
+ * local, expanding shorthand object properties to keep them valid.
+ */
 function replaceAlias(ctx: Ctx, ref: Ref, name: string, source: string): void {
   const local = ctx.importIdent(name, source);
   ctx.consumed.add(ref.node);
@@ -37,6 +42,20 @@ function replaceAlias(ctx: Ctx, ref: Ref, name: string, source: string): void {
   }
 }
 
+/**
+ * Transform pipeline, driven by unresolved (global) references in source
+ * order:
+ *
+ * 1. structural CTFs ($signal, $memo, derefs, $destructure, $component,
+ *    accessor/arrow CTFs, aliases) register reactive bindings as they go;
+ * 2. $effect / $renderEffect / `$(expr);` run afterwards so capture analysis
+ *    sees every reactive binding;
+ * 3. `rewriteReferences` rewrites all remaining reads/writes of reactive
+ *    bindings (phase 2);
+ * 4. leftover ref CTFs are reported as errors, JSX component names are
+ *    rewritten, hoisted effect callbacks are moved to module level, and the
+ *    import header is prepended.
+ */
 export default function transformProgram(ctx: Ctx): void {
   const unresolved = [...ctx.analysis.unresolved].sort((a, b) => a.node.start - b.node.start);
   const effects: Ref[] = [];

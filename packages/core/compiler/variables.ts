@@ -28,6 +28,7 @@ export function findDeclarator(ref: Ref): DeclSite | null {
   return null;
 }
 
+/** Returns the call expression when the reference is its direct callee. */
 export function isCallee(ref: Ref): Node | null {
   const call = ref.parents[ref.parents.length - 1];
   if (call?.type === 'CallExpression' && unwrap(call.callee) === ref.node) {
@@ -36,6 +37,7 @@ export function isCallee(ref: Ref): Node | null {
   return null;
 }
 
+/** Validates a CTF call's arguments: enforces the arity cap, rejects spread. */
 export function callArgs(ctx: Ctx, call: Node, max: number): Node[] {
   const args: Node[] = call.arguments;
   if (args.length > max) {
@@ -49,12 +51,18 @@ export function callArgs(ctx: Ctx, call: Node, max: number): Node[] {
   return args;
 }
 
+/** Drops the TS type annotation from a declarator id (the initializer changes shape). */
 function removeTypeAnnotation(ctx: Ctx, id: Node): void {
   if (id.typeAnnotation) {
     ctx.s.remove(id.typeAnnotation.start, id.typeAnnotation.end);
   }
 }
 
+/**
+ * Dev mode only: injects `{ name: "x" }` into the options argument at
+ * `optionsIndex` — merged via `Object.assign` when options exist, appended
+ * otherwise, with `void 0` fillers for skipped positional arguments.
+ */
 function devNameOptions(
   ctx: Ctx,
   call: Node,
@@ -98,6 +106,12 @@ function containsReactiveRead(ctx: Ctx, node: Node): boolean {
   return false;
 }
 
+/**
+ * `let count = $signal(value)` compiles to
+ * `let [count, setcount_1] = createSignal(value)` and registers the binding
+ * as a signal. Non-static initializers (or ones reading reactive variables)
+ * use the memoized signal convention: `createSignal(() => expr)`.
+ */
 export function transformSignal(ctx: Ctx, ref: Ref, site: DeclSite): void {
   const { declarator, call } = site;
   const id = declarator.id;
@@ -130,6 +144,11 @@ export function transformSignal(ctx: Ctx, ref: Ref, site: DeclSite): void {
   ctx.register(binding, { kind: 'signal', get: name, set });
 }
 
+/**
+ * `const total = $memo(expr)` (also the `$` declaration form) compiles to
+ * `const total = createMemo(() => expr)` and registers an accessor binding.
+ * Function-valued arguments are passed through unwrapped.
+ */
 export function transformMemo(ctx: Ctx, ref: Ref, site: DeclSite): void {
   const { declarator, call } = site;
   const id = declarator.id;
@@ -155,6 +174,11 @@ export function transformMemo(ctx: Ctx, ref: Ref, site: DeclSite): void {
   ctx.register(binding, { kind: 'accessor', get: name });
 }
 
+/**
+ * `let count = $derefSignal(tuple)` binds an existing `[get, set]` tuple as a
+ * reactive signal variable: the declarator becomes the destructuring
+ * `[count, setcount_1]` and the CTF wrapper is dropped.
+ */
 export function transformDerefSignal(ctx: Ctx, ref: Ref, site: DeclSite): void {
   const { declarator, call } = site;
   const id = declarator.id;
@@ -178,6 +202,10 @@ export function transformDerefSignal(ctx: Ctx, ref: Ref, site: DeclSite): void {
   ctx.register(binding, { kind: 'signal', get: name, set });
 }
 
+/**
+ * `const total = $derefMemo(accessor)` binds an existing accessor as a
+ * reactive read-only variable; the CTF wrapper is dropped.
+ */
 export function transformDerefMemo(ctx: Ctx, ref: Ref, site: DeclSite): void {
   const { declarator, call } = site;
   const id = declarator.id;
@@ -199,6 +227,12 @@ export function transformDerefMemo(ctx: Ctx, ref: Ref, site: DeclSite): void {
   ctx.register(binding, { kind: 'accessor', get: id.name as string });
 }
 
+/**
+ * Declaration CTFs ($children, $mapArray, $repeat): the call is replaced by
+ * the auto-imported runtime function, the first argument is arrow-wrapped
+ * when not already a function, and the variable becomes an accessor binding
+ * (reads compile to `name()`).
+ */
 export function transformAccessorCtf(
   ctx: Ctx,
   ref: Ref,

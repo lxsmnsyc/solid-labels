@@ -79,6 +79,16 @@ const SKIP_TS_STATEMENTS = new Set([
   'TSImportEqualsDeclaration',
 ]);
 
+/**
+ * Two-pass scope analysis over the whole program:
+ *
+ * - Pass A (`declareWalk`) builds the scope tree and declares every binding,
+ *   honoring `var` hoisting to the nearest function scope.
+ * - Pass B (`resolve`) walks expressions, resolving each identifier to its
+ *   binding (or recording it as unresolved — the CTF candidates), tracking
+ *   read/write mode, the ancestor chain, shorthand-property and export
+ *   positions, JSX element names, and `this`/`super`/meta-property spans.
+ */
 export function analyze(program: Node): Analysis {
   const scopeMap = new Map<Node, Scope>();
   const moduleScope: Scope = {
@@ -99,6 +109,7 @@ export function analyze(program: Node): Analysis {
     bindingByNode: new Map(),
   };
 
+  /** Declares a binding in `scope`; first declaration of a name wins. */
   function declare(id: Node, kind: string, scope: Scope): void {
     analysis.names.add(id.name);
     if (scope.bindings.has(id.name)) {
@@ -110,6 +121,7 @@ export function analyze(program: Node): Analysis {
     analysis.bindingByNode.set(id, binding);
   }
 
+  /** Nearest function (or module) scope — the hoisting target for `var`. */
   function varScope(scope: Scope): Scope {
     let current = scope;
     while (current.kind === 'block' && current.parent) {
@@ -122,6 +134,11 @@ export function analyze(program: Node): Analysis {
   // Pass A: build scopes and declare bindings.
   // ---------------------------------------------------------------------------
 
+  /**
+   * Declares every identifier bound by a pattern into `scope`, while walking
+   * computed keys and default expressions in `walkScope` (they may contain
+   * further declarations, e.g. function expressions).
+   */
   function declarePattern(pattern: Node, kind: string, scope: Scope, walkScope: Scope): void {
     switch (pattern.type) {
       case 'Identifier':
@@ -159,6 +176,7 @@ export function analyze(program: Node): Analysis {
     }
   }
 
+  /** Pass A walker: creates scopes for scope-carrying nodes and declares bindings. */
   function declareWalk(node: Node, scope: Scope): void {
     if (SKIP_TS_STATEMENTS.has(node.type)) {
       return;
@@ -256,6 +274,7 @@ export function analyze(program: Node): Analysis {
   const scopeStack: Scope[] = [moduleScope];
   const parentStack: Node[] = [];
 
+  /** Resolves a name through the current scope stack, innermost first. */
   function lookup(name: string): Binding | null {
     for (let i = scopeStack.length - 1; i >= 0; i--) {
       const binding = scopeStack[i].bindings.get(name);
@@ -266,6 +285,11 @@ export function analyze(program: Node): Analysis {
     return null;
   }
 
+  /**
+   * Records a reference: attached to its binding when resolved, otherwise
+   * pushed to `analysis.unresolved`. The ancestor chain is snapshotted from
+   * the current traversal stack (excluding the identifier itself).
+   */
   function reference(
     node: Node,
     mode: RefMode,
@@ -290,6 +314,10 @@ export function analyze(program: Node): Analysis {
     }
   }
 
+  /**
+   * Pass B over a declaration pattern: identifiers were declared in pass A,
+   * so only computed keys and default expressions are resolved here.
+   */
   function visitPatternDecl(pattern: Node): void {
     switch (pattern.type) {
       case 'Identifier':
@@ -326,6 +354,11 @@ export function analyze(program: Node): Analysis {
     }
   }
 
+  /**
+   * Resolves an assignment target: identifiers become write (or readwrite for
+   * compound operators) references; member expressions, computed keys, and
+   * defaults are plain reads; destructuring recurses with `write`.
+   */
   function visitAssignTarget(target: Node, mode: RefMode): void {
     switch (target.type) {
       case 'Identifier':
@@ -405,6 +438,7 @@ export function analyze(program: Node): Analysis {
     }
   }
 
+  /** Root of a JSX element name: `a` for `<a.b.c>`, the namespace for `<ns:x>`. */
   function jsxRoot(name: Node): Node {
     let current = name;
     while (current.type === 'JSXMemberExpression') {
@@ -416,6 +450,7 @@ export function analyze(program: Node): Analysis {
     return current;
   }
 
+  /** Pass B walker: resolves references, maintaining scope and ancestor stacks. */
   function resolve(node: Node): void {
     if (SKIP_TS_STATEMENTS.has(node.type) || node.type === 'TSEnumDeclaration') {
       return;

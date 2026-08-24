@@ -35,6 +35,11 @@ export interface PendingHoist {
   text?: string;
 }
 
+/**
+ * Mutable state for one compile pass: the MagicString being edited, scope
+ * analysis, auto-import registry, reactive binding registry, effect capture
+ * regions, and callbacks pending module-level hoisting.
+ */
 export class Ctx {
   s: MagicString;
   code: string;
@@ -69,6 +74,7 @@ export class Ctx {
     }
   }
 
+  /** Returns a collision-free identifier `base_N` and reserves it. */
   unique(base: string): string {
     let index = 1;
     while (this.names.has(`${base}_${index}`)) {
@@ -79,6 +85,11 @@ export class Ctx {
     return name;
   }
 
+  /**
+   * Returns the local identifier for an auto-import, registering it on first
+   * use. Deduplicated per `(source, name)`; locals are `_name` (uniquified on
+   * collision) and the header preserves first-use order.
+   */
   importIdent(name: string, source: string): string {
     const key = `${source} ${name}`;
     const existing = this.imports.get(key);
@@ -95,6 +106,7 @@ export class Ctx {
     return local;
   }
 
+  /** Marks a binding as reactive so `rewriteReferences` rewrites its uses. */
   register(binding: Binding, info: ReactiveInfo): void {
     this.reactive.set(binding, info);
   }
@@ -126,10 +138,12 @@ export class Ctx {
     return found;
   }
 
+  /** Throws a `CompileError` located at the node. */
   error(node: Node, message: string): never {
     compileError(this.code, node, message);
   }
 
+  /** Prepends the auto-import header (in first-use order). */
   finalize(): void {
     if (this.importOrder.length > 0) {
       let header = '';

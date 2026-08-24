@@ -1,5 +1,6 @@
 import type { Node } from './ast';
 
+/** Compilation failure carrying a 1-based line/column derived from the source offset. */
 export class CompileError extends Error {
   line: number;
   column: number;
@@ -21,6 +22,7 @@ export class CompileError extends Error {
   }
 }
 
+/** Throws a `CompileError` positioned at the node's start offset. */
 export function compileError(code: string, node: Node, message: string): never {
   throw new CompileError(message, code, node.start);
 }

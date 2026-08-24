@@ -106,6 +106,11 @@ function analyzeCaptures(ctx: Ctx, call: Node, target: Node, body: Node): Captur
   return { entries, params, captured, blocked };
 }
 
+/**
+ * A callback can move to module level only when it closes over nothing the
+ * capture array cannot carry: no writes to plain outer variables (`blocked`),
+ * and no `this` / `super` / meta-property / `arguments` inside the span.
+ */
 function isHoistable(ctx: Ctx, target: Node, blocked: boolean): boolean {
   if (blocked) {
     return false;

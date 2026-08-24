@@ -20,6 +20,7 @@ function isNode(value: unknown): value is Node {
   return value != null && typeof value === 'object' && typeof (value as Node).type === 'string';
 }
 
+/** Invokes `cb` for every direct child node, skipping TypeScript type-space keys. */
 export function eachChild(node: Node, cb: (child: Node) => void): void {
   for (const key of Object.keys(node)) {
     if (TYPE_KEYS.has(key)) {
@@ -56,10 +57,12 @@ export function unwrap(node: Node | null | undefined): Node | null {
   return current;
 }
 
+/** True for the wrappers peeled by `unwrap` (kept as-is in the output). */
 export function isWrapper(node: Node): boolean {
   return EXPRESSION_WRAPPERS.has(node.type);
 }
 
+/** True for any function-like node (arrow, function expression, or declaration). */
 export function isFunctionNode(node: Node | null): boolean {
   return (
     node != null &&

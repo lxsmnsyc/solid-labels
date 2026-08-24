@@ -65,6 +65,7 @@ export function destructurePattern(ctx: Ctx, pattern: Node, target: string, decl
   ctx.error(pattern, `Unsupported pattern: ${pattern.type}`);
 }
 
+/** Emits an accessor declarator for a leaf name and registers its binding. */
 function registerLeaf(ctx: Ctx, id: Node, body: string, decls: string[]): void {
   decls.push(`${id.name} = ${body}`);
   const binding = ctx.analysis.bindingByNode.get(id);
@@ -73,6 +74,13 @@ function registerLeaf(ctx: Ctx, id: Node, body: string, decls: string[]): void {
   }
 }
 
+/**
+ * Handles one pattern element bound to `access` (an expression string):
+ * identifiers become `() => access` leaves; defaults compile to a
+ * `value === void 0 ? default : value` accessor, with the default hoisted as a
+ * plain constant when static or a `createMemo` otherwise; nested patterns
+ * recurse through an intermediate `prop_N` accessor.
+ */
 function destructureValue(ctx: Ctx, value: Node, access: string, decls: string[]): void {
   switch (value.type) {
     case 'Identifier': {
@@ -115,6 +123,11 @@ function destructureValue(ctx: Ctx, value: Node, access: string, decls: string[]
   }
 }
 
+/**
+ * `const { a, b } = $destructure(expr)` compiles the whole declarator into a
+ * list of accessor declarators. Non-identifier sources are first bound to an
+ * `obj_N` intermediate so the source expression evaluates once.
+ */
 export function transformDestructure(ctx: Ctx, ref: Ref, site: DeclSite): void {
   const { declarator, call } = site;
   const pattern = declarator.id;

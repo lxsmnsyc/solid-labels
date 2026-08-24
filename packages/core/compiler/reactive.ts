@@ -2,6 +2,7 @@ import { type Node, containsAwaitOrYield, expandParens, isWrapper, unwrap } from
 import type { Ctx, ReactiveInfo } from './context';
 import type { Binding, Ref } from './scope';
 
+/** CTFs applied to a reference of an existing reactive variable. */
 export const REF_CTFS = new Set([
   '$get',
   '$set',
@@ -22,6 +23,11 @@ interface RefCtfUse {
   callIndex: number;
 }
 
+/**
+ * Matches `$get(count)`-style shapes: the reactive reference must be the sole
+ * argument of a call to an unresolved ref CTF. Also captures the enclosing
+ * object property for `$getter` / `$setter` / `$property`.
+ */
 function detectRefCtf(ctx: Ctx, ref: Ref): RefCtfUse | null {
   const parents = ref.parents;
   // Ascend through expression wrappers to the call.
@@ -63,12 +69,18 @@ function detectRefCtf(ctx: Ctx, ref: Ref): RefCtfUse | null {
   return { name: callee.name, call, callee, property, callIndex: index };
 }
 
+/** Source text of a property key, bracketed when computed. */
 function keyText(ctx: Ctx, property: Node): string {
   const key = property.key;
   const raw = ctx.code.slice(key.start, key.end);
   return property.computed ? `[${raw}]` : raw;
 }
 
+/**
+ * Replaces a ref CTF call with the underlying accessor/setter: `$get` with the
+ * getter, `$set` with the setter, `$refSignal` with the `[get, set]` tuple, and
+ * the property forms with `get`/`set` accessor properties.
+ */
 function rewriteRefCtf(ctx: Ctx, info: ReactiveInfo, ref: Ref, use: RefCtfUse): void {
   ctx.consumed.add(ref.node);
   ctx.consumed.add(use.callee);
@@ -138,6 +150,14 @@ function rewriteRefCtf(ctx: Ctx, info: ReactiveInfo, ref: Ref, use: RefCtfUse): 
   }
 }
 
+/**
+ * Rewrites a write to a signal binding into a setter call:
+ * `count++` compiles to `setcount_1(current_1 => ++current_1)`, compound
+ * assignment to the functional-update form, and plain `=` to
+ * `setcount_1(() => value)`. Right-hand sides containing await/yield are
+ * split into a temporary first (statement or concise arrow body only) so the
+ * setter never receives a promise.
+ */
 function rewriteWrite(ctx: Ctx, binding: Binding, info: ReactiveInfo, ref: Ref): void {
   if (info.kind !== 'signal' || !info.set) {
     ctx.error(ref.node, `Cannot assign to derived variable "${binding.name}"`);
@@ -191,6 +211,13 @@ function rewriteWrite(ctx: Ctx, binding: Binding, info: ReactiveInfo, ref: Ref):
   s.appendLeft(right.end, ')');
 }
 
+/**
+ * Phase 2: rewrites every remaining reference of each reactive binding.
+ * Reads get `()` appended (or shorthand-expanded), writes go through
+ * `rewriteWrite`, ref CTFs through `rewriteRefCtf`. References captured by an
+ * effect region are left untouched — inside the callback the name is the
+ * destructured raw value parameter.
+ */
 export function rewriteReferences(ctx: Ctx): void {
   const { s } = ctx;
   for (const [binding, info] of ctx.reactive) {
