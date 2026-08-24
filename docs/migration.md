@@ -72,7 +72,7 @@ $effect(() => {
 import { createSignal as _createSignal } from 'solid-js';
 import { createEffect as _createEffect } from 'solid-js';
 
-let [bar, setbar_1] = _createSignal(someValue());
+let [bar, setbar_1] = _createSignal(() => someValue());
 _createEffect(() => [bar()], effectCallback_1);
 
 function effectCallback_1([bar]) {

@@ -176,7 +176,7 @@ import { createSignal as _createSignal } from 'solid-js';
 import { createEffect as _createEffect } from 'solid-js';
 
 function App() {
-  let [bar, setbar_1] = _createSignal(someValue());
+  let [bar, setbar_1] = _createSignal(() => someValue());
   _createEffect(() => [bar()], effectCallback_1);
 }
 
