@@ -51,8 +51,8 @@ declare global {
   // Effects — the callback reads captured plain values; the compiler
   // generates the tracked compute phase from the identifiers it captures.
 
-  function $effect(callback: () => void, options?: { defer?: boolean; name?: string }): void;
-  function $renderEffect(callback: () => void, options?: { defer?: boolean; name?: string }): void;
+  function $effect(callback: () => (() => void) | void, options?: solid.EffectOptions): void;
+  function $renderEffect(callback: () => (() => void) | void, options?: solid.EffectOptions): void;
 
   function $untrack<T>(value: T): T;
   function $resolve<T>(value: T): Promise<Awaited<T>>;

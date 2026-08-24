@@ -99,6 +99,22 @@ function effectCallback_1([count]) {
 "
 `;
 
+exports[`$effect > preserves a returned cleanup function 1`] = `
+"import { createSignal as _createSignal } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
+
+function App() {
+  let [count, setcount_1] = _createSignal(0);
+  _createEffect(() => [count()], effectCallback_1);
+}
+
+function effectCallback_1([count]) {
+    const id = setInterval(() => poll(), count);
+    return () => clearInterval(id);
+  }
+"
+`;
+
 exports[`$effect > stays inline when the callback uses this 1`] = `
 "import { createSignal as _createSignal } from "solid-js";
 import { createEffect as _createEffect } from "solid-js";

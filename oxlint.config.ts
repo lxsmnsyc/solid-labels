@@ -35,6 +35,7 @@ export default defineConfig({
         'typescript/no-empty-object-type': 'off',
         'typescript/no-namespace': 'off',
         'typescript/no-unnecessary-type-parameters': 'off',
+        'typescript/no-invalid-void-type': 'off',
       },
     },
   ],

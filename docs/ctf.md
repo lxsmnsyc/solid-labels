@@ -148,8 +148,8 @@ cleanup).
 ### `$effect` and `$renderEffect`
 
 ```ts
-function $effect(callback: () => void, options?: EffectOptions): void;
-function $renderEffect(callback: () => void, options?: EffectOptions): void;
+function $effect(callback: () => (() => void) | void, options?: EffectOptions): void;
+function $renderEffect(callback: () => (() => void) | void, options?: EffectOptions): void;
 ```
 
 Solid 2.0 effects have two phases: a tracked `compute` function and an
@@ -237,6 +237,10 @@ Rules:
   compiler.
 - The callback must be synchronous (no `async`, no generators).
 - Module-scope plain values are not captured; they resolve directly.
+- A function returned from the callback is the **cleanup**: it runs before
+  the next application and on dispose, exactly as in `createEffect`. (The
+  `$(expr);` statement form discards the expression value — use the callback
+  form when you need cleanup.)
 - An optional second argument is passed through as `EffectOptions`
   (`{ defer: true }`, …).
 

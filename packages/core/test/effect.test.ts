@@ -99,6 +99,20 @@ $effect(() => {
 `),
     ).toMatchSnapshot();
   });
+  it('preserves a returned cleanup function', () => {
+    expect(
+      transform(`
+function App() {
+  let count = $signal(0);
+  $effect(() => {
+    const id = setInterval(() => poll(), count);
+    return () => clearInterval(id);
+  });
+}
+`),
+    ).toMatchSnapshot();
+  });
+
   it('supports nested effects', () => {
     expect(
       transform(`
