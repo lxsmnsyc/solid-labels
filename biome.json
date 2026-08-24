@@ -1,14 +1,18 @@
 {
   "$schema": "https://unpkg.com/@biomejs/biome/configuration_schema.json",
   "files": {
-    "ignore": ["node_modules/**/*"]
+    "ignore": [
+      "node_modules/**/*"
+    ]
   },
   "vcs": {
     "useIgnoreFile": true
   },
   "linter": {
     "enabled": true,
-    "ignore": ["node_modules/**/*"],
+    "ignore": [
+      "node_modules/**/*"
+    ],
     "rules": {
       "recommended": true,
       "a11y": {
@@ -99,7 +103,9 @@
   },
   "formatter": {
     "enabled": true,
-    "ignore": ["node_modules/**/*"],
+    "ignore": [
+      "node_modules/**/*"
+    ],
     "formatWithErrors": false,
     "indentWidth": 2,
     "indentStyle": "space",
@@ -108,7 +114,9 @@
   },
   "organizeImports": {
     "enabled": true,
-    "ignore": ["node_modules/**/*"]
+    "ignore": [
+      "node_modules/**/*"
+    ]
   },
   "javascript": {
     "formatter": {
@@ -143,5 +151,23 @@
       "allowComments": false,
       "allowTrailingCommas": false
     }
-  }
+  },
+  "overrides": [
+    {
+      "include": [
+        "packages/core/src/index.ts",
+        "src/index.ts"
+      ],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noExplicitAny": "off"
+          },
+          "complexity": {
+            "noBannedTypes": "off"
+          }
+        }
+      }
+    }
+  ]
 }

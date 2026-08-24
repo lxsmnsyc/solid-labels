@@ -1,0 +1,88 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`$ > captures setters in statements 1`] = `
+"import { createSignal as _createSignal } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
+
+let [count, setcount_1] = _createSignal(0);
+_createEffect(() => [setcount_1], effectCallback_1);
+
+function effectCallback_1([setcount_1]) {
+  setcount_1(current_1 => current_1 += step());
+}
+"
+`;
+
+exports[`$ > stays inline when the statement writes plain outer variables 1`] = `
+"import { createSignal as _createSignal } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
+
+function App() {
+  let el;
+  let [count, setcount_1] = _createSignal(0);
+  _createEffect(() => [count()], ([count]) => { el = render(count); });
+}
+"
+`;
+
+exports[`$ > transforms declarations into memos 1`] = `
+"import { createSignal as _createSignal } from "solid-js";
+import { createMemo as _createMemo } from "solid-js";
+
+let [count, setcount_1] = _createSignal(0);
+const message = _createMemo(() => \`Count: \${count()}\`);
+"
+`;
+
+exports[`$ > transforms statements like $effect 1`] = `
+"import { createSignal as _createSignal } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
+
+let [count, setcount_1] = _createSignal(0);
+_createEffect(() => [count()], effectCallback_1);
+
+function effectCallback_1([count]) {
+  console.log(count);
+}
+"
+`;
+
+exports[`$memo > adds debug names in dev mode 1`] = `
+"import { createMemo as _createMemo } from "solid-js";
+const value = _createMemo(() => compute(), { name: "value" });"
+`;
+
+exports[`$memo > adds debug names in dev mode 2`] = `
+"import { createMemo as _createMemo } from "solid-js";
+const value = _createMemo(() => compute(), Object.assign({ name: "value" }, { lazy: true }));"
+`;
+
+exports[`$memo > supports refs 1`] = `
+"import { createMemo as _createMemo } from "solid-js";
+
+const message = _createMemo(() => compute());
+const accessor = message;
+const getter = message;
+const wrapped = { get message() { return message(); } };
+"
+`;
+
+exports[`$memo > transforms declarations 1`] = `
+"import { createSignal as _createSignal } from "solid-js";
+import { createMemo as _createMemo } from "solid-js";
+
+let [count, setcount_1] = _createSignal(0);
+const message = _createMemo(() => \`Count: \${count()}\`);
+console.log(message());
+"
+`;
+
+exports[`$memo > transforms declarations 2`] = `
+"import { createMemo as _createMemo } from "solid-js";
+const value = _createMemo(() => compute());"
+`;
+
+exports[`$memo > transforms declarations 3`] = `
+"import { createMemo as _createMemo } from "solid-js";
+const value = _createMemo(() => compute(), { lazy: true });"
+`;

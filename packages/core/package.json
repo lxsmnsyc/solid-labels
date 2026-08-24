@@ -3,21 +3,27 @@
   "type": "module",
   "exports": {
     ".": "./dist/index.js",
-    "./babel": "./dist/babel.js",
     "./compiler": "./dist/compiler.js",
     "./package.json": "./package.json"
   },
-  "files": ["dist", "src"],
+  "files": [
+    "dist",
+    "src"
+  ],
   "engines": {
-    "node": ">=10"
+    "node": ">=18"
   },
   "license": "MIT",
-  "keywords": ["babel", "solid-js", "labels", "reactivity"],
+  "keywords": [
+    "solid-js",
+    "labels",
+    "reactivity",
+    "compiler",
+    "oxc"
+  ],
   "name": "solid-labels",
   "devDependencies": {
     "@solidjs/web": "2.0.0-rc.1",
-    "@types/babel__core": "^7.20.5",
-    "@types/babel__traverse": "^7.28.0",
     "@types/node": "^25.6.0",
     "solid-js": "2.0.0-rc.1",
     "tsdown": "^0.21.9",
@@ -30,9 +36,8 @@
     "@solidjs/web": "^2.0.0-rc.1"
   },
   "dependencies": {
-    "@babel/core": "^7.29.0",
-    "@babel/traverse": "^7.29.0",
-    "@babel/types": "^7.29.0"
+    "magic-string": "^1.2.2",
+    "oxc-parser": "^0.146.0"
   },
   "scripts": {
     "prepublishOnly": "tsdown",

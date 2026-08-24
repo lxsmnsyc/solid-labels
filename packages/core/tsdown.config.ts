@@ -5,7 +5,6 @@ export default defineConfig({
     'src/index.ts',
     {
       compiler: 'compiler/index.ts',
-      babel: 'compiler/plugin.ts',
     },
   ],
   platform: 'neutral',

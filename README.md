@@ -29,21 +29,20 @@ pnpm add solid-labels
 
 ## Features
 
-- 🏷 Labels: Turn labels into SolidJS utility calls!
-- 💬 Comments: Turn comments into SolidJS utility calls, too!
 - ⏱ Compile-time Functions: Use functions that are evaluated during compile-time!
 - 📦 Auto Imports: No need to import SolidJS utilities, explicitly!
+- ⚡ Oxc-powered: native-speed parsing, span-based output, high-resolution source maps!
 - 🤝 JS and TS Friendly!
+
+> Labels (`signal: x = 0`) and comment pragmas (`/* @signal */`) were removed
+> in 1.0 — see the [migration guide](https://github.com/LXSMNSYC/solid-labels/tree/main/docs/migration.md).
 
 ## Usage
 
-- [Labels](https://github.com/LXSMNSYC/solid-labels/tree/main/docs/labels.md)
-[![Open in CodeSandbox](https://img.shields.io/badge/Open%20in-CodeSandbox-blue?style=flat-square&logo=codesandbox)](https://codesandbox.io/s/github/LXSMNSYC/solid-labels/tree/main/examples/labels)
-- [Comments](https://github.com/LXSMNSYC/solid-labels/tree/main/docs/comments.md)
-[![Open in CodeSandbox](https://img.shields.io/badge/Open%20in-CodeSandbox-blue?style=flat-square&logo=codesandbox)](https://codesandbox.io/s/github/LXSMNSYC/solid-labels/tree/main/examples/comments)
 - [Compile-Time Functions](https://github.com/LXSMNSYC/solid-labels/tree/main/docs/ctf.md)
 [![Open in CodeSandbox](https://img.shields.io/badge/Open%20in-CodeSandbox-blue?style=flat-square&logo=codesandbox)](https://codesandbox.io/s/github/LXSMNSYC/solid-labels/tree/main/examples/ctf)
 - [Solid Namespace](https://github.com/LXSMNSYC/solid-labels/tree/main/docs/namespace.md)
+- [Migration from 0.x](https://github.com/LXSMNSYC/solid-labels/tree/main/docs/migration.md)
 
 ### Typescript
 
@@ -53,19 +52,13 @@ pnpm add solid-labels
 /// <reference types="solid-labels" />
 ```
 
-### Babel
+### Programmatic
 
-`.babelrc`
+```ts
+import { compile } from 'solid-labels/compiler';
 
-```json
-{
-  "plugins": [
-    ["solid-labels/babel", { "dev": false }]
-  ]
-}
+const { code, map } = await compile('App.tsx', source, { dev: true });
 ```
-
-[!INFO]: You don't have to use this if you're using Vite or Rollup plugins
 
 ## Integrations
 
@@ -80,22 +73,12 @@ You can disable some features by passing `disabled` option to the plugin options
 ```js
 {
   disabled: {
-    labels: {
-      signal: true,
-    },
-    pragma: {
-      '@signal': true,
-    },
     ctf: {
       $signal: true,
     },
   }
 }
 ```
-
-## Limitations
-
-- Detecting shadowed identifier for `signal` and `memo`.
 
 ## Sponsors
 

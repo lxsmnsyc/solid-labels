@@ -1,46 +1,56 @@
-import babel from '@babel/core';
-import path from 'node:path';
-import type { Options } from './core/types';
-import solidStyledPlugin from './plugin';
+import MagicString from 'magic-string';
+import { parseSync } from 'oxc-parser';
+import { Ctx } from './context';
+import { CompileError } from './errors';
+import { analyze } from './scope';
+import { transformProgram } from './transform';
+import type { CompileOutput, Options } from './types';
 
-export type { Options };
+export type { CompileOutput, Options };
+export { CompileError };
 
-export interface CompileOutput {
-  code: string;
-  map: babel.BabelFileResult['map'];
+const TSX_FILE = /\.tsx$/i;
+const TS_FILE = /\.[mc]?ts$/i;
+
+function languageOf(filename: string): 'js' | 'jsx' | 'ts' | 'tsx' {
+  const clean = filename.split('?')[0];
+  if (TSX_FILE.test(clean)) {
+    return 'tsx';
+  }
+  if (TS_FILE.test(clean)) {
+    return 'ts';
+  }
+  return 'jsx';
 }
 
-const FILE_FILTER = /\.[mc]?tsx?$/i;
-
+// biome-ignore lint/suspicious/useAwait: async keeps the public API stable
 export async function compile(
   id: string,
   code: string,
-  options: Options,
+  options: Options = {},
 ): Promise<CompileOutput> {
-  const plugins: NonNullable<
-    NonNullable<babel.TransformOptions['parserOpts']>['plugins']
-  > = ['jsx'];
-  if (FILE_FILTER.test(id.split('?')[0])) {
-    plugins.push('typescript');
-  }
-  const result = await babel.transformAsync(code, {
-    plugins: [[solidStyledPlugin, options]],
-    parserOpts: {
-      plugins,
-    },
-    filename: path.basename(id),
-    ast: false,
-    sourceMaps: true,
-    configFile: false,
-    babelrc: false,
-    sourceFileName: id,
+  const result = parseSync(id.split('?')[0], code, {
+    lang: languageOf(id),
+    sourceType: 'module',
+    preserveParens: false,
   });
-
-  if (result) {
-    return {
-      code: result.code || '',
-      map: result.map,
-    };
+  if (result.errors.length > 0) {
+    const first = result.errors[0];
+    const start = first.labels?.[0]?.start ?? 0;
+    throw new CompileError(first.message, code, start);
   }
-  throw new Error('invariant');
+  const s = new MagicString(code);
+  const analysis = analyze(result.program as never);
+  const ctx = new Ctx(
+    s,
+    code,
+    analysis,
+    options.dev === true,
+    options.disabled?.ctf ?? {},
+  );
+  transformProgram(ctx);
+  return {
+    code: s.toString(),
+    map: s.generateMap({ source: id, hires: true }),
+  };
 }

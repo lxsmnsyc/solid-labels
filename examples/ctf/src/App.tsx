@@ -4,7 +4,7 @@ import type { Accessor, Setter } from 'solid-js';
 function useCounter(): [Accessor<number>, Setter<number>] {
   const count = $signal(0);
 
-  $trackedEffect(() => {
+  $effect(() => {
     console.log('Current count:', count);
   });
 
@@ -16,7 +16,7 @@ export default function App(): JSX.Element {
 
   const message = $memo(`Count: ${count}`);
 
-  $trackedEffect(() => {
+  $effect(() => {
     console.log(message);
   });
 

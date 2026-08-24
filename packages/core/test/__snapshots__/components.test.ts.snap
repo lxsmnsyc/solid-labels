@@ -1,0 +1,51 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`components > auto-imports 2.0 components 1`] = `
+"import { Errored as _Errored } from "solid-js";
+import { Loading as _Loading } from "solid-js";
+import { Repeat as _Repeat } from "solid-js";
+
+const view = (
+  <_Errored fallback={(err, reset) => <button onClick={reset}>retry</button>}>
+    <_Loading fallback={<Spinner />}>
+      <_Repeat count={10}>{(i) => <Row index={i} />}</_Repeat>
+    </_Loading>
+  </_Errored>
+);
+"
+`;
+
+exports[`components > auto-imports components in JSX 1`] = `
+"import { createSignal as _createSignal } from "solid-js";
+import { Show as _Show } from "solid-js";
+
+let [count, setcount_1] = _createSignal(0);
+const view = (
+  <_Show when={count() % 2 === 0} fallback={<h1>Odd</h1>}>
+    <h1>Even</h1>
+  </_Show>
+);
+"
+`;
+
+exports[`components > respects shadowed components 1`] = `
+"
+import { Show } from './my-show';
+const view = <Show when={cond}>hi</Show>;
+"
+`;
+
+exports[`components > supports the solid: namespace 1`] = `
+"import { Errored as _Errored } from "solid-js";
+import { Loading as _Loading } from "solid-js";
+import { For as _For } from "solid-js";
+
+const view = (
+  <_Errored fallback={report}>
+    <_Loading fallback={<Spinner />}>
+      <_For each={items()}>{(item) => <Row item={item} />}</_For>
+    </_Loading>
+  </_Errored>
+);
+"
+`;

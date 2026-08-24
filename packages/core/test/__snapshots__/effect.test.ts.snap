@@ -1,0 +1,175 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`$effect > captures outer identifiers and hoists the callback 1`] = `
+"import { createSignal as _createSignal } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
+
+function App() {
+  let [bar, setbar_1] = _createSignal(() => someValue());
+  _createEffect(() => [bar()], effectCallback_1);
+}
+
+function effectCallback_1([bar]) {
+    foo(bar);
+  }
+"
+`;
+
+exports[`$effect > captures setters for writes 1`] = `
+"import { createSignal as _createSignal } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
+
+function App() {
+  let [count, setcount_1] = _createSignal(0);
+  _createEffect(() => [setcount_1], effectCallback_1);
+  _createEffect(() => [count(), setcount_1], effectCallback_2);
+}
+
+function effectCallback_1([setcount_1]) {
+    setcount_1(current_1 => current_1 += 1);
+  }
+
+function effectCallback_2([count, setcount_1]) {
+    setcount_1(() => compute(count));
+  }
+"
+`;
+
+exports[`$effect > captures signals, memos and plain locals 1`] = `
+"import { createSignal as _createSignal } from "solid-js";
+import { createMemo as _createMemo } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
+
+function App(props) {
+  let [count, setcount_1] = _createSignal(0);
+  const message = _createMemo(() => \`Count: \${count()}\`);
+  const step = props.step;
+  _createEffect(() => [message(), count(), step], effectCallback_1);
+}
+
+function effectCallback_1([message, count, step]) {
+    render(message, count, step);
+  }
+"
+`;
+
+exports[`$effect > does not capture module-scope plain values 1`] = `
+"import { createSignal as _createSignal } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
+
+const CONFIG = { step: 1 };
+let [count, setcount_1] = _createSignal(0);
+_createEffect(() => [count()], effectCallback_1);
+
+function effectCallback_1([count]) {
+  advance(count, CONFIG.step);
+}
+"
+`;
+
+exports[`$effect > hoists multiple callbacks in order 1`] = `
+"import { createSignal as _createSignal } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
+
+let [a, seta_1] = _createSignal(0);
+let [b, setb_1] = _createSignal(0);
+_createEffect(() => [a()], effectCallback_1);
+_createEffect(() => [b()], effectCallback_2);
+
+function effectCallback_1([a]) {
+  first(a);
+}
+
+function effectCallback_2([b]) {
+  second(b);
+}
+"
+`;
+
+exports[`$effect > passes options through 1`] = `
+"import { createSignal as _createSignal } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
+
+let [count, setcount_1] = _createSignal(0);
+_createEffect(() => [count()], effectCallback_1, { defer: true });
+
+function effectCallback_1([count]) {
+  track(count);
+}
+"
+`;
+
+exports[`$effect > stays inline when the callback uses this 1`] = `
+"import { createSignal as _createSignal } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
+
+class Widget {
+  attach() {
+    let [count, setcount_1] = _createSignal(0);
+    _createEffect(() => [count()], function ([count]) {
+      this.render(count);
+    });
+  }
+}
+"
+`;
+
+exports[`$effect > stays inline when the callback writes plain outer variables 1`] = `
+"import { createSignal as _createSignal } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
+
+function App() {
+  let el;
+  let [count, setcount_1] = _createSignal(0);
+  _createEffect(() => [count()], ([count]) => {
+    el = render(count);
+  });
+}
+"
+`;
+
+exports[`$effect > supports concise bodies 1`] = `
+"import { createSignal as _createSignal } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
+
+let [count, setcount_1] = _createSignal(0);
+_createEffect(() => [count()], effectCallback_1);
+
+function effectCallback_1([count]) {
+  return track(count);
+}
+"
+`;
+
+exports[`$effect > supports nested effects 1`] = `
+"import { createSignal as _createSignal } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
+
+function App() {
+  let [count, setcount_1] = _createSignal(0);
+  _createEffect(() => [count()], effectCallback_1);
+}
+
+function effectCallback_1([count]) {
+    outer(count);
+    _createEffect(() => [count], effectCallback_2);
+  }
+
+function effectCallback_2([count]) {
+      inner(count);
+    }
+"
+`;
+
+exports[`$effect > transforms $renderEffect the same way 1`] = `
+"import { createSignal as _createSignal } from "solid-js";
+import { createRenderEffect as _createRenderEffect } from "solid-js";
+
+let [title, settitle_1] = _createSignal('');
+_createRenderEffect(() => [title()], effectCallback_1);
+
+function effectCallback_1([title]) {
+  el.title = title;
+}
+"
+`;

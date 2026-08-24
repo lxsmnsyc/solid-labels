@@ -1,0 +1,25 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`typescript > compiles plain .ts files 1`] = `
+"import { createSignal as _createSignal } from "solid-js";
+let [count, setcount_1] = _createSignal(0); setcount_1(current_1 => current_1 += 1);"
+`;
+
+exports[`typescript > keeps type arguments and strips conflicting annotations 1`] = `
+"import { createSignal as _createSignal } from "solid-js";
+import { createMemo as _createMemo } from "solid-js";
+
+let [count, setcount_1] = _createSignal(0);
+const message = _createMemo<string>(() => \`Count: \${count()}\`);
+console.log(count(), message());
+"
+`;
+
+exports[`typescript > sees through TS expression wrappers 1`] = `
+"import { createSignal as _createSignal } from "solid-js";
+import { untrack as _untrack } from "solid-js";
+
+let [count, setcount_1] = _createSignal(0 as number);
+const value = _untrack(() => count() satisfies number);
+"
+`;
