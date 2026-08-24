@@ -1,27 +1,48 @@
 {
+  "name": "solid-labels",
   "version": "0.17.0",
-  "type": "module",
-  "exports": {
-    ".": "./dist/index.js",
-    "./compiler": "./dist/compiler.js",
-    "./package.json": "./package.json"
+  "private": false,
+  "description": "Simple, reactive labels for SolidJS",
+  "keywords": [
+    "compiler",
+    "labels",
+    "oxc",
+    "reactivity",
+    "solid-js"
+  ],
+  "homepage": "https://github.com/lxsmnsyc/solid-labels/tree/main/packages/core",
+  "bugs": {
+    "url": "https://github.com/lxsmnsyc/solid-labels/issues"
+  },
+  "license": "MIT",
+  "author": "Alexis Munsayac",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lxsmnsyc/solid-labels.git"
   },
   "files": [
     "dist",
     "src"
   ],
-  "engines": {
-    "node": ">=18"
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./compiler": "./dist/compiler.js",
+    "./package.json": "./package.json"
   },
-  "license": "MIT",
-  "keywords": [
-    "solid-js",
-    "labels",
-    "reactivity",
-    "compiler",
-    "oxc"
-  ],
-  "name": "solid-labels",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "prepublishOnly": "tsdown",
+    "build": "tsdown",
+    "watch": "tsdown --watch"
+  },
+  "dependencies": {
+    "magic-string": "^1.2.2",
+    "oxc-parser": "^0.146.0"
+  },
   "devDependencies": {
     "@solidjs/web": "2.0.0-rc.1",
     "@types/node": "^25.6.0",
@@ -32,31 +53,10 @@
     "vitest": "^4.1.4"
   },
   "peerDependencies": {
-    "solid-js": "^2.0.0-rc.1",
-    "@solidjs/web": "^2.0.0-rc.1"
+    "@solidjs/web": "^2.0.0-rc.1",
+    "solid-js": "^2.0.0-rc.1"
   },
-  "dependencies": {
-    "magic-string": "^1.2.2",
-    "oxc-parser": "^0.146.0"
-  },
-  "scripts": {
-    "prepublishOnly": "tsdown",
-    "build": "tsdown",
-    "watch": "tsdown --watch"
-  },
-  "description": "Simple, reactive labels for SolidJS",
-  "repository": {
-    "url": "https://github.com/lxsmnsyc/solid-labels.git",
-    "type": "git"
-  },
-  "homepage": "https://github.com/lxsmnsyc/solid-labels/tree/main/packages/core",
-  "bugs": {
-    "url": "https://github.com/lxsmnsyc/solid-labels/issues"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "author": "Alexis Munsayac",
-  "private": false,
-  "types": "./dist/index.d.ts"
+  "engines": {
+    "node": ">=18"
+  }
 }

@@ -6,7 +6,7 @@ import type { Ctx } from './context';
  * are marked consumed so the main rewrite phase skips them — the caller is
  * about to overwrite the span with the rendered text.
  */
-export function renderSlice(ctx: Ctx, start: number, end: number): string {
+export default function renderSlice(ctx: Ctx, start: number, end: number): string {
   interface Edit {
     start: number;
     end: number;
@@ -25,10 +25,7 @@ export function renderSlice(ctx: Ctx, start: number, end: number): string {
         continue;
       }
       if (ref.mode !== 'read') {
-        ctx.error(
-          ref.node,
-          `Cannot assign to reactive variable "${binding.name}" here`,
-        );
+        ctx.error(ref.node, `Cannot assign to reactive variable "${binding.name}" here`);
       }
       ctx.consumed.add(ref.node);
       if (ref.shorthand) {

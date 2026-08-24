@@ -1,10 +1,4 @@
-import {
-  containsAwaitOrYield,
-  expandParens,
-  isFunctionNode,
-  type Node,
-  unwrap,
-} from './ast';
+import { type Node, containsAwaitOrYield, expandParens, isFunctionNode, unwrap } from './ast';
 import type { CaptureInfo, Ctx } from './context';
 import type { Binding, Ref } from './scope';
 import { callArgs } from './variables';
@@ -28,12 +22,7 @@ interface CaptureResult {
  * `target`) and derives the compute-phase entries plus the destructured
  * parameter list.
  */
-function analyzeCaptures(
-  ctx: Ctx,
-  call: Node,
-  target: Node,
-  body: Node,
-): CaptureResult {
+function analyzeCaptures(ctx: Ctx, call: Node, target: Node, body: Node): CaptureResult {
   const captures: Capture[] = [];
   const captured = new Map<Binding, CaptureInfo>();
   let blocked = false;
@@ -67,10 +56,7 @@ function analyzeCaptures(
     const reactive = ctx.reactive.get(binding);
     if (reactive && reactive.kind !== 'raw') {
       if (writes && !reactive.set) {
-        ctx.error(
-          binding.node,
-          `Cannot assign to derived variable "${binding.name}"`,
-        );
+        ctx.error(binding.node, `Cannot assign to derived variable "${binding.name}"`);
       }
       const info: CaptureInfo = { get: reads, set: writes };
       captured.set(binding, info);
@@ -128,10 +114,7 @@ function isHoistable(ctx: Ctx, target: Node, blocked: boolean): boolean {
     ([start, end]) => start >= target.start && end <= target.end,
   );
   const hasArguments = ctx.analysis.unresolved.some(
-    r =>
-      r.node.name === 'arguments' &&
-      r.node.start >= target.start &&
-      r.node.end <= target.end,
+    (r) => r.node.name === 'arguments' && r.node.start >= target.start && r.node.end <= target.end,
   );
   return !(hasThis || hasArguments);
 }
@@ -149,7 +132,7 @@ function isHoistable(ctx: Ctx, target: Node, blocked: boolean): boolean {
  * When the callback captures nothing that blocks it, the callback is hoisted
  * to module level as a named function.
  */
-export function transformEffect(
+export default function transformEffect(
   ctx: Ctx,
   ref: Ref,
   call: Node,
@@ -161,8 +144,7 @@ export function transformEffect(
     ctx.error(call, `${ref.node.name} requires a callback`);
   }
   const fn = unwrap(args[0]);
-  const isCallback =
-    fn != null && isFunctionNode(fn) && fn.type !== 'FunctionDeclaration';
+  const isCallback = fn != null && isFunctionNode(fn) && fn.type !== 'FunctionDeclaration';
   if (!(isCallback || isDollar)) {
     ctx.error(args[0], `${ref.node.name} requires a function expression`);
   }
@@ -170,7 +152,7 @@ export function transformEffect(
   const callParen = code.indexOf('(', call.callee.end);
 
   if (isCallback) {
-    const target = fn as Node;
+    const target = fn;
     if (target.params.length > 0) {
       ctx.error(
         target.params[0],
@@ -189,20 +171,11 @@ export function transformEffect(
       call.end - 1,
     );
 
-    const { entries, params, captured, blocked } = analyzeCaptures(
-      ctx,
-      call,
-      target,
-      body,
-    );
+    const { entries, params, captured, blocked } = analyzeCaptures(ctx, call, target, body);
     ctx.regions.push({ start: body.start, end: body.end, captured });
 
     ctx.consumed.add(ref.node);
-    s.overwrite(
-      ref.node.start,
-      ref.node.end,
-      ctx.importIdent(importName, 'solid-js'),
-    );
+    s.overwrite(ref.node.start, ref.node.end, ctx.importIdent(importName, 'solid-js'));
     s.appendLeft(fnStart, `() => [${entries.join(', ')}], `);
 
     if (isHoistable(ctx, target, blocked)) {
@@ -240,20 +213,11 @@ export function transformEffect(
     call.end - 1,
   );
 
-  const { entries, params, captured, blocked } = analyzeCaptures(
-    ctx,
-    call,
-    expr,
-    expr,
-  );
+  const { entries, params, captured, blocked } = analyzeCaptures(ctx, call, expr, expr);
   ctx.regions.push({ start: expr.start, end: expr.end, captured });
 
   ctx.consumed.add(ref.node);
-  s.overwrite(
-    ref.node.start,
-    ref.node.end,
-    ctx.importIdent(importName, 'solid-js'),
-  );
+  s.overwrite(ref.node.start, ref.node.end, ctx.importIdent(importName, 'solid-js'));
   const computeText = `() => [${entries.join(', ')}], `;
 
   if (isHoistable(ctx, expr, blocked)) {

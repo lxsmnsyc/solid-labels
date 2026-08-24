@@ -1,19 +1,62 @@
 {
   "name": "unplugin-solid-labels",
   "version": "0.17.0",
-  "type": "module",
+  "private": false,
+  "description": "Rollup plugin for solid-styled",
+  "keywords": [
+    "pridepack"
+  ],
+  "homepage": "https://github.com/lxsmnsyc/solid-styled/packages/rollup",
+  "bugs": {
+    "url": "https://github.com/lxsmnsyc/solid-styled/issues"
+  },
+  "license": "MIT",
+  "author": "Alexis Munsayac",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lxsmnsyc/solid-styled.git"
+  },
   "files": [
     "dist",
     "babel",
     "core"
   ],
-  "engines": {
-    "node": ">=10"
+  "type": "module",
+  "main": "./dist/cjs/production/index.cjs",
+  "module": "./dist/esm/production/index.mjs",
+  "types": "./dist/types/index.d.ts",
+  "typesVersions": {
+    "*": {}
   },
-  "license": "MIT",
-  "keywords": [
-    "pridepack"
-  ],
+  "exports": {
+    ".": {
+      "development": {
+        "require": "./dist/cjs/development/index.cjs",
+        "import": "./dist/esm/development/index.mjs"
+      },
+      "require": "./dist/cjs/production/index.cjs",
+      "import": "./dist/esm/production/index.mjs",
+      "types": "./dist/types/index.d.ts"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "prepublishOnly": "pridepack clean && pridepack build",
+    "build": "pridepack build",
+    "type-check": "pridepack check",
+    "lint": "pridepack lint",
+    "clean": "pridepack clean",
+    "watch": "pridepack watch",
+    "start": "pridepack start",
+    "dev": "pridepack dev"
+  },
+  "dependencies": {
+    "@babel/core": "^7.26.9",
+    "@rollup/pluginutils": "^5.1.4",
+    "unplugin": "^2.2.0"
+  },
   "devDependencies": {
     "@types/babel__core": "^7.20.5",
     "@types/node": "^22.13.4",
@@ -23,11 +66,6 @@
     "tslib": "^2.8.1",
     "typescript": "^5.8.2",
     "vite": "^6.1.1"
-  },
-  "dependencies": {
-    "@babel/core": "^7.26.9",
-    "@rollup/pluginutils": "^5.1.4",
-    "unplugin": "^2.2.0"
   },
   "peerDependencies": {
     "rollup": "^3 || 4",
@@ -42,45 +80,7 @@
       "optional": true
     }
   },
-  "scripts": {
-    "prepublishOnly": "pridepack clean && pridepack build",
-    "build": "pridepack build",
-    "type-check": "pridepack check",
-    "lint": "pridepack lint",
-    "clean": "pridepack clean",
-    "watch": "pridepack watch",
-    "start": "pridepack start",
-    "dev": "pridepack dev"
-  },
-  "description": "Rollup plugin for solid-styled",
-  "repository": {
-    "url": "https://github.com/lxsmnsyc/solid-styled.git",
-    "type": "git"
-  },
-  "homepage": "https://github.com/lxsmnsyc/solid-styled/packages/rollup",
-  "bugs": {
-    "url": "https://github.com/lxsmnsyc/solid-styled/issues"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "author": "Alexis Munsayac",
-  "private": false,
-  "types": "./dist/types/index.d.ts",
-  "main": "./dist/cjs/production/index.cjs",
-  "module": "./dist/esm/production/index.mjs",
-  "exports": {
-    ".": {
-      "development": {
-        "require": "./dist/cjs/development/index.cjs",
-        "import": "./dist/esm/development/index.mjs"
-      },
-      "require": "./dist/cjs/production/index.cjs",
-      "import": "./dist/esm/production/index.mjs",
-      "types": "./dist/types/index.d.ts"
-    }
-  },
-  "typesVersions": {
-    "*": {}
+  "engines": {
+    "node": ">=10"
   }
 }

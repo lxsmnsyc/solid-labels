@@ -1,33 +1,33 @@
 import { describe, expect, it } from 'vitest';
-import { transform } from './util';
+import transform from './util';
 
 describe('accessor CTFs', () => {
-  it('transforms $children', async () => {
+  it('transforms $children', () => {
     expect(
-      await transform(`
+      transform(`
 const nodes = $children(props.children);
 console.log(nodes);
 `),
     ).toMatchSnapshot();
   });
-  it('transforms $mapArray', async () => {
+  it('transforms $mapArray', () => {
     expect(
-      await transform(`
+      transform(`
 let list = $signal([]);
 const squares = $mapArray(list, (value) => value ** 2);
 console.log(squares);
 `),
     ).toMatchSnapshot();
     expect(
-      await transform(`
+      transform(`
 let list = $signal([]);
 const squares = $mapArray(list, (value, index) => value ** 2, { keyed: false });
 `),
     ).toMatchSnapshot();
   });
-  it('transforms $repeat', async () => {
+  it('transforms $repeat', () => {
     expect(
-      await transform(`
+      transform(`
 let total = $signal(10);
 const rows = $repeat(total, (index) => index * 2);
 console.log(rows);

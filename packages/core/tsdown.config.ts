@@ -11,6 +11,6 @@ export default defineConfig({
   dts: true,
   exports: true,
   deps: {
-    neverBundle: [/^node\:.*$/i],
+    neverBundle: [/^node:.*$/i],
   },
 });

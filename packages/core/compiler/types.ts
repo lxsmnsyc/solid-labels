@@ -1,3 +1,5 @@
+import type MagicString from 'magic-string';
+
 export interface Options {
   /** Adds debug names to signals and memos. */
   dev?: boolean;
@@ -9,5 +11,5 @@ export interface Options {
 
 export interface CompileOutput {
   code: string;
-  map: ReturnType<import('magic-string').default['generateMap']>;
+  map: ReturnType<MagicString['generateMap']>;
 }

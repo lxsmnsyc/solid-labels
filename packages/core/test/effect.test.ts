@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { transform } from './util';
+import transform from './util';
 
 describe('$effect', () => {
-  it('captures outer identifiers and hoists the callback', async () => {
+  it('captures outer identifiers and hoists the callback', () => {
     expect(
-      await transform(`
+      transform(`
 function App() {
   let bar = $signal(someValue());
   $effect(() => {
@@ -14,9 +14,9 @@ function App() {
 `),
     ).toMatchSnapshot();
   });
-  it('captures signals, memos and plain locals', async () => {
+  it('captures signals, memos and plain locals', () => {
     expect(
-      await transform(`
+      transform(`
 function App(props) {
   let count = $signal(0);
   const message = $memo(\`Count: \${count}\`);
@@ -28,9 +28,9 @@ function App(props) {
 `),
     ).toMatchSnapshot();
   });
-  it('captures setters for writes', async () => {
+  it('captures setters for writes', () => {
     expect(
-      await transform(`
+      transform(`
 function App() {
   let count = $signal(0);
   $effect(() => {
@@ -43,9 +43,9 @@ function App() {
 `),
     ).toMatchSnapshot();
   });
-  it('does not capture module-scope plain values', async () => {
+  it('does not capture module-scope plain values', () => {
     expect(
-      await transform(`
+      transform(`
 const CONFIG = { step: 1 };
 let count = $signal(0);
 $effect(() => {
@@ -54,9 +54,9 @@ $effect(() => {
 `),
     ).toMatchSnapshot();
   });
-  it('stays inline when the callback writes plain outer variables', async () => {
+  it('stays inline when the callback writes plain outer variables', () => {
     expect(
-      await transform(`
+      transform(`
 function App() {
   let el;
   let count = $signal(0);
@@ -67,9 +67,9 @@ function App() {
 `),
     ).toMatchSnapshot();
   });
-  it('stays inline when the callback uses this', async () => {
+  it('stays inline when the callback uses this', () => {
     expect(
-      await transform(`
+      transform(`
 class Widget {
   attach() {
     let count = $signal(0);
@@ -81,17 +81,17 @@ class Widget {
 `),
     ).toMatchSnapshot();
   });
-  it('supports concise bodies', async () => {
+  it('supports concise bodies', () => {
     expect(
-      await transform(`
+      transform(`
 let count = $signal(0);
 $effect(() => track(count));
 `),
     ).toMatchSnapshot();
   });
-  it('passes options through', async () => {
+  it('passes options through', () => {
     expect(
-      await transform(`
+      transform(`
 let count = $signal(0);
 $effect(() => {
   track(count);
@@ -99,9 +99,9 @@ $effect(() => {
 `),
     ).toMatchSnapshot();
   });
-  it('supports nested effects', async () => {
+  it('supports nested effects', () => {
     expect(
-      await transform(`
+      transform(`
 function App() {
   let count = $signal(0);
   $effect(() => {
@@ -114,9 +114,9 @@ function App() {
 `),
     ).toMatchSnapshot();
   });
-  it('hoists multiple callbacks in order', async () => {
+  it('hoists multiple callbacks in order', () => {
     expect(
-      await transform(`
+      transform(`
 let a = $signal(0);
 let b = $signal(0);
 $effect(() => {
@@ -128,9 +128,9 @@ $effect(() => {
 `),
     ).toMatchSnapshot();
   });
-  it('transforms $renderEffect the same way', async () => {
+  it('transforms $renderEffect the same way', () => {
     expect(
-      await transform(`
+      transform(`
 let title = $signal('');
 $renderEffect(() => {
   el.title = title;
@@ -138,14 +138,14 @@ $renderEffect(() => {
 `),
     ).toMatchSnapshot();
   });
-  it('rejects callbacks with parameters', async () => {
-    await expect(
-      transform('$effect((value) => console.log(value));'),
-    ).rejects.toThrow('callbacks take no parameters');
+  it('rejects callbacks with parameters', () => {
+    expect(() => transform('$effect((value) => console.log(value));')).toThrow(
+      'callbacks take no parameters',
+    );
   });
-  it('rejects async callbacks', async () => {
-    await expect(
-      transform('$effect(async () => { await work(); });'),
-    ).rejects.toThrow('must be synchronous');
+  it('rejects async callbacks', () => {
+    expect(() => transform('$effect(async () => { await work(); });')).toThrow(
+      'must be synchronous',
+    );
   });
 });

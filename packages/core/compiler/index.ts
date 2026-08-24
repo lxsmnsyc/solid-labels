@@ -3,7 +3,7 @@ import { parseSync } from 'oxc-parser';
 import { Ctx } from './context';
 import { CompileError } from './errors';
 import { analyze } from './scope';
-import { transformProgram } from './transform';
+import transformProgram from './transform';
 import type { CompileOutput, Options } from './types';
 
 export type { CompileOutput, Options };
@@ -23,12 +23,7 @@ function languageOf(filename: string): 'js' | 'jsx' | 'ts' | 'tsx' {
   return 'jsx';
 }
 
-// biome-ignore lint/suspicious/useAwait: async keeps the public API stable
-export async function compile(
-  id: string,
-  code: string,
-  options: Options = {},
-): Promise<CompileOutput> {
+export function compile(id: string, code: string, options: Options = {}): CompileOutput {
   const result = parseSync(id.split('?')[0], code, {
     lang: languageOf(id),
     sourceType: 'module',
@@ -40,14 +35,8 @@ export async function compile(
     throw new CompileError(first.message, code, start);
   }
   const s = new MagicString(code);
-  const analysis = analyze(result.program as never);
-  const ctx = new Ctx(
-    s,
-    code,
-    analysis,
-    options.dev === true,
-    options.disabled?.ctf ?? {},
-  );
+  const analysis = analyze(result.program);
+  const ctx = new Ctx(s, code, analysis, options.dev === true, options.disabled?.ctf ?? {});
   transformProgram(ctx);
   return {
     code: s.toString(),

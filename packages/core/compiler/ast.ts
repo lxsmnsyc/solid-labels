@@ -2,7 +2,7 @@ export interface Node {
   type: string;
   start: number;
   end: number;
-  // biome-ignore lint/suspicious/noExplicitAny: structural AST typing
+  // Structural AST typing.
   [key: string]: any;
 }
 
@@ -17,11 +17,7 @@ const TYPE_KEYS = new Set([
 ]);
 
 function isNode(value: unknown): value is Node {
-  return (
-    value != null &&
-    typeof value === 'object' &&
-    typeof (value as Node).type === 'string'
-  );
+  return value != null && typeof value === 'object' && typeof (value as Node).type === 'string';
 }
 
 export function eachChild(node: Node, cb: (child: Node) => void): void {
@@ -80,10 +76,7 @@ export function containsAwaitOrYield(node: Node): boolean {
     if (found) {
       return;
     }
-    if (
-      current.type === 'AwaitExpression' ||
-      current.type === 'YieldExpression'
-    ) {
+    if (current.type === 'AwaitExpression' || current.type === 'YieldExpression') {
       found = true;
       return;
     }
@@ -114,9 +107,7 @@ export function isStaticExpression(node: Node | null): boolean {
       return isStaticExpression(current.argument);
     case 'BinaryExpression':
     case 'LogicalExpression':
-      return (
-        isStaticExpression(current.left) && isStaticExpression(current.right)
-      );
+      return isStaticExpression(current.left) && isStaticExpression(current.right);
     case 'ConditionalExpression':
       return (
         isStaticExpression(current.test) &&
@@ -124,16 +115,11 @@ export function isStaticExpression(node: Node | null): boolean {
         isStaticExpression(current.alternate)
       );
     case 'ArrayExpression':
-      return current.elements.every(
-        (el: Node | null) => el == null || isStaticExpression(el),
-      );
+      return current.elements.every((el: Node | null) => el == null || isStaticExpression(el));
     case 'ObjectExpression':
       return current.properties.every((prop: Node) => {
         if (prop.type === 'Property') {
-          return (
-            (!prop.computed || isStaticExpression(prop.key)) &&
-            isStaticExpression(prop.value)
-          );
+          return (!prop.computed || isStaticExpression(prop.key)) && isStaticExpression(prop.value);
         }
         return false;
       });
@@ -167,12 +153,7 @@ export function expandParens(
     while (after < code.length && WHITESPACE.test(code[after])) {
       after++;
     }
-    if (
-      before >= lowerBound &&
-      after < upperBound &&
-      code[before] === '(' &&
-      code[after] === ')'
-    ) {
+    if (before >= lowerBound && after < upperBound && code[before] === '(' && code[after] === ')') {
       currentStart = before;
       currentEnd = after + 1;
     } else {

@@ -51,14 +51,8 @@ declare global {
   // Effects — the callback reads captured plain values; the compiler
   // generates the tracked compute phase from the identifiers it captures.
 
-  function $effect(
-    callback: () => void,
-    options?: { defer?: boolean; name?: string },
-  ): void;
-  function $renderEffect(
-    callback: () => void,
-    options?: { defer?: boolean; name?: string },
-  ): void;
+  function $effect(callback: () => void, options?: { defer?: boolean; name?: string }): void;
+  function $renderEffect(callback: () => void, options?: { defer?: boolean; name?: string }): void;
 
   function $untrack<T>(value: T): T;
   function $resolve<T>(value: T): Promise<Awaited<T>>;
@@ -101,9 +95,7 @@ declare global {
 
   function $destructure<T>(value: T): T;
 
-  function $component<P>(
-    Comp: (props: P) => solid.Element,
-  ): (props: P) => solid.Element;
+  function $component<P>(Comp: (props: P) => solid.Element): (props: P) => solid.Element;
 
   // Auto-import aliases
 
@@ -157,7 +149,7 @@ declare global {
 type Props<T> = T extends (props: infer P) => any ? P : never;
 
 declare module '@solidjs/web' {
-  // biome-ignore lint/style/noNamespace: JSX namespace augmentation
+  // JSX namespace augmentation
   namespace JSX {
     interface IntrinsicElements {
       'solid:for': Props<typeof For>;
@@ -170,7 +162,7 @@ declare module '@solidjs/web' {
       'solid:reveal': Props<typeof Reveal>;
       // `Props<typeof Dynamic>` would be circular through IntrinsicElements.
       'solid:dynamic': Record<string, unknown>;
-      'solid:portal': Props<typeof solidWeb.Portal>;
+      'solid:portal': Props<typeof Portal>;
       'solid:hydration-script': Props<typeof solidWeb.HydrationScript>;
       'solid:hydration': Props<typeof solidWeb.Hydration>;
       'solid:no-hydration': Props<typeof solidWeb.NoHydration>;

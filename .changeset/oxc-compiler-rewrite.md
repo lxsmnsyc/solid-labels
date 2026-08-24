@@ -1,8 +1,8 @@
 ---
-"solid-labels": major
-"unplugin-solid-labels": major
-"vite-plugin-solid-labels": major
-"rollup-plugin-solid-labels": major
+'solid-labels': major
+'unplugin-solid-labels': major
+'vite-plugin-solid-labels': major
+'rollup-plugin-solid-labels': major
 ---
 
 Rewrite the compiler on Oxc and retarget the API surface at Solid 2.0.

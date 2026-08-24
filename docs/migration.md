@@ -17,39 +17,39 @@ CTF names now mirror Solid 2.0 keywords exactly (`onSettled` → `$settled`,
 
 ## Dropped (the Solid 1.x API no longer exists)
 
-| CTF | 1.x API | What to use instead |
-| --- | ------- | ------------------- |
-| `$batch` | `batch` | Writes batch by default; `$flush` applies them synchronously |
-| `$computed` | `createComputed` | `$memo`, or split `$effect` |
-| `$resource` | `createResource` | Async computations: `$memo(fetchUser(id))` + `<Loading>` |
-| `$selector` | `createSelector` | `$projection` / `createStore(fn)` |
-| `$on` | `on` | `$effect` — the compute phase *is* the explicit dependency list |
-| `$observable`, `$from` | `observable`, `from` | Async iterables in computations |
-| `$error`, `$catchError` | `onError`, `catchError` | `<Errored>` or `createEffect`'s `error` option |
-| `$startTransition`, `$useTransition` | transitions API | Built-in transitions; `$isPending`, `$latest` |
-| `$indexArray` | `indexArray` | `$mapArray(..., { keyed: false })` or `$repeat` |
-| `$mutable`, `$produce` | `createMutable`, `produce` | `$store` — setters are draft-first |
-| `$deferred` | `createDeferred` | Removed in 2.0; no replacement |
-| `$mount` | `onMount` | `$settled` (also covers cleanup via a returned function) |
-| `$unwrap` | `unwrap` | `$snapshot` |
-| `Index`, `Suspense`, `SuspenseList`, `ErrorBoundary`, `Assets` components | — | `Repeat` / `<For keyed={false}>`, `Loading`, `Reveal`, `Errored`; `Assets` is gone |
+| CTF                                                                       | 1.x API                    | What to use instead                                                                |
+| ------------------------------------------------------------------------- | -------------------------- | ---------------------------------------------------------------------------------- |
+| `$batch`                                                                  | `batch`                    | Writes batch by default; `$flush` applies them synchronously                       |
+| `$computed`                                                               | `createComputed`           | `$memo`, or split `$effect`                                                        |
+| `$resource`                                                               | `createResource`           | Async computations: `$memo(fetchUser(id))` + `<Loading>`                           |
+| `$selector`                                                               | `createSelector`           | `$projection` / `createStore(fn)`                                                  |
+| `$on`                                                                     | `on`                       | `$effect` — the compute phase _is_ the explicit dependency list                    |
+| `$observable`, `$from`                                                    | `observable`, `from`       | Async iterables in computations                                                    |
+| `$error`, `$catchError`                                                   | `onError`, `catchError`    | `<Errored>` or `createEffect`'s `error` option                                     |
+| `$startTransition`, `$useTransition`                                      | transitions API            | Built-in transitions; `$isPending`, `$latest`                                      |
+| `$indexArray`                                                             | `indexArray`               | `$mapArray(..., { keyed: false })` or `$repeat`                                    |
+| `$mutable`, `$produce`                                                    | `createMutable`, `produce` | `$store` — setters are draft-first                                                 |
+| `$deferred`                                                               | `createDeferred`           | Removed in 2.0; no replacement                                                     |
+| `$mount`                                                                  | `onMount`                  | `$settled` (also covers cleanup via a returned function)                           |
+| `$unwrap`                                                                 | `unwrap`                   | `$snapshot`                                                                        |
+| `Index`, `Suspense`, `SuspenseList`, `ErrorBoundary`, `Assets` components | —                          | `Repeat` / `<For keyed={false}>`, `Loading`, `Reveal`, `Errored`; `Assets` is gone |
 
 ## Translated (same idea, 2.0 name and semantics)
 
-| CTF | Compiles to | Notes |
-| --- | ----------- | ----- |
-| `$signal`, `$memo`, `$` | `createSignal`, `createMemo` | Options follow 2.0 (`ownedWrite`, `lazy`, `unobserved`); non-static `$signal` initializers compile to the writable-derived form `createSignal(() => expr)` |
-| `$untrack` | `untrack` | `$batch` sibling removed |
-| `$root`, `$uid`, `$reaction` | `createRoot`, `createUniqueId`, `createReaction` | |
-| `$merge` | `merge` | Was `mergeProps` |
-| `$omit` | `omit` | New; replaces `splitProps` usage inside `$destructure` too |
-| `$settled`, `$cleanup` | `onSettled`, `onCleanup` | |
-| `$flush`, `$action`, `$isPending`, `$latest`, `$refresh`, `$affects`, `$resolve` | same names | New 2.0 async surface |
-| `$store`, `$projection`, `$optimistic`, `$optimisticStore`, `$reconcile`, `$snapshot`, `$deep` | same names | Store APIs live in `solid-js` now |
-| `$mapArray`, `$repeat` | `mapArray`, `repeat` | `$repeat` replaces `$indexArray` |
-| `$children`, `$lazy`, `$createContext`, `$useContext`, `$owner`, `$runWithOwner` | same names | |
-| `$destructure`, `$component`, `$refSignal`, `$refMemo`, `$derefSignal`, `$derefMemo`, `$get`, `$set`, `$getter`, `$setter`, `$property` | — | solid-labels core mechanics, unchanged surface |
-| Components (`For`, `Show`, `Switch`, `Match`, `Repeat`, `Errored`, `Loading`, `Reveal`, `Dynamic`, `Portal`, `HydrationScript`, `Hydration`, `NoHydration`) and the `solid:` JSX namespace | auto-imports | DOM components come from `@solidjs/web` |
+| CTF                                                                                                                                                                                        | Compiles to                                      | Notes                                                                                                                                                      |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `$signal`, `$memo`, `$`                                                                                                                                                                    | `createSignal`, `createMemo`                     | Options follow 2.0 (`ownedWrite`, `lazy`, `unobserved`); non-static `$signal` initializers compile to the writable-derived form `createSignal(() => expr)` |
+| `$untrack`                                                                                                                                                                                 | `untrack`                                        | `$batch` sibling removed                                                                                                                                   |
+| `$root`, `$uid`, `$reaction`                                                                                                                                                               | `createRoot`, `createUniqueId`, `createReaction` |                                                                                                                                                            |
+| `$merge`                                                                                                                                                                                   | `merge`                                          | Was `mergeProps`                                                                                                                                           |
+| `$omit`                                                                                                                                                                                    | `omit`                                           | New; replaces `splitProps` usage inside `$destructure` too                                                                                                 |
+| `$settled`, `$cleanup`                                                                                                                                                                     | `onSettled`, `onCleanup`                         |                                                                                                                                                            |
+| `$flush`, `$action`, `$isPending`, `$latest`, `$refresh`, `$affects`, `$resolve`                                                                                                           | same names                                       | New 2.0 async surface                                                                                                                                      |
+| `$store`, `$projection`, `$optimistic`, `$optimisticStore`, `$reconcile`, `$snapshot`, `$deep`                                                                                             | same names                                       | Store APIs live in `solid-js` now                                                                                                                          |
+| `$mapArray`, `$repeat`                                                                                                                                                                     | `mapArray`, `repeat`                             | `$repeat` replaces `$indexArray`                                                                                                                           |
+| `$children`, `$lazy`, `$createContext`, `$useContext`, `$owner`, `$runWithOwner`                                                                                                           | same names                                       |                                                                                                                                                            |
+| `$destructure`, `$component`, `$refSignal`, `$refMemo`, `$derefSignal`, `$derefMemo`, `$get`, `$set`, `$getter`, `$setter`, `$property`                                                    | —                                                | solid-labels core mechanics, unchanged surface                                                                                                             |
+| Components (`For`, `Show`, `Switch`, `Match`, `Repeat`, `Errored`, `Loading`, `Reveal`, `Dynamic`, `Portal`, `HydrationScript`, `Hydration`, `NoHydration`) and the `solid:` JSX namespace | auto-imports                                     | DOM components come from `@solidjs/web`                                                                                                                    |
 
 ## Decided (was undecided)
 
@@ -69,8 +69,8 @@ $effect(() => {
 ```
 
 ```js
-import { createSignal as _createSignal } from "solid-js";
-import { createEffect as _createEffect } from "solid-js";
+import { createSignal as _createSignal } from 'solid-js';
+import { createEffect as _createEffect } from 'solid-js';
 
 let [bar, setbar_1] = _createSignal(someValue());
 _createEffect(() => [bar()], effectCallback_1);

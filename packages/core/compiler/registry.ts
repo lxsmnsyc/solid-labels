@@ -40,10 +40,7 @@ export const AUTO_ALIAS: Record<string, ImportDef> = {
 };
 
 /** Call CTFs whose first argument is wrapped in an arrow function. */
-export const ARROW_CTF: Record<
-  string,
-  [name: string, source: string, args: number]
-> = {
+export const ARROW_CTF: Record<string, [name: string, source: string, args: number]> = {
   $lazy: ['lazy', 'solid-js', 2],
   $untrack: ['untrack', 'solid-js', 1],
   $resolve: ['resolve', 'solid-js', 1],
@@ -53,10 +50,7 @@ export const ARROW_CTF: Record<
  * Declaration CTFs that produce an accessor variable:
  * `const nodes = $children(props.children)` reads as `nodes` afterwards.
  */
-export const ACCESSOR_CTF: Record<
-  string,
-  [name: string, source: string, args: number]
-> = {
+export const ACCESSOR_CTF: Record<string, [name: string, source: string, args: number]> = {
   $children: ['children', 'solid-js', 1],
   $mapArray: ['mapArray', 'solid-js', 3],
   $repeat: ['repeat', 'solid-js', 3],

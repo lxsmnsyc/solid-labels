@@ -1,10 +1,10 @@
 import type { Node } from './ast';
 import { unwrap } from './ast';
-import { transformComponent } from './component';
+import transformComponent from './component';
 import type { Ctx } from './context';
 import { transformDestructure } from './destructure';
-import { transformEffect } from './effect';
-import { transformJSXComponents } from './jsx';
+import transformEffect from './effect';
+import transformJSXComponents from './jsx';
 import { REF_CTFS, rewriteReferences } from './reactive';
 import { ACCESSOR_CTF, ARROW_CTF, AUTO_ALIAS, COMPONENTS } from './registry';
 import type { Ref } from './scope';
@@ -23,9 +23,7 @@ function isStatementCall(ref: Ref, call: Node): boolean {
   const parents = ref.parents;
   const maybeStatement = parents[parents.length - 2];
   return (
-    maybeStatement != null &&
-    maybeStatement.type === 'ExpressionStatement' &&
-    unwrap(maybeStatement.expression) === call
+    maybeStatement?.type === 'ExpressionStatement' && unwrap(maybeStatement.expression) === call
   );
 }
 
@@ -39,10 +37,8 @@ function replaceAlias(ctx: Ctx, ref: Ref, name: string, source: string): void {
   }
 }
 
-export function transformProgram(ctx: Ctx): void {
-  const unresolved = [...ctx.analysis.unresolved].sort(
-    (a, b) => a.node.start - b.node.start,
-  );
+export default function transformProgram(ctx: Ctx): void {
+  const unresolved = [...ctx.analysis.unresolved].sort((a, b) => a.node.start - b.node.start);
   const effects: Ref[] = [];
 
   for (const ref of unresolved) {
@@ -89,18 +85,12 @@ export function transformProgram(ctx: Ctx): void {
         effects.push(ref);
         continue;
       }
-      ctx.error(
-        ref.node,
-        '$ must initialize a variable declaration or be used as a statement',
-      );
+      ctx.error(ref.node, '$ must initialize a variable declaration or be used as a statement');
     }
     if (name === '$derefSignal') {
       const site = findDeclarator(ref);
       if (!site) {
-        ctx.error(
-          ref.node,
-          '$derefSignal must initialize a variable declaration',
-        );
+        ctx.error(ref.node, '$derefSignal must initialize a variable declaration');
       }
       transformDerefSignal(ctx, ref, site);
       continue;
@@ -108,10 +98,7 @@ export function transformProgram(ctx: Ctx): void {
     if (name === '$derefMemo') {
       const site = findDeclarator(ref);
       if (!site) {
-        ctx.error(
-          ref.node,
-          '$derefMemo must initialize a variable declaration',
-        );
+        ctx.error(ref.node, '$derefMemo must initialize a variable declaration');
       }
       transformDerefMemo(ctx, ref, site);
       continue;
@@ -119,10 +106,7 @@ export function transformProgram(ctx: Ctx): void {
     if (name === '$destructure') {
       const site = findDeclarator(ref);
       if (!site) {
-        ctx.error(
-          ref.node,
-          '$destructure must initialize a variable declaration',
-        );
+        ctx.error(ref.node, '$destructure must initialize a variable declaration');
       }
       transformDestructure(ctx, ref, site);
       continue;
@@ -177,9 +161,7 @@ export function transformProgram(ctx: Ctx): void {
         ctx,
         ref,
         call,
-        ref.node.name === '$renderEffect'
-          ? 'createRenderEffect'
-          : 'createEffect',
+        ref.node.name === '$renderEffect' ? 'createRenderEffect' : 'createEffect',
       );
     }
   }
@@ -194,10 +176,7 @@ export function transformProgram(ctx: Ctx): void {
       !ctx.consumed.has(ref.node) &&
       !ctx.disabled[ref.node.name]
     ) {
-      ctx.error(
-        ref.node,
-        `${ref.node.name} must be used on a reactive variable`,
-      );
+      ctx.error(ref.node, `${ref.node.name} must be used on a reactive variable`);
     }
   }
 
@@ -214,9 +193,7 @@ function extractHoistedCallbacks(ctx: Ctx): void {
   if (ctx.pendingHoists.length === 0) {
     return;
   }
-  const byDepth = [...ctx.pendingHoists].sort(
-    (a, b) => b.body.start - a.body.start,
-  );
+  const byDepth = [...ctx.pendingHoists].sort((a, b) => b.body.start - a.body.start);
   for (const pending of byDepth) {
     pending.text = ctx.s.snip(pending.body.start, pending.body.end).toString();
     ctx.s.remove(pending.body.start, pending.body.end);
@@ -226,9 +203,7 @@ function extractHoistedCallbacks(ctx: Ctx): void {
     const header = `function ${pending.name}([${pending.params.join(', ')}]) `;
     let body = pending.text;
     if (pending.concise) {
-      body = pending.statement
-        ? `{\n  ${pending.text};\n}`
-        : `{\n  return ${pending.text};\n}`;
+      body = pending.statement ? `{\n  ${pending.text};\n}` : `{\n  return ${pending.text};\n}`;
     }
     trailer += `\n${header}${body}\n`;
   }

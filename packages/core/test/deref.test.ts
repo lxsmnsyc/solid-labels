@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { transform } from './util';
+import transform from './util';
 
 describe('$derefSignal', () => {
-  it('adopts external signal tuples', async () => {
+  it('adopts external signal tuples', () => {
     expect(
-      await transform(`
+      transform(`
 let count = $derefSignal(useCounter());
 console.log(count);
 count = 10;
@@ -14,9 +14,9 @@ count = 10;
 });
 
 describe('$derefMemo', () => {
-  it('adopts external accessors', async () => {
+  it('adopts external accessors', () => {
     expect(
-      await transform(`
+      transform(`
 const message = $derefMemo(useMessage());
 console.log(message);
 `),

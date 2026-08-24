@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { transform } from './util';
+import transform from './util';
 
 describe('components', () => {
-  it('auto-imports components in JSX', async () => {
+  it('auto-imports components in JSX', () => {
     expect(
-      await transform(`
+      transform(`
 let count = $signal(0);
 const view = (
   <Show when={count % 2 === 0} fallback={<h1>Odd</h1>}>
@@ -14,9 +14,9 @@ const view = (
 `),
     ).toMatchSnapshot();
   });
-  it('auto-imports 2.0 components', async () => {
+  it('auto-imports 2.0 components', () => {
     expect(
-      await transform(`
+      transform(`
 const view = (
   <Errored fallback={(err, reset) => <button onClick={reset}>retry</button>}>
     <Loading fallback={<Spinner />}>
@@ -27,9 +27,9 @@ const view = (
 `),
     ).toMatchSnapshot();
   });
-  it('supports the solid: namespace', async () => {
+  it('supports the solid: namespace', () => {
     expect(
-      await transform(`
+      transform(`
 const view = (
   <solid:errored fallback={report}>
     <solid:loading fallback={<Spinner />}>
@@ -40,9 +40,9 @@ const view = (
 `),
     ).toMatchSnapshot();
   });
-  it('respects shadowed components', async () => {
+  it('respects shadowed components', () => {
     expect(
-      await transform(`
+      transform(`
 import { Show } from './my-show';
 const view = <Show when={cond}>hi</Show>;
 `),

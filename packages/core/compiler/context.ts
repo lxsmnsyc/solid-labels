@@ -119,11 +119,7 @@ export class Ctx {
   enclosingRegion(pos: number): EffectRegion | null {
     let found: EffectRegion | null = null;
     for (const region of this.regions) {
-      if (
-        pos >= region.start &&
-        pos < region.end &&
-        (!found || region.start >= found.start)
-      ) {
+      if (pos >= region.start && pos < region.end && (!found || region.start >= found.start)) {
         found = region;
       }
     }

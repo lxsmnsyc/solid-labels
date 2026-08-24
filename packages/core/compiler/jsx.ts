@@ -2,7 +2,7 @@ import type { Ctx } from './context';
 import { COMPONENTS, NAMESPACE_COMPONENTS } from './registry';
 
 /** Rewrites `<solid:loading>` and unshadowed `<Loading>` JSX names. */
-export function transformJSXComponents(ctx: Ctx): void {
+export default function transformJSXComponents(ctx: Ctx): void {
   for (const entry of ctx.analysis.jsxNames) {
     const { opening, closing, resolved } = entry;
     if (opening.type === 'JSXNamespacedName') {

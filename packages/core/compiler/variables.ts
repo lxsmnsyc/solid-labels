@@ -1,10 +1,4 @@
-import {
-  type Node,
-  isFunctionNode,
-  isStaticExpression,
-  isWrapper,
-  unwrap,
-} from './ast';
+import { type Node, isFunctionNode, isStaticExpression, isWrapper, unwrap } from './ast';
 import type { Ctx } from './context';
 import type { Ref } from './scope';
 
@@ -20,11 +14,7 @@ export interface DeclSite {
 export function findDeclarator(ref: Ref): DeclSite | null {
   const parents = ref.parents;
   const call = parents[parents.length - 1];
-  if (
-    !call ||
-    call.type !== 'CallExpression' ||
-    unwrap(call.callee) !== ref.node
-  ) {
+  if (call?.type !== 'CallExpression' || unwrap(call.callee) !== ref.node) {
     return null;
   }
   let index = parents.length - 2;
@@ -32,11 +22,7 @@ export function findDeclarator(ref: Ref): DeclSite | null {
     index--;
   }
   const declarator = parents[index];
-  if (
-    declarator &&
-    declarator.type === 'VariableDeclarator' &&
-    unwrap(declarator.init) === call
-  ) {
+  if (declarator?.type === 'VariableDeclarator' && unwrap(declarator.init) === call) {
     return { declarator, call };
   }
   return null;
@@ -44,11 +30,7 @@ export function findDeclarator(ref: Ref): DeclSite | null {
 
 export function isCallee(ref: Ref): Node | null {
   const call = ref.parents[ref.parents.length - 1];
-  if (
-    call &&
-    call.type === 'CallExpression' &&
-    unwrap(call.callee) === ref.node
-  ) {
+  if (call?.type === 'CallExpression' && unwrap(call.callee) === ref.node) {
     return call;
   }
   return null;
@@ -108,10 +90,7 @@ function containsReactiveRead(ctx: Ctx, node: Node): boolean {
       continue;
     }
     for (const bindingRef of binding.refs) {
-      if (
-        bindingRef.node.start >= node.start &&
-        bindingRef.node.end <= node.end
-      ) {
+      if (bindingRef.node.start >= node.start && bindingRef.node.end <= node.end) {
         return true;
       }
     }
@@ -145,11 +124,7 @@ export function transformSignal(ctx: Ctx, ref: Ref, site: DeclSite): void {
       ctx.s.prependRight(init.start, '() => ');
     }
   }
-  ctx.s.overwrite(
-    ref.node.start,
-    ref.node.end,
-    ctx.importIdent('createSignal', 'solid-js'),
-  );
+  ctx.s.overwrite(ref.node.start, ref.node.end, ctx.importIdent('createSignal', 'solid-js'));
   devNameOptions(ctx, call, args, 1, name);
   ctx.consumed.add(ref.node);
   ctx.register(binding, { kind: 'signal', get: name, set });
@@ -171,11 +146,7 @@ export function transformMemo(ctx: Ctx, ref: Ref, site: DeclSite): void {
     ctx.error(call, `${ref.node.name} requires a value`);
   }
   removeTypeAnnotation(ctx, id);
-  ctx.s.overwrite(
-    ref.node.start,
-    ref.node.end,
-    ctx.importIdent('createMemo', 'solid-js'),
-  );
+  ctx.s.overwrite(ref.node.start, ref.node.end, ctx.importIdent('createMemo', 'solid-js'));
   if (!isFunctionNode(unwrap(args[0]))) {
     ctx.s.prependRight(args[0].start, '() => ');
   }
@@ -250,11 +221,7 @@ export function transformAccessorCtf(
     ctx.error(call, `${ref.node.name} requires a value`);
   }
   removeTypeAnnotation(ctx, id);
-  ctx.s.overwrite(
-    ref.node.start,
-    ref.node.end,
-    ctx.importIdent(importName, source),
-  );
+  ctx.s.overwrite(ref.node.start, ref.node.end, ctx.importIdent(importName, source));
   if (!isFunctionNode(unwrap(args[0]))) {
     ctx.s.prependRight(args[0].start, '() => ');
   }
@@ -275,11 +242,7 @@ export function transformArrowCtf(
   if (args.length === 0) {
     ctx.error(call, `${ref.node.name} requires a value`);
   }
-  ctx.s.overwrite(
-    ref.node.start,
-    ref.node.end,
-    ctx.importIdent(importName, source),
-  );
+  ctx.s.overwrite(ref.node.start, ref.node.end, ctx.importIdent(importName, source));
   if (!isFunctionNode(unwrap(args[0]))) {
     ctx.s.prependRight(args[0].start, '() => ');
   }

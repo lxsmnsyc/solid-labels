@@ -2,11 +2,9 @@ import type { SolidLabelsPluginOptions } from 'unplugin-solid-labels';
 import solidLabelsUnplugin from 'unplugin-solid-labels';
 import type { Plugin } from 'rollup';
 
-export type {
-  SolidLabelsPluginFilter,
-  SolidLabelsPluginOptions,
-} from 'unplugin-solid-labels';
+export type { SolidLabelsPluginFilter, SolidLabelsPluginOptions } from 'unplugin-solid-labels';
 
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion
 const solidLabelsPlugin = solidLabelsUnplugin.rollup as (
   options: SolidLabelsPluginOptions,
 ) => Plugin;

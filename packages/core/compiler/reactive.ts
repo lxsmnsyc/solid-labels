@@ -1,10 +1,4 @@
-import {
-  type Node,
-  containsAwaitOrYield,
-  expandParens,
-  isWrapper,
-  unwrap,
-} from './ast';
+import { type Node, containsAwaitOrYield, expandParens, isWrapper, unwrap } from './ast';
 import type { Ctx, ReactiveInfo } from './context';
 import type { Binding, Ref } from './scope';
 
@@ -36,11 +30,11 @@ function detectRefCtf(ctx: Ctx, ref: Ref): RefCtfUse | null {
     index--;
   }
   const call = parents[index];
-  if (!call || call.type !== 'CallExpression') {
+  if (call?.type !== 'CallExpression') {
     return null;
   }
   const callee = unwrap(call.callee);
-  if (!callee || callee.type !== 'Identifier' || !REF_CTFS.has(callee.name)) {
+  if (callee?.type !== 'Identifier' || !REF_CTFS.has(callee.name)) {
     return null;
   }
   if (!ctx.unresolvedByNode.has(callee)) {
@@ -59,8 +53,7 @@ function detectRefCtf(ctx: Ctx, ref: Ref): RefCtfUse | null {
   }
   const maybeProp = parents[propIndex];
   const property =
-    maybeProp &&
-    maybeProp.type === 'Property' &&
+    maybeProp?.type === 'Property' &&
     propIndex >= 1 &&
     parents[propIndex - 1].type === 'ObjectExpression' &&
     maybeProp.value !== undefined &&
@@ -76,12 +69,7 @@ function keyText(ctx: Ctx, property: Node): string {
   return property.computed ? `[${raw}]` : raw;
 }
 
-function rewriteRefCtf(
-  ctx: Ctx,
-  info: ReactiveInfo,
-  ref: Ref,
-  use: RefCtfUse,
-): void {
+function rewriteRefCtf(ctx: Ctx, info: ReactiveInfo, ref: Ref, use: RefCtfUse): void {
   ctx.consumed.add(ref.node);
   ctx.consumed.add(use.callee);
   const { s } = ctx;
@@ -97,7 +85,7 @@ function rewriteRefCtf(
     }
     case '$set': {
       signalOnly();
-      s.overwrite(use.call.start, use.call.end, info.set as string);
+      s.overwrite(use.call.start, use.call.end, info.set!);
       break;
     }
     case '$refSignal': {
@@ -111,28 +99,18 @@ function rewriteRefCtf(
     }
     case '$getter': {
       if (!use.property) {
-        ctx.error(
-          use.callee,
-          '$getter must be used as an object property value',
-        );
+        ctx.error(use.callee, '$getter must be used as an object property value');
       }
-      const prop = use.property as Node;
-      s.overwrite(
-        prop.start,
-        prop.end,
-        `get ${keyText(ctx, prop)}() { return ${info.get}(); }`,
-      );
+      const prop = use.property;
+      s.overwrite(prop.start, prop.end, `get ${keyText(ctx, prop)}() { return ${info.get}(); }`);
       break;
     }
     case '$setter': {
       signalOnly();
       if (!use.property) {
-        ctx.error(
-          use.callee,
-          '$setter must be used as an object property value',
-        );
+        ctx.error(use.callee, '$setter must be used as an object property value');
       }
-      const prop = use.property as Node;
+      const prop = use.property;
       const param = ctx.unique('param');
       s.overwrite(
         prop.start,
@@ -143,12 +121,9 @@ function rewriteRefCtf(
     }
     case '$property': {
       if (!use.property) {
-        ctx.error(
-          use.callee,
-          '$property must be used as an object property value',
-        );
+        ctx.error(use.callee, '$property must be used as an object property value');
       }
-      const prop = use.property as Node;
+      const prop = use.property;
       const key = keyText(ctx, prop);
       let text = `get ${key}() { return ${info.get}(); }`;
       if (info.kind === 'signal' && info.set) {
@@ -163,67 +138,46 @@ function rewriteRefCtf(
   }
 }
 
-function rewriteWrite(
-  ctx: Ctx,
-  binding: Binding,
-  info: ReactiveInfo,
-  ref: Ref,
-): void {
+function rewriteWrite(ctx: Ctx, binding: Binding, info: ReactiveInfo, ref: Ref): void {
   if (info.kind !== 'signal' || !info.set) {
     ctx.error(ref.node, `Cannot assign to derived variable "${binding.name}"`);
   }
-  const set = info.set as string;
+  const set = info.set;
   const { s, code } = ctx;
   const parent = ref.parents[ref.parents.length - 1];
-  if (parent && parent.type === 'UpdateExpression') {
+  if (parent?.type === 'UpdateExpression') {
     const current = ctx.unique('current');
     const op = parent.operator === '++' ? `++${current}` : `--${current}`;
     s.overwrite(parent.start, parent.end, `${set}(${current} => ${op})`);
     return;
   }
-  if (
-    !parent ||
-    parent.type !== 'AssignmentExpression' ||
-    parent.left !== ref.node
-  ) {
-    ctx.error(
-      ref.node,
-      `Unsupported write to reactive variable "${binding.name}"`,
-    );
+  if (parent?.type !== 'AssignmentExpression' || parent.left !== ref.node) {
+    ctx.error(ref.node, `Unsupported write to reactive variable "${binding.name}"`);
   }
-  const assign = parent as Node;
+  const assign = parent;
   const right = assign.right;
   if (assign.operator !== '=') {
     // Compound assignment: functional update over the previous value.
     const current = ctx.unique('current');
-    s.overwrite(
-      ref.node.start,
-      ref.node.end,
-      `${set}(${current} => ${current}`,
-    );
+    s.overwrite(ref.node.start, ref.node.end, `${set}(${current} => ${current}`);
     s.appendLeft(right.end, ')');
     return;
   }
   if (containsAwaitOrYield(right)) {
     const tmp = ctx.unique('tmp');
     const grand = ref.parents[ref.parents.length - 2];
-    if (grand && grand.type === 'ExpressionStatement') {
+    if (grand?.type === 'ExpressionStatement') {
       s.overwrite(ref.node.start, right.start, `const ${tmp} = `);
       s.appendLeft(right.end, `;\n${set}(() => ${tmp})`);
       return;
     }
     // Concise arrow body: `async () => (count = await value())`
     const arrowIndex = ref.parents.findIndex(
-      p => p.type === 'ArrowFunctionExpression' && unwrap(p.body) === assign,
+      (p) => p.type === 'ArrowFunctionExpression' && unwrap(p.body) === assign,
     );
     if (arrowIndex !== -1) {
       const arrow = ref.parents[arrowIndex];
-      const [bodyStart, bodyEnd] = expandParens(
-        code,
-        assign.start,
-        assign.end,
-        arrow.start,
-      );
+      const [bodyStart, bodyEnd] = expandParens(code, assign.start, assign.end, arrow.start);
       s.overwrite(bodyStart, right.start, `{ const ${tmp} = `);
       s.overwrite(right.end, bodyEnd, `; return ${set}(() => ${tmp}); }`);
       return;
@@ -248,10 +202,7 @@ export function rewriteReferences(ctx: Ctx): void {
         continue;
       }
       if (ref.exported) {
-        ctx.error(
-          ref.node,
-          `Cannot export reactive variable "${binding.name}" directly`,
-        );
+        ctx.error(ref.node, `Cannot export reactive variable "${binding.name}" directly`);
       }
       const use = detectRefCtf(ctx, ref);
       if (use) {
@@ -275,11 +226,7 @@ export function rewriteReferences(ctx: Ctx): void {
         }
         ctx.consumed.add(ref.node);
         if (ref.shorthand) {
-          s.overwrite(
-            ref.node.start,
-            ref.node.end,
-            `${binding.name}: ${info.get}()`,
-          );
+          s.overwrite(ref.node.start, ref.node.end, `${binding.name}: ${info.get}()`);
         } else {
           s.appendLeft(ref.node.end, '()');
         }

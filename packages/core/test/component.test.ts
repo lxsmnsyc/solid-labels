@@ -1,33 +1,33 @@
 import { describe, expect, it } from 'vitest';
-import { transform } from './util';
+import transform from './util';
 
 describe('$component', () => {
-  it('destructures object-pattern props', async () => {
+  it('destructures object-pattern props', () => {
     expect(
-      await transform(`
+      transform(`
 const App = $component(({ name, count = 0 }) => {
   return <div>{name}: {count}</div>;
 });
 `),
     ).toMatchSnapshot();
   });
-  it('supports concise bodies', async () => {
+  it('supports concise bodies', () => {
     expect(
-      await transform(`
+      transform(`
 const App = $component(({ name }) => <div>{name}</div>);
 `),
     ).toMatchSnapshot();
   });
-  it('supports rest props', async () => {
+  it('supports rest props', () => {
     expect(
-      await transform(`
+      transform(`
 const App = $component(({ name, ...rest }) => <div {...rest}>{name}</div>);
 `),
     ).toMatchSnapshot();
   });
-  it('leaves plain parameters alone', async () => {
+  it('leaves plain parameters alone', () => {
     expect(
-      await transform(`
+      transform(`
 const App = $component((props) => <div>{props.name}</div>);
 `),
     ).toMatchSnapshot();

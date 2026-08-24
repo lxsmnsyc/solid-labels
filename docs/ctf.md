@@ -31,7 +31,7 @@ calls. Only allowed as a variable initializer.
 **Memoized signal convention:** a static initializer (literal, identifier,
 static object/array) is stored as-is. A non-static initializer — or one that
 reads another reactive variable — is wrapped in a compute function, producing
-Solid 2.0's *writable derived* form:
+Solid 2.0's _writable derived_ form:
 
 ```js
 let value = $signal(foo());
@@ -58,13 +58,13 @@ count++;
 ```
 
 ```js
-import { createSignal as _createSignal } from "solid-js";
+import { createSignal as _createSignal } from 'solid-js';
 
 let [count, setcount_1] = _createSignal(0);
 console.log(count());
 setcount_1(() => 10);
-setcount_1(current_1 => current_1 += 1);
-setcount_1(current_2 => ++current_2);
+setcount_1((current_1) => (current_1 += 1));
+setcount_1((current_2) => ++current_2);
 ```
 
 Assignments whose right side awaits or yields are split so the setter never
@@ -107,8 +107,8 @@ console.log(message);
 ```
 
 ```js
-import { createSignal as _createSignal } from "solid-js";
-import { createMemo as _createMemo } from "solid-js";
+import { createSignal as _createSignal } from 'solid-js';
+import { createMemo as _createMemo } from 'solid-js';
 
 let [count, setcount_1] = _createSignal(0);
 const message = _createMemo(() => `Count: ${count()}`);
@@ -128,9 +128,9 @@ $(console.log(message));
 ```
 
 ```js
-import { createSignal as _createSignal } from "solid-js";
-import { createMemo as _createMemo } from "solid-js";
-import { createEffect as _createEffect } from "solid-js";
+import { createSignal as _createSignal } from 'solid-js';
+import { createMemo as _createMemo } from 'solid-js';
+import { createEffect as _createEffect } from 'solid-js';
 
 let [count, setcount_1] = _createSignal(0);
 const message = _createMemo(() => `Count: ${count()}`);
@@ -158,7 +158,7 @@ form into both phases mechanically:
 
 1. The compiler collects every outer identifier the callback uses.
 2. The generated compute phase returns their current values — signals and
-   memos are *read there*, so that phase does the tracking.
+   memos are _read there_, so that phase does the tracking.
 3. The callback receives the values as a destructured array parameter; its
    body reads plain values and stays untracked.
 
@@ -172,8 +172,8 @@ function App() {
 ```
 
 ```js
-import { createSignal as _createSignal } from "solid-js";
-import { createEffect as _createEffect } from "solid-js";
+import { createSignal as _createSignal } from 'solid-js';
+import { createEffect as _createEffect } from 'solid-js';
 
 function App() {
   let [bar, setbar_1] = _createSignal(someValue());
@@ -206,9 +206,12 @@ function App() {
 function App() {
   let el;
   let [count, setcount_1] = _createSignal(0);
-  _createEffect(() => [count()], ([count]) => {
-    el = render(count);
-  });
+  _createEffect(
+    () => [count()],
+    ([count]) => {
+      el = render(count);
+    },
+  );
 }
 ```
 
@@ -224,7 +227,7 @@ $effect(() => {
 _createEffect(() => [setcount_1], effectCallback_1);
 
 function effectCallback_1([setcount_1]) {
-  setcount_1(current_1 => current_1 += 1);
+  setcount_1((current_1) => (current_1 += 1));
 }
 ```
 
@@ -259,7 +262,7 @@ const value = $untrack(count);
 ```
 
 ```js
-import { untrack as _untrack } from "solid-js";
+import { untrack as _untrack } from 'solid-js';
 
 const value = _untrack(() => count());
 ```
@@ -319,23 +322,33 @@ becomes an accessor under its original name; rest elements compile to `omit`.
 Supports nesting, defaults, and computed keys.
 
 ```js
-let { a: { b, c }, b: { d = defaultD, e = compute() }, ...f } = $destructure(x);
+let {
+  a: { b, c },
+  b: { d = defaultD, e = compute() },
+  ...f
+} = $destructure(x);
 console.log(b, c, d, e, f);
 ```
 
 ```js
-import { createMemo as _createMemo } from "solid-js";
-import { omit as _omit } from "solid-js";
+import { createMemo as _createMemo } from 'solid-js';
+import { omit as _omit } from 'solid-js';
 
 let prop_1 = () => x.a,
   b = () => prop_1().b,
   c = () => prop_1().c,
   prop_2 = () => x.b,
   def_1 = defaultD,
-  d = () => { const value_1 = prop_2().d; return value_1 === void 0 ? def_1 : value_1; },
+  d = () => {
+    const value_1 = prop_2().d;
+    return value_1 === void 0 ? def_1 : value_1;
+  },
   def_2 = _createMemo(() => compute()),
-  e = () => { const value_2 = prop_2().e; return value_2 === void 0 ? def_2() : value_2; },
-  f = _omit(x, "a", "b");
+  e = () => {
+    const value_2 = prop_2().e;
+    return value_2 === void 0 ? def_2() : value_2;
+  },
+  f = _omit(x, 'a', 'b');
 console.log(b(), c(), d(), e(), f);
 ```
 
@@ -358,7 +371,11 @@ reactive destructure — props stay live even though they look destructured.
 
 ```js
 const App = $component(({ name, count = 0 }) => {
-  return <div>{name}: {count}</div>;
+  return (
+    <div>
+      {name}: {count}
+    </div>
+  );
 });
 ```
 
@@ -366,8 +383,15 @@ const App = $component(({ name, count = 0 }) => {
 const App = (props_1) => {
   const name = () => props_1.name,
     def_1 = 0,
-    count = () => { const value_1 = props_1.count; return value_1 === void 0 ? def_1 : value_1; };
-  return <div>{name()}: {count()}</div>;
+    count = () => {
+      const value_1 = props_1.count;
+      return value_1 === void 0 ? def_1 : value_1;
+    };
+  return (
+    <div>
+      {name()}: {count()}
+    </div>
+  );
 };
 ```
 
@@ -395,9 +419,24 @@ const c = { value: $property(count) };
 
 ```js
 let [count, setcount_1] = _createSignal(0);
-const a = { get value() { return count(); } };
-const b = { set value(param_1) { setcount_1(() => param_1); } };
-const c = { get value() { return count(); }, set value(param_2) { setcount_1(() => param_2); } };
+const a = {
+  get value() {
+    return count();
+  },
+};
+const b = {
+  set value(param_1) {
+    setcount_1(() => param_1);
+  },
+};
+const c = {
+  get value() {
+    return count();
+  },
+  set value(param_2) {
+    setcount_1(() => param_2);
+  },
+};
 ```
 
 ## Arrays
@@ -427,7 +466,10 @@ const squares = $mapArray(list, (value) => value ** 2);
 
 ```js
 let [list, setlist_1] = _createSignal([]);
-const squares = _mapArray(() => list(), (value) => value ** 2);
+const squares = _mapArray(
+  () => list(),
+  (value) => value ** 2,
+);
 ```
 
 ### `$repeat`
@@ -450,7 +492,10 @@ const rows = $repeat(total, (index) => index * 2);
 
 ```js
 let [total, settotal_1] = _createSignal(10);
-const rows = _repeat(() => total(), (index) => index * 2);
+const rows = _repeat(
+  () => total(),
+  (index) => index * 2,
+);
 ```
 
 ## Component APIs
@@ -462,7 +507,9 @@ Alias for `createUniqueId`.
 ### `$lazy`
 
 ```ts
-function $lazy<T extends Component<any>>(fn: Promise<{ default: T }>): T & {
+function $lazy<T extends Component<any>>(
+  fn: Promise<{ default: T }>,
+): T & {
   preload: () => void;
 };
 ```
@@ -472,7 +519,7 @@ const Page = $lazy(import('./Page'));
 ```
 
 ```js
-import { lazy as _lazy } from "solid-js";
+import { lazy as _lazy } from 'solid-js';
 
 const Page = _lazy(() => import('./Page'));
 ```
@@ -487,7 +534,7 @@ console.log(nodes);
 ```
 
 ```js
-import { children as _children } from "solid-js";
+import { children as _children } from 'solid-js';
 
 const nodes = _children(() => props.children);
 console.log(nodes());
@@ -500,7 +547,7 @@ const CounterContext = $createContext(0);
 const value = $useContext(CounterContext);
 ```
 
-Compiles to `createContext` / `useContext`. In 2.0 the context value *is* the
+Compiles to `createContext` / `useContext`. In 2.0 the context value _is_ the
 provider: `<CounterContext value={10}>...</CounterContext>`.
 
 ### Owner
@@ -538,7 +585,7 @@ const read = count;
 const write = setcount_1;
 
 let [adopted, setadopted_1] = useCounter();
-setadopted_1(current_1 => current_1 += 1);
+setadopted_1((current_1) => (current_1 += 1));
 ```
 
 ## Stores

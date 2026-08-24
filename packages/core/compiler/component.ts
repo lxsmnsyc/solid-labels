@@ -8,7 +8,7 @@ import { callArgs } from './variables';
  * `$component((props) => ...)` unwraps to the component function itself,
  * turning an object-pattern parameter into a reactive destructure.
  */
-export function transformComponent(ctx: Ctx, ref: Ref, call: Node): void {
+export default function transformComponent(ctx: Ctx, ref: Ref, call: Node): void {
   const args = callArgs(ctx, call, 1);
   if (args.length !== 1) {
     ctx.error(call, '$component requires a function');
@@ -17,7 +17,7 @@ export function transformComponent(ctx: Ctx, ref: Ref, call: Node): void {
   if (!(fn && isFunctionNode(fn)) || fn.type === 'FunctionDeclaration') {
     ctx.error(args[0], '$component requires a function expression');
   }
-  const target = fn as Node;
+  const target = fn;
   ctx.consumed.add(ref.node);
   // Drop the `$component(...)` wrapper.
   ctx.s.overwrite(call.start, target.start, '');
@@ -43,12 +43,7 @@ export function transformComponent(ctx: Ctx, ref: Ref, call: Node): void {
   if (body.type === 'BlockStatement') {
     ctx.s.appendLeft(body.start + 1, `\n  ${declText}`);
   } else {
-    const [bodyStart, bodyEnd] = expandParens(
-      ctx.code,
-      body.start,
-      body.end,
-      target.start,
-    );
+    const [bodyStart, bodyEnd] = expandParens(ctx.code, body.start, body.end, target.start);
     ctx.s.prependLeft(bodyStart, `{\n  ${declText}\n  return `);
     ctx.s.appendLeft(bodyEnd, ';\n}');
   }

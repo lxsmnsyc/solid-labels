@@ -1,9 +1,36 @@
 {
+  "name": "vite-plugin-solid-labels",
   "version": "0.17.0",
+  "private": false,
+  "description": "Simple, reactive labels for SolidJS",
+  "keywords": [
+    "babel",
+    "labels",
+    "pridepack",
+    "reactivity",
+    "solid-js"
+  ],
+  "homepage": "https://github.com/lxsmnsyc/solid-labels/tree/main/packages/vite",
+  "bugs": {
+    "url": "https://github.com/lxsmnsyc/solid-labels/issues"
+  },
+  "license": "MIT",
+  "author": "Alexis Munsayac",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lxsmnsyc/solid-labels.git"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
   "type": "module",
-  "types": "./dist/types/index.d.ts",
   "main": "./dist/cjs/production/index.cjs",
   "module": "./dist/esm/production/index.mjs",
+  "types": "./dist/types/index.d.ts",
+  "typesVersions": {
+    "*": {}
+  },
   "exports": {
     ".": {
       "development": {
@@ -15,37 +42,8 @@
       "types": "./dist/types/index.d.ts"
     }
   },
-  "files": [
-    "dist",
-    "src"
-  ],
-  "engines": {
-    "node": ">=10"
-  },
-  "license": "MIT",
-  "keywords": [
-    "pridepack",
-    "babel",
-    "solid-js",
-    "labels",
-    "reactivity"
-  ],
-  "name": "vite-plugin-solid-labels",
-  "devDependencies": {
-    "@types/node": "^22.13.4",
-    "pridepack": "2.6.0",
-    "rollup": "^4.34.8",
-    "solid-labels": "0.17.0",
-    "tslib": "^2.8.1",
-    "typescript": "^5.8.2",
-    "vite": "^6.1.1"
-  },
-  "dependencies": {
-    "unplugin-solid-labels": "0.17.0"
-  },
-  "peerDependencies": {
-    "solid-labels": "^0.17",
-    "vite": "^3 || ^4 || ^5 || ^6 || ^7 || ^8"
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "prepublish": "pridepack clean && pridepack build",
@@ -55,21 +53,23 @@
     "clean": "pridepack clean",
     "watch": "pridepack watch"
   },
-  "description": "Simple, reactive labels for SolidJS",
-  "repository": {
-    "url": "https://github.com/lxsmnsyc/solid-labels.git",
-    "type": "git"
+  "dependencies": {
+    "unplugin-solid-labels": "0.17.0"
   },
-  "homepage": "https://github.com/lxsmnsyc/solid-labels/tree/main/packages/vite",
-  "bugs": {
-    "url": "https://github.com/lxsmnsyc/solid-labels/issues"
+  "devDependencies": {
+    "@types/node": "^22.13.4",
+    "pridepack": "2.6.0",
+    "rollup": "^4.34.8",
+    "solid-labels": "0.17.0",
+    "tslib": "^2.8.1",
+    "typescript": "^5.8.2",
+    "vite": "^6.1.1"
   },
-  "publishConfig": {
-    "access": "public"
+  "peerDependencies": {
+    "solid-labels": "^0.17",
+    "vite": "^3 || ^4 || ^5 || ^6 || ^7 || ^8"
   },
-  "author": "Alexis Munsayac",
-  "private": false,
-  "typesVersions": {
-    "*": {}
+  "engines": {
+    "node": ">=10"
   }
 }

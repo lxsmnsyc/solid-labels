@@ -1,6 +1,6 @@
 import { type Node, isStaticExpression, unwrap } from './ast';
 import type { Ctx } from './context';
-import { renderSlice } from './render';
+import renderSlice from './render';
 import type { Ref } from './scope';
 import { type DeclSite, callArgs } from './variables';
 
@@ -9,12 +9,7 @@ import { type DeclSite, callArgs } from './variables';
  * source. Leaf names keep their original identifiers and are registered as
  * accessor bindings; rest elements become `omit(...)` proxies.
  */
-export function destructurePattern(
-  ctx: Ctx,
-  pattern: Node,
-  target: string,
-  decls: string[],
-): void {
+export function destructurePattern(ctx: Ctx, pattern: Node, target: string, decls: string[]): void {
   if (pattern.type === 'ObjectPattern') {
     const omitArgs: string[] = [];
     let rest: Node | null = null;
@@ -78,12 +73,7 @@ function registerLeaf(ctx: Ctx, id: Node, body: string, decls: string[]): void {
   }
 }
 
-function destructureValue(
-  ctx: Ctx,
-  value: Node,
-  access: string,
-  decls: string[],
-): void {
+function destructureValue(ctx: Ctx, value: Node, access: string, decls: string[]): void {
   switch (value.type) {
     case 'Identifier': {
       registerLeaf(ctx, value, `() => ${access}`, decls);

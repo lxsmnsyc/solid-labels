@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { transform } from './util';
+import transform from './util';
 
 describe('auto-import aliases', () => {
-  it('compiles reactivity aliases', async () => {
+  it('compiles reactivity aliases', () => {
     expect(
-      await transform(`
+      transform(`
 const dispose = $root(() => setup());
 $trackedEffect(() => console.log('tracked'));
 const track = $reaction(() => console.log('reacted'));
@@ -12,9 +12,9 @@ $flush();
 `),
     ).toMatchSnapshot();
   });
-  it('compiles lifecycle aliases', async () => {
+  it('compiles lifecycle aliases', () => {
     expect(
-      await transform(`
+      transform(`
 $settled(() => {
   const id = setInterval(tick, 1000);
   return () => clearInterval(id);
@@ -23,9 +23,9 @@ $cleanup(() => dispose());
 `),
     ).toMatchSnapshot();
   });
-  it('compiles async aliases', async () => {
+  it('compiles async aliases', () => {
     expect(
-      await transform(`
+      transform(`
 const save = $action(function* (todo) {
   yield api.add(todo);
   $refresh(todos);
@@ -36,9 +36,9 @@ $affects(user);
 `),
     ).toMatchSnapshot();
   });
-  it('compiles component API aliases', async () => {
+  it('compiles component API aliases', () => {
     expect(
-      await transform(`
+      transform(`
 const id = $uid();
 const merged = $merge(defaults, props);
 const rest = $omit(props, 'class');
@@ -49,9 +49,9 @@ $runWithOwner(owner, () => work());
 `),
     ).toMatchSnapshot();
   });
-  it('compiles store aliases', async () => {
+  it('compiles store aliases', () => {
     expect(
-      await transform(`
+      transform(`
 const [store, setStore] = $store({ list: [] });
 const items = $projection(() => api.list(), [], { key: 'id' });
 const [name, setName] = $optimistic('Alice');
@@ -62,9 +62,9 @@ const tracked = $deep(store);
 `),
     ).toMatchSnapshot();
   });
-  it('compiles arrow CTFs', async () => {
+  it('compiles arrow CTFs', () => {
     expect(
-      await transform(`
+      transform(`
 let count = $signal(0);
 const value = $untrack(count);
 const Page = $lazy(import('./Page'));
@@ -72,9 +72,9 @@ const settled = $resolve(user);
 `),
     ).toMatchSnapshot();
   });
-  it('respects shadowing', async () => {
+  it('respects shadowing', () => {
     expect(
-      await transform(`
+      transform(`
 const $merge = (a, b) => ({ ...a, ...b });
 const merged = $merge(a, b);
 `),

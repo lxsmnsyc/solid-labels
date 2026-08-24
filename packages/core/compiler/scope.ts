@@ -122,12 +122,7 @@ export function analyze(program: Node): Analysis {
   // Pass A: build scopes and declare bindings.
   // ---------------------------------------------------------------------------
 
-  function declarePattern(
-    pattern: Node,
-    kind: string,
-    scope: Scope,
-    walkScope: Scope,
-  ): void {
+  function declarePattern(pattern: Node, kind: string, scope: Scope, walkScope: Scope): void {
     switch (pattern.type) {
       case 'Identifier':
         declare(pattern, kind, scope);
@@ -180,8 +175,7 @@ export function analyze(program: Node): Analysis {
     }
     switch (node.type) {
       case 'VariableDeclaration': {
-        const target =
-          node.kind === 'var' ? varScope(currentScope) : currentScope;
+        const target = node.kind === 'var' ? varScope(currentScope) : currentScope;
         for (const decl of node.declarations) {
           declarePattern(decl.id, node.kind, target, currentScope);
           if (decl.init) {
@@ -232,7 +226,7 @@ export function analyze(program: Node): Analysis {
         if (node.id) {
           declare(node.id, 'class', currentScope);
         }
-        eachChild(node, child => {
+        eachChild(node, (child) => {
           if (child !== node.id) {
             declareWalk(child, currentScope);
           }
@@ -246,7 +240,9 @@ export function analyze(program: Node): Analysis {
         break;
       }
       default:
-        eachChild(node, child => declareWalk(child, currentScope));
+        eachChild(node, (child) => {
+          declareWalk(child, currentScope);
+        });
         break;
     }
   }
@@ -278,9 +274,7 @@ export function analyze(program: Node): Analysis {
     analysis.names.add(node.name);
     const binding = lookup(node.name);
     const parents =
-      parentStack[parentStack.length - 1] === node
-        ? parentStack.slice(0, -1)
-        : parentStack.slice();
+      parentStack[parentStack.length - 1] === node ? parentStack.slice(0, -1) : parentStack.slice();
     const ref: Ref = {
       node,
       mode,
@@ -379,6 +373,22 @@ export function analyze(program: Node): Analysis {
     }
   }
 
+  function visitJSXAttributes(attributes: Node[]): void {
+    for (const attr of attributes) {
+      if (attr.type === 'JSXAttribute') {
+        if (attr.value?.type === 'JSXExpressionContainer') {
+          if (attr.value.expression.type !== 'JSXEmptyExpression') {
+            resolve(attr.value.expression);
+          }
+        } else if (attr.value?.type === 'JSXElement') {
+          resolve(attr.value);
+        }
+      } else if (attr.type === 'JSXSpreadAttribute') {
+        resolve(attr.argument);
+      }
+    }
+  }
+
   function visitJSXChildren(children: Node[]): void {
     for (const child of children) {
       if (child.type === 'JSXExpressionContainer') {
@@ -407,10 +417,7 @@ export function analyze(program: Node): Analysis {
   }
 
   function resolve(node: Node): void {
-    if (
-      SKIP_TS_STATEMENTS.has(node.type) ||
-      node.type === 'TSEnumDeclaration'
-    ) {
+    if (SKIP_TS_STATEMENTS.has(node.type) || node.type === 'TSEnumDeclaration') {
       return;
     }
     const mapped = scopeMap.get(node);
@@ -459,10 +466,7 @@ export function analyze(program: Node): Analysis {
         break;
       }
       case 'AssignmentExpression': {
-        visitAssignTarget(
-          node.left,
-          node.operator === '=' ? 'write' : 'readwrite',
-        );
+        visitAssignTarget(node.left, node.operator === '=' ? 'write' : 'readwrite');
         resolve(node.right);
         break;
       }
@@ -533,8 +537,7 @@ export function analyze(program: Node): Analysis {
         const opening = node.openingElement;
         const closing = node.closingElement;
         const root = jsxRoot(opening.name);
-        const binding =
-          root.type === 'JSXIdentifier' ? lookup(root.name) : null;
+        const binding = root.type === 'JSXIdentifier' ? lookup(root.name) : null;
         analysis.names.add(root.name);
         analysis.jsxNames.push({
           element: node,
@@ -543,19 +546,7 @@ export function analyze(program: Node): Analysis {
           root,
           resolved: binding != null,
         });
-        for (const attr of opening.attributes) {
-          if (attr.type === 'JSXAttribute') {
-            if (attr.value && attr.value.type === 'JSXExpressionContainer') {
-              if (attr.value.expression.type !== 'JSXEmptyExpression') {
-                resolve(attr.value.expression);
-              }
-            } else if (attr.value && attr.value.type === 'JSXElement') {
-              resolve(attr.value);
-            }
-          } else if (attr.type === 'JSXSpreadAttribute') {
-            resolve(attr.argument);
-          }
-        }
+        visitJSXAttributes(opening.attributes);
         visitJSXChildren(node.children);
         break;
       }

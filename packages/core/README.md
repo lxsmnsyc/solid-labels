@@ -1,4 +1,3 @@
-
 # `solid-labels`
 
 [![NPM](https://img.shields.io/npm/v/solid-labels.svg)](https://www.npmjs.com/package/solid-labels) [![JavaScript Style Guide](https://badgen.net/badge/code%20style/airbnb/ff5a5f?icon=airbnb)](https://github.com/airbnb/javascript)
@@ -40,7 +39,7 @@ pnpm add solid-labels
 ## Usage
 
 - [Compile-Time Functions](https://github.com/LXSMNSYC/solid-labels/tree/main/docs/ctf.md)
-[![Open in CodeSandbox](https://img.shields.io/badge/Open%20in-CodeSandbox-blue?style=flat-square&logo=codesandbox)](https://codesandbox.io/s/github/LXSMNSYC/solid-labels/tree/main/examples/ctf)
+  [![Open in CodeSandbox](https://img.shields.io/badge/Open%20in-CodeSandbox-blue?style=flat-square&logo=codesandbox)](https://codesandbox.io/s/github/LXSMNSYC/solid-labels/tree/main/examples/ctf)
 - [Solid Namespace](https://github.com/LXSMNSYC/solid-labels/tree/main/docs/namespace.md)
 - [Migration from 0.x](https://github.com/LXSMNSYC/solid-labels/tree/main/docs/migration.md)
 
