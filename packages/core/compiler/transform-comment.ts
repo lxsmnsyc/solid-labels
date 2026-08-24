@@ -1,17 +1,16 @@
 import type * as babel from '@babel/core';
 import * as t from '@babel/types';
+import { UNDEFINED } from './constants';
 import { accessorVariable } from './core/accessor-variable';
 import { destructureVariable } from './core/destructure-variable';
 import { getImportIdentifier } from './core/get-import-identifier';
 import { memoVariable } from './core/memo-variable';
 import { signalVariable } from './core/signal-variable';
 import type { State } from './core/types';
-import { UNDEFINED } from './constants';
 
 const VARIABLE_LABEL = {
   '@signal': true,
   '@memo': true,
-  '@deferred': true,
   '@destructure': true,
   '@children': true,
 };
@@ -19,16 +18,13 @@ const VARIABLE_LABEL = {
 type CallbackLabel = [name: string, source: string, named: boolean];
 
 const CALLBACK_LABEL: Record<string, CallbackLabel> = {
-  '@effect': ['createEffect', 'solid-js', true],
-  '@computed': ['createComputed', 'solid-js', true],
-  '@renderEffect': ['createRenderEffect', 'solid-js', true],
-  '@mount': ['onMount', 'solid-js', false],
+  '@effect': ['createTrackedEffect', 'solid-js', true],
+  '@mount': ['onSettled', 'solid-js', false],
+  '@settled': ['onSettled', 'solid-js', false],
   '@cleanup': ['onCleanup', 'solid-js', false],
-  '@error': ['onError', 'solid-js', false],
   '@root': ['createRoot', 'solid-js', false],
   '@untrack': ['untrack', 'solid-js', false],
-  '@batch': ['untrack', 'solid-js', false],
-  '@transition': ['startTransition', 'solid-js', false],
+  '@action': ['action', 'solid-js', false],
 };
 
 function getVariableLabelPreference(
@@ -161,7 +157,6 @@ const COMMENT_TRAVERSE: babel.Visitor<State> = {
         const args: t.Expression[] = [callback];
         if (named && nameOption) {
           args.push(
-            t.unaryExpression('void', t.numericLiteral(0)),
             t.objectExpression([
               t.objectProperty(
                 t.identifier('name'),
@@ -192,7 +187,6 @@ const COMMENT_TRAVERSE: babel.Visitor<State> = {
         const args: t.Expression[] = [callback];
         if (named && nameOption) {
           args.push(
-            UNDEFINED,
             t.objectExpression([
               t.objectProperty(
                 t.identifier('name'),

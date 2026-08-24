@@ -3,7 +3,6 @@ import * as t from '@babel/types';
 import { accessorVariable } from './accessor-variable';
 import { getImportIdentifier } from './get-import-identifier';
 import type { State } from './types';
-import { UNDEFINED } from '../constants';
 
 export function memoVariable(
   state: State,
@@ -21,7 +20,6 @@ export function memoVariable(
   const exprs: t.Expression[] = [normalIdentifier];
 
   if (state.opts.dev) {
-    exprs.push(UNDEFINED);
     if (optionsIdentifier) {
       exprs.push(
         t.callExpression(
@@ -48,7 +46,6 @@ export function memoVariable(
       );
     }
   } else if (optionsIdentifier) {
-    exprs.push(UNDEFINED);
     exprs.push(optionsIdentifier);
   }
 

@@ -70,7 +70,7 @@ function Counter() {
   }); //
 
 
-  const _message = _createMemo(() => `Count: ${_x()}`, undefined, {
+  const _message = _createMemo(() => `Count: ${_x()}`, {
     name: "message"
   });
 
@@ -85,9 +85,11 @@ Chained variable declaration is also supported.
 const y = x + 10, z = y / 10;
 ```
 
-### `@effect`, `@computed` and `@renderEffect`
+### `@effect`
 
-Transforms into `createEffect`, `createComputed` and `createRenderEffect`, respectively.
+Transforms into `createTrackedEffect`.
+
+> Solid 2.0 removed `createComputed`, and `createEffect` / `createRenderEffect` now take a tracked `compute` phase plus an untracked `effect` phase. The single-callback form is `createTrackedEffect`, so the `@computed` and `@renderEffect` pragmas are gone. Use the `$effect` and `$renderEffect` CTFs when you need the two-phase form.
 
 ```js
 function Counter() {
@@ -97,43 +99,27 @@ function Counter() {
   /* @effect */ {
     console.log('Count', x);
   }
-  /* @computed */ {
-    console.log('Count', x);
-  }
-  /* @renderEffect */ {
-    console.log('Count', x);
-  }
 }
 ```
 
 into
 
 ```js
-import { createRenderEffect as _createRenderEffect } from "solid-js";
-import { createComputed as _createComputed } from "solid-js";
-import { createEffect as _createEffect } from "solid-js";
+import { createTrackedEffect as _createTrackedEffect } from "solid-js";
 import { createSignal as _createSignal } from "solid-js";
 
 function Counter() {
   const [_x, _setx] = _createSignal(0);
 
-  _createEffect(() => {
-    console.log('Count', _x());
-  });
-
-  _createComputed(() => {
-    console.log('Count', _x());
-  });
-
-  _createRenderEffect(() => {
+  _createTrackedEffect(() => {
     console.log('Count', _x());
   });
 }
 ```
 
-You may use an arrow function instead of a block statement to accepts the previously returned value.
+You may use an arrow function instead of a block statement.
 
-`@effect`, `@computed` and `@renderEffect` can also be named:
+`@effect` can also be named:
 
 ```js
 // @signal
@@ -142,18 +128,10 @@ let x = 0;
 /* @effect Effect Log */ {
   console.log('Count', x);
 }
-/* @computed Computed Log */ {
-  console.log('Count', x);
-}
-/* @renderEffect Render Effect Log */ {
-  console.log('Count', x);
-}
 ```
 
 ```js
-import { createRenderEffect as _createRenderEffect } from "solid-js";
-import { createComputed as _createComputed } from "solid-js";
-import { createEffect as _createEffect } from "solid-js";
+import { createTrackedEffect as _createTrackedEffect } from "solid-js";
 import { createSignal as _createSignal } from "solid-js";
 
 //
@@ -161,43 +139,26 @@ let [_x, _setx] = _createSignal(0);
 /**/
 
 
-_createEffect(() => {
+_createTrackedEffect(() => {
   console.log('Count', _x());
-}, undefined, {
+}, {
   name: "Effect Log"
-});
-/**/
-
-
-_createComputed(() => {
-  console.log('Count', _x());
-}, undefined, {
-  name: "Computed Log"
-});
-/**/
-
-
-_createRenderEffect(() => {
-  console.log('Count', _x());
-}, undefined, {
-  name: "Render Effect Log"
 });
 ```
 
-### `@mount`, `@cleanup` and `@error`
+### `@mount`, `@settled` and `@cleanup`
 
-Transforms into `onMount`, `onCleanup` and `onError`.
+Transforms into `onSettled` (both `@mount` and `@settled`) and `onCleanup`.
+
+> `onMount` and `onError` are gone in Solid 2.0. `onSettled` runs once the current activity settles and accepts a returned cleanup function; errors are handled by `<Errored>` or by the `error` option of `createEffect`.
 
 ```js
 function Counter() {
   /* @mount */ {
-    console.log('Mounted!');
+    console.log('Settled!');
   }
   /* @cleanup */ {
     console.log('Cleaned!');
-  }
-  /* @error */ {
-    console.log('Something went wrong.');
   }
 }
 ```
@@ -205,36 +166,30 @@ function Counter() {
 into
 
 ```js
-import { onError as _onError } from "solid-js";    
 import { onCleanup as _onCleanup } from "solid-js";
-import { onMount as _onMount } from "solid-js";    
+import { onSettled as _onSettled } from "solid-js";
 
 function Counter() {
-  _onMount(() => {
-    console.log('Mounted!');
+  _onSettled(() => {
+    console.log('Settled!');
   });
 
   _onCleanup(() => {
     console.log('Cleaned!');
   });
-
-  _onError(() => {
-    console.log('Something went wrong.');
-  });
 }
 ```
 
-You may also use an arrow function. For `onError`, an arrow function with a parameter may be used to receive the error object.
+You may also use an arrow function.
 
-### `@untrack` and `@batch`
+### `@untrack`
 
-Transforms into `untrack` and `batch`.
+Transforms into `untrack`.
+
+> Solid 2.0 batches writes by default, so the `@batch` pragma is gone. Use the `$flush` CTF to apply queued writes synchronously.
 
 ```js
 function Counter() {
-  /* @batch */ {
-    console.log('This is batched!');
-  }
   /* @untrack */ {
     console.log('This is untracked!');
   }
@@ -245,13 +200,8 @@ into
 
 ```js
 import { untrack as _untrack } from "solid-js";
-import { batch as _batch } from "solid-js";
 
 function Counter() {
-  _batch(() => {
-    console.log('This is batched!');
-  });
-
   _untrack(() => {
     console.log('This is untracked!');
   });
@@ -296,56 +246,21 @@ import { children as _children } from "solid-js";
 const _nodes = _children(() => props.children);
 ```
 
-### `@deferred`
+### `@action`
 
-Compiles to `createDeferred`.
-
-```js
-// @signal
-let searchInput = '';
-// @deferred
-let deferredSearchInput = searchInput;
-
-effect: {
-  fetchResults(deferredSearchInput);
-}
-```
-
-```js
-import { createEffect as _createEffect } from "solid-js";
-import { createDeferred as _createDeferred } from "solid-js";
-import { createSignal as _createSignal } from "solid-js";
-
-//
-let [_searchInput, _setsearchInput] = _createSignal('', {
-  name: "searchInput"
-}); //
-
-
-let _deferredSearchInput = _createDeferred(() => _searchInput(), {
-  name: "deferredSearchInput"
-});
-
-_createEffect(() => {
-  fetchResults(_deferredSearchInput());
-});
-```
-
-### `@transition`
-
-Compiles to `startTransition`. Arrow function can be provided instead of blocks.
+Compiles to `action`. Arrow function can be provided instead of blocks.
 
 ```js
 // @signal
 let data;
 
-/* @transition */ {
+/* @action */ {
   data = fetchData();
 }
 ```
 
 ```js
-import { startTransition as _startTransition } from "solid-js";
+import { action as _action } from "solid-js";
 import { createSignal as _createSignal } from "solid-js";
 
 //
@@ -355,14 +270,14 @@ let [_data, _setdata] = _createSignal(undefined, {
 /**/
 
 
-_startTransition(() => {
+_action(() => {
   _setdata(() => fetchData());
 });
 ```
 
 ### `@destructure`
 
-Destructures an object while retaining reactivity. This partially compiles to `splitProps` if a rest expression is detected.
+Destructures an object while retaining reactivity. This partially compiles to `omit` if a rest expression is detected.
 
 `@destructure` also supports nested destructures.
 
@@ -384,25 +299,25 @@ effect: {
 ```
 
 ```js
-import { createEffect as _createEffect } from "solid-js";
-import { splitProps as _splitProps } from "solid-js";
+import { createTrackedEffect as _createTrackedEffect } from "solid-js";
+import { omit as _omit } from "solid-js";
 //
 const _prop = () => x.a,
   _prop2 = () => _prop().b,
   _prop3 = () => _prop().c,
-  _other2 = _splitProps(_prop(), ["b", "c"])[1],
+  _other2 = _omit(_prop(), "b", "c"),
   _prop4 = () => x.b,
   _prop5 = () => _prop4().d,
   _prop6 = () => _prop4().e,
-  _other3 = _splitProps(_prop4(), ["d", "e"])[1],
-  _other = _splitProps(x, ["a", "b"])[1];
-_createEffect(() => {
+  _other3 = _omit(_prop4(), "d", "e"),
+  _other = _omit(x, "a", "b");
+_createTrackedEffect(() => {
   console.log(_prop2(), _prop3());
 });
-_createEffect(() => {
+_createTrackedEffect(() => {
   console.log(_prop5(), _prop6());
 });
-_createEffect(() => {
+_createTrackedEffect(() => {
   console.log(_other);
 });
 ```

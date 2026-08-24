@@ -1,5 +1,6 @@
 import type * as babel from '@babel/core';
 import * as t from '@babel/types';
+import { UNDEFINED } from '../constants';
 import { derefMemo } from './deref-memo';
 import { unexpectedType } from './errors';
 import { generateUniqueName } from './generate-unique-name';
@@ -7,7 +8,6 @@ import { getImportIdentifier } from './get-import-identifier';
 import { isStatic } from './is-static';
 import type { State } from './types';
 import { unwrapNode } from './unwrap-node';
-import { UNDEFINED } from '../constants';
 
 export function destructureVariable(
   state: State,
@@ -228,22 +228,15 @@ export function destructureVariable(
   const expr = t.variableDeclarator(
     otherIdentifier,
     properties.length
-      ? t.memberExpression(
-          t.callExpression(
-            getImportIdentifier(state, path, 'splitProps', 'solid-js'),
-            [
-              defaultValue != null
-                ? t.callExpression(
-                    getImportIdentifier(state, path, 'mergeProps', 'solid-js'),
-                    [target, defaultValue],
-                  )
-                : target,
-              t.arrayExpression(properties),
-            ],
-          ),
-          t.numericLiteral(1),
-          true,
-        )
+      ? t.callExpression(getImportIdentifier(state, path, 'omit', 'solid-js'), [
+          defaultValue != null
+            ? t.callExpression(
+                getImportIdentifier(state, path, 'merge', 'solid-js'),
+                [target, defaultValue],
+              )
+            : target,
+          ...properties,
+        ])
       : target,
   );
 

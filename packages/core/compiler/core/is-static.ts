@@ -7,8 +7,12 @@ export function isStatic(
     | t.AssignmentPattern
     | t.ArrayPattern
     | t.ObjectPattern
-    | t.RestElement,
+    | t.RestElement
+    | t.VoidPattern,
 ): boolean {
+  if (t.isVoidPattern(node)) {
+    return false;
+  }
   // The following types are singular nested expressions
   if (
     t.isParenthesizedExpression(node) ||

@@ -1,4 +1,4 @@
-import type { JSX } from 'solid-js/jsx-runtime';
+import type { JSX } from '@solidjs/web';
 
 export default function App(): JSX.Element {
   /* @signal */
@@ -6,10 +6,7 @@ export default function App(): JSX.Element {
 
   /* @memo */
   const message = `Count: ${count}`;
-
-  /* @effect */ {
-    console.log(message);
-  }
+  console.log(message);
 
   function increment(): void {
     count += 1;

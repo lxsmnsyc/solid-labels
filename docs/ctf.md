@@ -11,7 +11,8 @@ function $signal<T>(
   options?: {
     equals?: false | ((prev: T, next: T) => boolean);
     name?: string;
-    internal?: boolean,
+    ownedWrite?: boolean;
+    unobserved?: () => void;
   }
 ): T;
 ```
@@ -39,11 +40,12 @@ let [_count, _setcount] = _createSignal(0, {
 ```ts
 function $memo<T>(
   value: T,
-  options?: { equals?: false | ((prev: T, next: T) => boolean); name?: string }
-): T;
-function $memo<T>(
-  value: T,
-  options?: { equals?: false | ((prev: T, next: T) => boolean); name?: string }
+  options?: {
+    equals?: false | ((prev: T, next: T) => boolean);
+    name?: string;
+    lazy?: boolean;
+    unobserved?: () => void;
+  }
 ): T;
 ```
 
@@ -64,7 +66,7 @@ let [_count, _setcount] = _createSignal(0, {
   name: "count"
 });
 
-const _message = _createMemo(() => `Count: ${_count()}`, undefined, {
+const _message = _createMemo(() => `Count: ${_count()}`, {
   name: "message"
 });
 ```
@@ -77,7 +79,7 @@ const _message = _createMemo(() => `Count: ${_count()}`, undefined, {
 function $<T>(value: T): T;
 ```
 
-Compiles into `createMemo` when used in variable declarations, otherwise it compiles to `createEffect` when used in single-line statements. If used for other expressions, it raises a compile-time error.
+Compiles into `createMemo` when used in variable declarations, otherwise it compiles to `createTrackedEffect` when used in single-line statements. If used for other expressions, it raises a compile-time error.
 
 ```js
 let count = $signal(0);
@@ -89,7 +91,7 @@ $(console.log(message));
 compiles into
 
 ```js
-import { createEffect as _createEffect } from "solid-js";
+import { createTrackedEffect as _createTrackedEffect } from "solid-js";
 import { createMemo as _createMemo } from "solid-js";
 import { createSignal as _createSignal } from "solid-js";
 
@@ -97,83 +99,76 @@ let [_count, _setcount] = _createSignal(0, {
   name: "count"
 });
 
-const _message = _createMemo(() => `Count: ${_count()}`, undefined, {
+const _message = _createMemo(() => `Count: ${_count()}`, {
   name: "message"
 });
 
-_createEffect(() => console.log(_message()));
+_createTrackedEffect(() => console.log(_message()));
 ```
 
-### `$untrack` and `$batch`
+### `$untrack`
 
 ```ts
 function $untrack<T>(value: T): T;
-function $batch<T>(value: T): T;
 ```
 
-Compiles into `untrack` and `batch`, respectively. Unlike `untrack` and `batch`, `$untrack` and `$batch` doesn't have to provide an arrow function.
+Compiles into `untrack`. Unlike `untrack`, `$untrack` doesn't have to provide an arrow function.
+
+> Solid 2.0 batches writes by default, so the old `$batch` CTF is gone. Use `$flush` if you need to apply queued writes synchronously.
 
 ```js
 let count = $signal(0);
 
 effect: {
   console.log($untrack(count));
-
-  $batch(updateData(count));
 }
 ```
 
 compiles into
 
 ```js
-import { batch as _batch } from "solid-js";
 import { untrack as _untrack } from "solid-js";
-import { createEffect as _createEffect } from "solid-js";
+import { createTrackedEffect as _createTrackedEffect } from "solid-js";
 import { createSignal as _createSignal } from "solid-js";
 
 let [_count, _setcount] = _createSignal(0, {
   name: "count"
 });
 
-_createEffect(() => {
+_createTrackedEffect(() => {
   console.log(_untrack(() => _count()));
-
-  _batch(() => updateData(_count()));
 });
 ```
 
-### `$effect`, `$computed` and `$renderEffect`
+### `$effect`, `$trackedEffect` and `$renderEffect`
 
 ```ts
-function $effect<T>(fn: (v?: T) => T | undefined): void;
-function $effect<T>(fn: (v: T) => T, value: T, options?: { name?: string }): void;
-
-function $computed<T>(fn: (v?: T) => T | undefined): void;
-function $computed<T>(fn: (v: T) => T, value: T, options?: { name?: string }): void;
-
-function $renderEffect<T>(fn: (v?: T) => T | undefined): void;
-function $renderEffect<T>(fn: (v: T) => T, value: T, options?: { name?: string }): void;
+const $effect: typeof createEffect;
+const $trackedEffect: typeof createTrackedEffect;
+const $renderEffect: typeof createRenderEffect;
 ```
 
-Compiles to `createEffect`, `createComputed` and `createRenderEffect`, respectively.
+Compiles to `createEffect`, `createTrackedEffect` and `createRenderEffect`, respectively.
+
+In Solid 2.0, `createEffect` and `createRenderEffect` take two phases: a tracked `compute` function and an untracked `effect` function. `createTrackedEffect` is the single-callback form, which is what the `effect` label and the `$` statement compile to.
 
 ```js
 let x = $signal(0);
 
-$effect(() => {
+$effect(() => x, value => {
+  console.log('Count', value);
+});
+$trackedEffect(() => {
   console.log('Count', x);
 });
-$computed(() => {
-  console.log('Count', x);
-});
-$renderEffect(() => {
-  console.log('Count', x);
+$renderEffect(() => x, value => {
+  console.log('Count', value);
 });
 ```
 
 ```js
 import { createRenderEffect as _createRenderEffect } from "solid-js";
-import { createComputed as _createComputed } from "solid-js";
+import { createTrackedEffect as _createTrackedEffect } from "solid-js";
 import { createEffect as _createEffect } from "solid-js";
 import { createSignal as _createSignal } from "solid-js";
 
@@ -181,16 +176,16 @@ let [_x, _setx] = _createSignal(0, {
   name: "x"
 });
 
-_createEffect(() => {
+_createEffect(() => _x(), value => {
+  console.log('Count', value);
+});
+
+_createTrackedEffect(() => {
   console.log('Count', _x());
 });
 
-_createComputed(() => {
-  console.log('Count', _x());
-});
-
-_createRenderEffect(() => {
-  console.log('Count', _x());
+_createRenderEffect(() => _x(), value => {
+  console.log('Count', value);
 });
 ```
 
@@ -223,207 +218,19 @@ const cleanup = _createRoot(dispose => {
 _createRoot(() => renderApp());
 ```
 
-### `$selector`
-
-```ts
-function $selector<T, U>(
-  source: T,
-  fn?: (a: U, b: T) => boolean,
-  options?: { name?: string }
-): (key: U) => boolean;
-```
-
-Compiles to `createSelector`. Automatically injects arrow function to `source`.
-
-```js
-let selectedID = $signal();
-
-let isSelected = $selector(selectedID);
-
-effect: {
-  if (isSelected(userID)) {
-    selectUser(userID);
-  }
-}
-```
-
-```js
-import { createEffect as _createEffect } from "solid-js";
-import { createSelector as _createSelector } from "solid-js";
-import { createSignal as _createSignal } from "solid-js";
-
-let [_selectedID, _setselectedID] = _createSignal(undefined, {
-  name: "selectedID"
-});
-
-let isSelected = _createSelector(() => _selectedID());
-
-_createEffect(() => {
-  if (isSelected(userID)) {
-    selectUser(userID);
-  }
-});
-```
-
-### `$on`
-
-```ts
-function $on<T, U>(
-  deps: T,
-  fn: (input: T, prevInput: T, prevValue?: U) => U,
-  options?: { defer?: boolean }
-): (prevValue?: U) => U;
-```
-
-Compiles to `on`. Arrow function is automatically injected to `deps`.
-
-```js
-let selectedID = $signal();
-
-effect: $on(selectedID, (value) => {
-  if (userID === value) {
-    selectUser(userID);
-  }
-})
-```
-
-```js
-import { on as _on } from "solid-js";
-import { createEffect as _createEffect } from "solid-js";
-import { createSignal as _createSignal } from "solid-js";
-
-let [_selectedID, _setselectedID] = _createSignal(undefined, {
-  name: "selectedID"
-});
-
-_createEffect(_on(() => _selectedID(), value => {
-  if (userID === value) {
-    selectUser(userID);
-  }
-}));
-```
-
-### `$deferred`
-
-```ts
-function $deferred<T>(
-  source: T,
-  options?: {
-    equals?: false | ((prev: T, next: T) => boolean);
-    name?: string;
-    timeoutMs?: number;
-  },
-): T;
-```
-
-Compiles to `createDeferred`. Automatically injects arrow function to `source`. Automatically treats variable reads as accessor calls like `$memo`. Can only be called in variable declarations.
-
-```js
-let searchInput = $signal('');
-let deferredSearchInput = $deferred(searchInput);
-
-effect: {
-  fetchResults(deferredSearchInput);
-}
-```
-
-```js
-import { createEffect as _createEffect } from "solid-js";
-import { createDeferred as _createDeferred } from "solid-js";
-import { createSignal as _createSignal } from "solid-js";
-
-let [_searchInput, _setsearchInput] = _createSignal('', {
-  name: "searchInput"
-});
-
-let _deferredSearchInput = _createDeferred(() => _searchInput(), {
-  name: "deferredSearchInput"
-});
-
-_createEffect(() => {
-  fetchResults(_deferredSearchInput());
-});
-```
-
-### `$resource`
-
-This compile as an auto-import alias for `createResource`.
-
 ### `$reaction`
 
-This CTF is a compile-time alias for the `createReaction` utility that was added in 1.3.
+This CTF is a compile-time alias for `createReaction`.
 
 ## Lifecycles
 
 The following CTFs are compile-time aliases:
 
 - `$cleanup` -> `onCleanup`
-- `$mount` -> `onMount`
-- `$error` -> `onError`
+- `$settled` -> `onSettled`
+- `$mount` -> `onSettled`
 
-## Observables
-
-### `$observable`
-
-```ts
-function $observable<T>(value: T): Observable<T>;
-```
-
-Compiles to `observable`. Automatically injects arrow function to `value`.
-
-```js
-let count = $signal(0);
-const counter$ = $observable(count);
-```
-
-```js
-import { observable as _observable } from "solid-js";
-import { createSignal as _createSignal } from "solid-js";
-
-let [_count, _setcount] = _createSignal(0, {
-  name: "count"
-});
-
-const counter$ = _observable(() => _count());
-```
-
-### `$from`
-
-```ts
-function $from<T>(observable: Observable<T>): T;
-function $from<T>(produce: ((setter: Setter<T>) => () => void)): T;
-```
-
-Compiles to `from`. Automatically treats variable reads as accessor calls like `$memo`.
-
-```js
-let count = $signal(0);
-const counter$ = $observable(count);
-const counter = $from(counter$);
-
-effect: {
-  console.log('Count:', counter);
-}
-```
-
-```js
-import { createEffect as _createEffect } from "solid-js";
-import { from as _from } from "solid-js";
-import { observable as _observable } from "solid-js";
-import { createSignal as _createSignal } from "solid-js";
-
-let [_count, _setcount] = _createSignal(0, {
-  name: "count"
-});
-
-const counter$ = _observable(() => _count());
-
-const _counter = _from(counter$);
-
-_createEffect(() => {
-  console.log('Count:', _counter());
-});
-```
+`onMount` is gone in Solid 2.0. `onSettled` runs once after the current activity settles and accepts a returned cleanup function, so it covers both mount and unmount.
 
 ## Objects
 
@@ -433,7 +240,7 @@ _createEffect(() => {
 function $destructure<T>(value: T): T;
 ```
 
-Destructures an object while retaining reactivity. This partially compiles to `splitProps` if a rest expression is detected.
+Destructures an object while retaining reactivity. This partially compiles to `omit` if a rest expression is detected.
 
 `$destructure` also supports nested destructures.
 
@@ -454,12 +261,12 @@ effect: {
 ```
 
 ```js
-import { splitProps as _splitProps } from "solid-js";
-import { createEffect as _createEffect } from "solid-js";
+import { omit as _omit } from "solid-js";
+import { createTrackedEffect as _createTrackedEffect } from "solid-js";
 let _prop = () => x.a,
   _prop2 = () => _prop().b,
   _prop3 = () => _prop().c,
-  _other2 = _splitProps(_prop(), ["b", "c"])[1],
+  _other2 = _omit(_prop(), "b", "c"),
   _prop4 = () => x.b,
   _def = defaultD,
   _prop5 = () => {
@@ -471,15 +278,15 @@ let _prop = () => x.a,
     const _value2 = _prop4().e;
     return _value2 === undefined ? _def2 : _value2;
   },
-  _other3 = _splitProps(_prop4(), ["d", "e"])[1],
-  _other = _splitProps(x, ["a", "b"])[1];
-_createEffect(() => {
+  _other3 = _omit(_prop4(), "d", "e"),
+  _other = _omit(x, "a", "b");
+_createTrackedEffect(() => {
   console.log(_prop2(), _prop3());
 });
-_createEffect(() => {
+_createTrackedEffect(() => {
   console.log(_prop5(), _prop6());
 });
-_createEffect(() => {
+_createTrackedEffect(() => {
   console.log(_other);
 });
 ```
@@ -487,19 +294,37 @@ _createEffect(() => {
 ### `$merge`
 
 ```ts
-function $merge<T extends any[]>(...args: T): MergeProps<T>;
+function $merge<T extends unknown[]>(...args: T): Merge<T>;
 ```
 
-Merges one or more objects while retaining reactivity. Compiles to `mergeProps`.
+Merges one or more objects while retaining reactivity. Compiles to `merge` (formerly `mergeProps`).
 
 ```js
 const mergedObject = $merge(a, b, c, d);
 ```
 
 ```js
-import { mergeProps as _mergeProps } from "solid-js";
+import { merge as _merge } from "solid-js";
 
-const mergedObject = _mergeProps(a, b, c, d);
+const mergedObject = _merge(a, b, c, d);
+```
+
+### `$omit`
+
+```ts
+function $omit<T, K extends readonly (keyof T)[]>(props: T, ...keys: K): Omit<T, K>;
+```
+
+Returns a reactive proxy of the object with the given keys hidden. Compiles to `omit` (formerly `splitProps`).
+
+```js
+const rest = $omit(props, 'class', 'style');
+```
+
+```js
+import { omit as _omit } from "solid-js";
+
+const rest = _omit(props, 'class', 'style');
 ```
 
 ### `$component`
@@ -517,8 +342,8 @@ $component(({ [x]: { y, ...z } = { y: 10 }, ...a }) => (
 ```
 
 ```js
-import { mergeProps as _mergeProps } from "solid-js";
-import { splitProps as _splitProps } from "solid-js";
+import { merge as _merge } from "solid-js";
+import { omit as _omit } from "solid-js";
 _props => {
   const _def = {
       y: 10
@@ -528,8 +353,8 @@ _props => {
       return _value === undefined ? _def : _value;
     },
     _prop2 = () => _prop().y,
-    _other2 = _splitProps(_mergeProps(_prop(), _def), ["y"])[1],
-    _other = _splitProps(_props, [x])[1];
+    _other2 = _omit(_merge(_prop(), _def), "y"),
+    _other = _omit(_props, x);
   return <>
     {_prop2()}
     {_other2}
@@ -544,10 +369,21 @@ _props => {
 
 ```ts
 function $mapArray<T, U>(
-  arr: readonly T[] | undefined | null | false,
+  arr: Accessor<readonly T[] | undefined | null | false>,
   mapFn: (v: T, i: Accessor<number>) => U,
   options?: {
+    keyed?: true;
     fallback?: Accessor<any>;
+    name?: string;
+  },
+): U[];
+function $mapArray<T, U>(
+  arr: Accessor<readonly T[] | undefined | null | false>,
+  mapFn: (v: Accessor<T>, i: number) => U,
+  options: {
+    keyed: false;
+    fallback?: Accessor<any>;
+    name?: string;
   },
 ): U[];
 ```
@@ -566,7 +402,7 @@ list = ['Hello'];
 ```
 
 ```js
-import { createEffect as _createEffect } from "solid-js";
+import { createTrackedEffect as _createTrackedEffect } from "solid-js";
 import { mapArray as _mapArray } from "solid-js";
 import { createSignal as _createSignal } from "solid-js";
 
@@ -576,55 +412,55 @@ let [_list, _setlist] = _createSignal([], {
 
 const _squaredList = _mapArray(() => _list(), value => value ** 2);
 
-_createEffect(() => {
+_createTrackedEffect(() => {
   console.log('1st value', _squaredList()[0]);
 });
 
 _setlist(() => ['Hello']);
 ```
 
-### `$indexArray`
+### `$repeat`
 
 ```ts
-function $indexArray<T, U>(
-  arr: readonly T[] | undefined | null | false,
-  mapFn: (v: Accessor<T>, i: number) => U,
+function $repeat<U>(
+  count: Accessor<number>,
+  mapFn: (i: number) => U,
   options?: {
+    from?: Accessor<number | undefined>;
     fallback?: Accessor<any>;
+    name?: string;
   },
 ): U[];
 ```
 
-Compiles to `mapArray`. Automatically treats variable reads as accessor calls like `$memo`. Automatically injects arrow function to `arr`.
+Compiles to `repeat`, which replaces `indexArray` for count-driven rendering. Automatically treats variable reads as accessor calls like `$memo`.
 
 ```js
-let list = $signal([]);
-const squaredList = $indexArray(list, (value) => value() ** 2);
+let total = $signal(0);
+const rows = $repeat(() => total, (index) => index ** 2);
 
 effect: {
-  console.log('1st value', squaredList[0]);
+  console.log('1st value', rows[0]);
 }
-
-list = ['Hello'];
 ```
 
 ```js
-import { createEffect as _createEffect } from "solid-js";
-import { indexArray as _indexArray } from "solid-js";
+import { createTrackedEffect as _createTrackedEffect } from "solid-js";
+import { repeat as _repeat } from "solid-js";
 import { createSignal as _createSignal } from "solid-js";
 
-let [_list, _setlist] = _createSignal([], {
-  name: "list"
+let [_total, _settotal] = _createSignal(0, {
+  name: "total"
 });
 
-const _squaredList = _indexArray(() => _list(), value => value() ** 2);
+const _rows = _repeat(() => _total(), index => index ** 2);
 
-_createEffect(() => {
-  console.log('1st value', _squaredList()[0]);
+_createTrackedEffect(() => {
+  console.log('1st value', _rows()[0]);
 });
-
-_setlist(() => ['Hello']);
 ```
+
+> Non-keyed list mapping now lives in `$mapArray` with `{ keyed: false }`; `$indexArray` is gone.
 
 ## Component APIs
 
@@ -634,7 +470,7 @@ _setlist(() => ['Hello']);
 function $uid(): string;
 ```
 
-Compiles to `createUniqueId` (Only available for Solid 1.1.0+)
+Compiles to `createUniqueId`.
 
 ```js
 const elementID = $uid();
@@ -709,12 +545,17 @@ const CounterContext = _createContext(0);
 const value = _useContext(CounterContext);
 ```
 
-### Transition
+### Async
 
-```ts
-function $startTransition(fn: () => unknown): Promise<void>
-function $useTransition(): Transition
-```
+Transitions are built in on Solid 2.0, so `$startTransition` and `$useTransition` are gone. The following CTFs are compile-time aliases for the async APIs:
+
+- `$action` -> `action`
+- `$isPending` -> `isPending`
+- `$latest` -> `latest`
+- `$refresh` -> `refresh`
+- `$affects` -> `affects`
+- `$flush` -> `flush`
+- `$resolve` -> `resolve` (an arrow function is injected to the value)
 
 ### Owner
 
@@ -723,7 +564,7 @@ function $owner(): Owner | null
 function $runWithOwner<T>(o: Owner, fn: () => T): T
 ```
 
-Compiles to `useTransition` and `startTransition`.
+Compiles to `getOwner` and `runWithOwner`.
 
 ## Refs and Derefs
 
@@ -781,7 +622,7 @@ let [_count, _setcount] = _createSignal(0, {
   name: "count"
 });
 
-const _message = _createMemo(() => `Count: ${_count()}`, undefined, {
+const _message = _createMemo(() => `Count: ${_count()}`, {
   name: "message"
 });
 
@@ -820,7 +661,7 @@ let [_count, _setcount] = _createSignal(0, {
   name: "count"
 });
 
-const _message = _createMemo(() => `Count: ${_count()}`, undefined, {
+const _message = _createMemo(() => `Count: ${_count()}`, {
   name: "message"
 });
 
@@ -893,7 +734,7 @@ let [_value, _setvalue] = [getValue, setValue];
 
 _setvalue(() => newValue);
 
-_createEffect(() => {
+_createTrackedEffect(() => {
   console.log(_value());
 });
 ```
@@ -913,11 +754,11 @@ effect: {
 compiles into
 
 ```js
-import { createEffect as _createEffect } from "solid-js";
+import { createTrackedEffect as _createTrackedEffect } from "solid-js";
 
 const _count = useCounterValue();
 
-_createEffect(() => {
+_createTrackedEffect(() => {
   console.log('Count:', _count());
 });
 ```
@@ -1016,17 +857,23 @@ const obj = {
 
 ## Store
 
-These CTFs are based from `solid-js/store` exports.
+Store APIs moved into `solid-js` on Solid 2.0.
 
 - `$store` -> `createStore`
-- `$mutable` -> `createMutable`
+- `$projection` -> `createProjection`
+- `$optimistic` -> `createOptimistic`
+- `$optimisticStore` -> `createOptimisticStore`
 - `$reconcile` -> `reconcile`
-- `$produce` -> `produce`
-- `$unwrap` -> `unwrap`
+- `$snapshot` (also `$unwrap`) -> `snapshot`
+- `$deep` -> `deep`
+
+`createMutable` and `produce` are gone; store setters are draft-first.
 
 ## Components
 
-These CTFs are auto-imported components from `solid-js` and `solid-js/web`. You can still use their original identifiers since those are already supported by `babel-preset-solid`.
+These CTFs are auto-imported components from `solid-js` and `@solidjs/web`. You can still use their original identifiers since those are already supported by `babel-preset-solid`.
+
+Available: `For`, `Show`, `Switch`, `Match`, `Repeat`, `Errored`, `Loading`, `Reveal`, `Dynamic`, `Portal`, `HydrationScript`, `Hydration` and `NoHydration`.
 
 ## Tooling
 

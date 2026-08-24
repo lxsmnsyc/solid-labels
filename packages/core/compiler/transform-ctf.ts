@@ -1,5 +1,6 @@
 import type * as babel from '@babel/core';
 import * as t from '@babel/types';
+import { UNDEFINED } from './constants';
 import { accessorVariable } from './core/accessor-variable';
 import { assert } from './core/assert';
 import { derefMemoVariable } from './core/deref-memo-variable';
@@ -12,17 +13,13 @@ import { memoVariable } from './core/memo-variable';
 import { signalVariable } from './core/signal-variable';
 import type { State } from './core/types';
 import { unwrapNode } from './core/unwrap-node';
-import { UNDEFINED } from './constants';
 
 type AutoArrowCTF = [name: string, source: string, arguments: number];
 
 const AUTO_ARROW_CTF: Record<string, AutoArrowCTF> = {
   $lazy: ['lazy', 'solid-js', 1],
   $untrack: ['untrack', 'solid-js', 1],
-  $batch: ['batch', 'solid-js', 1],
-  $observable: ['observable', 'solid-js', 1],
-  $selector: ['createSelector', 'solid-js', 1],
-  $on: ['on', 'solid-js', 3],
+  $resolve: ['resolve', 'solid-js', 1],
 };
 
 type AutoImportAliasCTF = [name: string, source: string];
@@ -33,26 +30,32 @@ const AUTO_IMPORT_ALIAS_CTF: Record<string, AutoImportAliasCTF> = {
   $createContext: ['createContext', 'solid-js'],
   $uid: ['createUniqueId', 'solid-js'],
   $effect: ['createEffect', 'solid-js'],
-  $computed: ['createComputed', 'solid-js'],
+  $trackedEffect: ['createTrackedEffect', 'solid-js'],
   $renderEffect: ['createRenderEffect', 'solid-js'],
-  $merge: ['mergeProps', 'solid-js'],
-  $resource: ['createResource', 'solid-js'],
+  $merge: ['merge', 'solid-js'],
+  $omit: ['omit', 'solid-js'],
   $cleanup: ['onCleanup', 'solid-js'],
-  $mount: ['onMount', 'solid-js'],
-  $error: ['onError', 'solid-js'],
+  $settled: ['onSettled', 'solid-js'],
+  $mount: ['onSettled', 'solid-js'],
   $reaction: ['createReaction', 'solid-js'],
-  $startTransition: ['startTransition', 'solid-js'],
-  $useTransition: ['useTransition', 'solid-js'],
   $owner: ['getOwner', 'solid-js'],
   $runWithOwner: ['runWithOwner', 'solid-js'],
-  $catchError: ['catchError', 'solid-js'],
+  $flush: ['flush', 'solid-js'],
+  $action: ['action', 'solid-js'],
+  $isPending: ['isPending', 'solid-js'],
+  $latest: ['latest', 'solid-js'],
+  $refresh: ['refresh', 'solid-js'],
+  $affects: ['affects', 'solid-js'],
 
   // Store API
-  $store: ['createStore', 'solid-js/store'],
-  $mutable: ['createMutable', 'solid-js/store'],
-  $produce: ['produce', 'solid-js/store'],
-  $reconcile: ['reconcile', 'solid-js/store'],
-  $unwrap: ['unwrap', 'solid-js/store'],
+  $store: ['createStore', 'solid-js'],
+  $projection: ['createProjection', 'solid-js'],
+  $optimistic: ['createOptimistic', 'solid-js'],
+  $optimisticStore: ['createOptimisticStore', 'solid-js'],
+  $reconcile: ['reconcile', 'solid-js'],
+  $snapshot: ['snapshot', 'solid-js'],
+  $unwrap: ['snapshot', 'solid-js'],
+  $deep: ['deep', 'solid-js'],
 };
 
 type AutoAccessorCTF = [
@@ -63,10 +66,9 @@ type AutoAccessorCTF = [
 ];
 
 const AUTO_ACCESSOR_CTF: Record<string, AutoAccessorCTF> = {
-  $from: ['from', 'solid-js', 1, true],
   $children: ['children', 'solid-js', 1, false],
   $mapArray: ['mapArray', 'solid-js', 3, false],
-  $indexArray: ['indexArray', 'solid-js', 3, false],
+  $repeat: ['repeat', 'solid-js', 3, false],
 };
 
 const SIGNAL_CTF = '$signal';
@@ -343,7 +345,12 @@ const CTF_TRAVERSE: babel.Visitor<State> = {
           path.replaceWith(
             t.expressionStatement(
               t.callExpression(
-                getImportIdentifier(state, path, 'createEffect', 'solid-js'),
+                getImportIdentifier(
+                  state,
+                  path,
+                  'createTrackedEffect',
+                  'solid-js',
+                ),
                 [
                   t.isArrowFunctionExpression(argument) ||
                   t.isFunctionExpression(argument)

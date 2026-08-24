@@ -17,21 +17,23 @@ import { For as _For } from "solid-js";
 </_For>;
 ```
 
-## `<solid:index>`
+## `<solid:repeat>`
 
-Alias for [`<Index>`](https://www.solidjs.com/docs/latest#%3Cindex%3E)
+Alias for `<Repeat>`, which renders a callback `count` times.
+
+> `<Index>` is gone in Solid 2.0. For non-keyed list rendering, use `<solid:for keyed={false}>`.
 
 ```jsx
-<solid:index each={state.list} fallback={<div>Loading...</div>}>
-  {(item) => <div>{item()}</div>}
-</solid:index>
+<solid:repeat count={state.list.length} fallback={<div>Empty</div>}>
+  {(index) => <div>{state.list[index]}</div>}
+</solid:repeat>
 ```
 
 ```jsx
-import { Index as _Index } from "solid-js";
-<_Index each={state.list} fallback={<div>Loading...</div>}>
-  {item => <div>{item()}</div>}
-</_Index>;
+import { Repeat as _Repeat } from "solid-js";
+<_Repeat count={state.list.length} fallback={<div>Empty</div>}>
+  {index => <div>{state.list[index]}</div>}
+</_Repeat>;
 ```
 
 ## `<solid:switch>` and `<solid:match>`
@@ -79,70 +81,70 @@ import { Show as _Show } from "solid-js";
 </_Show>;
 ```
 
-## `<solid:error-boundary>`
+## `<solid:errored>`
 
-Alias for [`<ErrorBoundary>`](https://www.solidjs.com/docs/latest#%3Cerrorboundary%3E)
+Alias for `<Errored>`, which replaces `<ErrorBoundary>`.
 
 ```jsx
-<solid:error-boundary
-  fallback={(err, reset) => <div onClick={reset}>Error: {err.toString()}</div>}
+<solid:errored
+  fallback={(err, reset) => <div onClick={reset}>Error: {String(err())}</div>}
 >
   <MyComp />
-</solid:error-boundary>
+</solid:errored>
 ```
 
 ```jsx
-import { ErrorBoundary as _ErrorBoundary } from "solid-js";
-<_ErrorBoundary fallback={(err, reset) => <div onClick={reset}>Error: {err.toString()}</div>}>
+import { Errored as _Errored } from "solid-js";
+<_Errored fallback={(err, reset) => <div onClick={reset}>Error: {String(err())}</div>}>
   <MyComp />
-</_ErrorBoundary>;
+</_Errored>;
 ```
 
-## `<solid:suspense>`
+## `<solid:loading>`
 
-Alias for [`<Suspense>`](https://www.solidjs.com/docs/latest#%3Csuspense%3E)
+Alias for `<Loading>`, which replaces `<Suspense>`.
 
 ```jsx
-<solid:suspense fallback={<div>Loading...</div>}>
+<solid:loading fallback={<div>Loading...</div>}>
   <AsyncComponent />
-</solid:suspense>
+</solid:loading>
 ```
 
 ```jsx
-import { Suspense as _Suspense } from "solid-js";
-<_Suspense fallback={<div>Loading...</div>}>
+import { Loading as _Loading } from "solid-js";
+<_Loading fallback={<div>Loading...</div>}>
   <AsyncComponent />
-</_Suspense>;
+</_Loading>;
 ```
 
-## `<solid:suspense-list>`
+## `<solid:reveal>`
 
-Alias for [`<SuspenseList>`](https://www.solidjs.com/docs/latest#%3Csuspenselist%3E-(experimental))
+Alias for `<Reveal>`, which replaces `<SuspenseList>`.
 
 ```jsx
-<solid:suspense-list revealOrder="forwards" tail="collapsed">
-  <ProfileDetails user={resource.user} />
-  <solid:suspense fallback={<h2>Loading posts...</h2>}>
-    <ProfileTimeline posts={resource.posts} />
-  </solid:suspense>
-  <solid:suspense fallback={<h2>Loading fun facts...</h2>}>
-    <ProfileTrivia trivia={resource.trivia} />
-  </solid:suspense>
-</solid:suspense-list>
+<solid:reveal collapsed>
+  <ProfileDetails user={user()} />
+  <solid:loading fallback={<h2>Loading posts...</h2>}>
+    <ProfileTimeline posts={posts()} />
+  </solid:loading>
+  <solid:loading fallback={<h2>Loading fun facts...</h2>}>
+    <ProfileTrivia trivia={trivia()} />
+  </solid:loading>
+</solid:reveal>
 ```
 
 ```jsx
-import { Suspense as _Suspense } from "solid-js";
-import { SuspenseList as _SuspenseList } from "solid-js";
-<_SuspenseList revealOrder="forwards" tail="collapsed">
-  <ProfileDetails user={resource.user} />
-  <_Suspense fallback={<h2>Loading posts...</h2>}>
-    <ProfileTimeline posts={resource.posts} />
-  </_Suspense>
-  <_Suspense fallback={<h2>Loading fun facts...</h2>}>
-    <ProfileTrivia trivia={resource.trivia} />
-  </_Suspense>
-</_SuspenseList>;
+import { Loading as _Loading } from "solid-js";
+import { Reveal as _Reveal } from "solid-js";
+<_Reveal collapsed>
+  <ProfileDetails user={user()} />
+  <_Loading fallback={<h2>Loading posts...</h2>}>
+    <ProfileTimeline posts={posts()} />
+  </_Loading>
+  <_Loading fallback={<h2>Loading fun facts...</h2>}>
+    <ProfileTrivia trivia={trivia()} />
+  </_Loading>
+</_Reveal>;
 ```
 
 ## `<solid:dynamic>`
@@ -154,7 +156,7 @@ Alias for [`<Dynamic>`](https://www.solidjs.com/docs/latest#%3Cdynamic%3E)
 ```
 
 ```jsx
-import { Dynamic as _Dynamic } from "solid-js/web";
+import { Dynamic as _Dynamic } from "@solidjs/web";
 <_Dynamic component={state.component} someProp={state.something} />;
 ```
 
@@ -169,27 +171,10 @@ Alias for [`<Portal>`](https://www.solidjs.com/docs/latest#%3Cportal%3E)
 ```
 
 ```jsx
-import { Portal as _Portal } from "solid-js/web";
+import { Portal as _Portal } from "@solidjs/web";
 <_Portal mount={document.getElementById("modal")}>
   <div>My Content</div>
 </_Portal>;
-```
-
-## `<solid:assets>`
-
-Alias for `<Assets>`
-
-```jsx
-<solid:assets>
-  <link rel="stylesheet" href="/styles.css" />
-</solid:assets>
-```
-
-```jsx
-import { Assets as _Assets } from "solid-js/web";
-<_Assets>
-  <link rel="stylesheet" href="/styles.css" />
-</_Assets>;
 ```
 
 ## `<solid:hydration-script>`
@@ -214,7 +199,7 @@ const App = () => {
 ```
 
 ```jsx
-import { HydrationScript as _HydrationScript } from "solid-js/web";
+import { HydrationScript as _HydrationScript } from "@solidjs/web";
 
 const App = () => {
   return <html lang="en">
@@ -243,8 +228,34 @@ Alias for `<NoHydration>`
 ```
 
 ```jsx
-import { NoHydration as _NoHydration } from "solid-js/web";
+import { NoHydration as _NoHydration } from "@solidjs/web";
 <_NoHydration>
   <ImNotHydrated />
+</_NoHydration>;
+```
+
+## `<solid:hydration>`
+
+Alias for `<Hydration>`, which re-enters hydration inside a `<solid:no-hydration>` subtree.
+
+```jsx
+<solid:no-hydration>
+  <Shell>
+    <solid:hydration>
+      <Interactive />
+    </solid:hydration>
+  </Shell>
+</solid:no-hydration>
+```
+
+```jsx
+import { Hydration as _Hydration } from "@solidjs/web";
+import { NoHydration as _NoHydration } from "@solidjs/web";
+<_NoHydration>
+  <Shell>
+    <_Hydration>
+      <Interactive />
+    </_Hydration>
+  </Shell>
 </_NoHydration>;
 ```

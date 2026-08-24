@@ -11,6 +11,8 @@
   />
 </p>
 
+> This version targets **Solid 2.0** (`solid-js@2.0.0-rc.1` and `@solidjs/web@2.0.0-rc.1`). For Solid 1.x, use `solid-labels@0.17` or older.
+
 ## Install
 
 ```bash

@@ -1,9 +1,7 @@
-import * as babel from '@babel/core';
 import type { FilterPattern } from '@rollup/pluginutils';
 import { createFilter } from '@rollup/pluginutils';
-import path from 'node:path';
-import type { Options } from 'solid-labels/babel';
-import solidLabelsBabel from 'solid-labels/babel';
+import type { Options } from 'solid-labels/compiler';
+import { compile } from 'solid-labels/compiler';
 import type { TransformResult } from 'unplugin';
 import { createUnplugin } from 'unplugin';
 import type { Plugin } from 'vite';
@@ -52,8 +50,6 @@ function repushPlugin(
 const DEFAULT_INCLUDE = 'src/**/*.{jsx,tsx,ts,js,mjs,cjs}';
 const DEFAULT_EXCLUDE = 'node_modules/**/*.{jsx,tsx,ts,js,mjs,cjs}';
 
-const FILE_FILTER = /\.[mc]?tsx?$/i;
-
 const solidLabelsPlugin = createUnplugin(
   (options: SolidLabelsPluginOptions = {}) => {
     const filter = createFilter(
@@ -69,40 +65,15 @@ const solidLabelsPlugin = createUnplugin(
         return filter(id);
       },
       async transform(code, id): Promise<TransformResult> {
-        const plugins: NonNullable<
-          NonNullable<babel.TransformOptions['parserOpts']>['plugins']
-        > = ['jsx'];
-        if (FILE_FILTER.test(id)) {
-          plugins.push('typescript');
-        }
-        const result = await babel.transformAsync(code, {
-          plugins: [
-            [
-              solidLabelsBabel,
-              {
-                disabled: options.disabled,
-                dev: env === 'development' || options.dev,
-              },
-            ],
-          ],
-          parserOpts: {
-            plugins,
-          },
-          filename: path.basename(id),
-          ast: false,
-          sourceMaps: true,
-          configFile: false,
-          babelrc: false,
-          sourceFileName: id,
+        const result = await compile(id, code, {
+          disabled: options.disabled,
+          dev: env === 'development' || options.dev,
         });
 
-        if (result) {
-          return {
-            code: result.code || '',
-            map: result.map,
-          };
-        }
-        return undefined;
+        return {
+          code: result.code,
+          map: result.map,
+        };
       },
       vite: {
         enforce: 'pre',

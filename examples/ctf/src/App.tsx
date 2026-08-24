@@ -1,9 +1,10 @@
-import type { Accessor, JSX, Setter } from 'solid-js';
+import type { JSX } from '@solidjs/web';
+import type { Accessor, Setter } from 'solid-js';
 
 function useCounter(): [Accessor<number>, Setter<number>] {
   const count = $signal(0);
 
-  $effect(() => {
+  $trackedEffect(() => {
     console.log('Current count:', count);
   });
 
@@ -15,7 +16,7 @@ export default function App(): JSX.Element {
 
   const message = $memo(`Count: ${count}`);
 
-  $effect(() => {
+  $trackedEffect(() => {
     console.log(message);
   });
 

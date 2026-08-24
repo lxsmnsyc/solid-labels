@@ -1,6 +1,6 @@
 import * as babel from '@babel/core';
 import { describe, expect, it } from 'vitest';
-import plugin from '../babel';
+import plugin from '../compiler/plugin';
 
 async function compile(code: string, dev?: boolean): Promise<string> {
   const result = await babel.transformAsync(code, {
@@ -450,19 +450,19 @@ describe('ctf', () => {
       expect(await compile(code)).toMatchSnapshot();
     });
   });
-  describe('$effect, $renderEffect, $computed', () => {
-    it('should transform $effect, $renderEffect, $computed', async () => {
+  describe('$effect, $trackedEffect, $renderEffect', () => {
+    it('should transform $effect, $trackedEffect, $renderEffect', async () => {
       const code = `
       let x = $signal(0);
 
-      $effect(() => {
+      $effect(() => x, value => {
+        console.log('Count', value);
+      });
+      $trackedEffect(() => {
         console.log('Count', x);
       });
-      $computed(() => {
-        console.log('Count', x);
-      });
-      $renderEffect(() => {
-        console.log('Count', x);
+      $renderEffect(() => x, value => {
+        console.log('Count', value);
       });
       `;
       expect(await compile(code)).toMatchSnapshot();

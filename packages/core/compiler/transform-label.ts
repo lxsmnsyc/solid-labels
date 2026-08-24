@@ -1,5 +1,6 @@
 import type * as babel from '@babel/core';
 import * as t from '@babel/types';
+import { UNDEFINED } from './constants';
 import { accessorVariable } from './core/accessor-variable';
 import { assert } from './core/assert';
 import { destructureVariable } from './core/destructure-variable';
@@ -8,7 +9,6 @@ import { getImportIdentifier } from './core/get-import-identifier';
 import { memoVariable } from './core/memo-variable';
 import { signalVariable } from './core/signal-variable';
 import type { State } from './core/types';
-import { UNDEFINED } from './constants';
 
 const REACTIVE_LABEL = '$';
 
@@ -17,7 +17,6 @@ const SPECIAL_LABELS = new Set([REACTIVE_LABEL]);
 const VARIABLE_LABEL = {
   signal: true,
   memo: true,
-  deferred: true,
   destructure: true,
   children: true,
 };
@@ -25,16 +24,13 @@ const VARIABLE_LABEL = {
 type CallbackLabel = [name: string, source: string, named: boolean];
 
 const CALLBACK_LABEL: Record<string, CallbackLabel> = {
-  effect: ['createEffect', 'solid-js', true],
-  computed: ['createComputed', 'solid-js', true],
-  renderEffect: ['createRenderEffect', 'solid-js', true],
-  mount: ['onMount', 'solid-js', false],
+  effect: ['createTrackedEffect', 'solid-js', true],
+  mount: ['onSettled', 'solid-js', false],
+  settled: ['onSettled', 'solid-js', false],
   cleanup: ['onCleanup', 'solid-js', false],
-  error: ['onError', 'solid-js', false],
   root: ['createRoot', 'solid-js', false],
   untrack: ['untrack', 'solid-js', false],
-  batch: ['untrack', 'solid-js', false],
-  transition: ['startTransition', 'solid-js', false],
+  action: ['action', 'solid-js', false],
 };
 
 function transformReactiveLabel(
@@ -56,7 +52,7 @@ function transformReactiveLabel(
   }
   path.replaceWith(
     t.callExpression(
-      getImportIdentifier(state, path, 'createEffect', 'solid-js'),
+      getImportIdentifier(state, path, 'createTrackedEffect', 'solid-js'),
       [t.arrowFunctionExpression([], target)],
     ),
   );
@@ -154,7 +150,6 @@ function transformCallbackLabel(
   const args: t.Expression[] = [callback];
   if (named && nameOption) {
     args.push(
-      UNDEFINED,
       t.objectExpression([
         t.objectProperty(t.identifier('name'), t.stringLiteral(nameOption)),
       ]),

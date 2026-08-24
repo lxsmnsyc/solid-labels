@@ -1,12 +1,12 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`ctf > $component > should transform $component 1`] = `
-"import { splitProps as _splitProps } from "solid-js";
+"import { omit as _omit } from "solid-js";
 props_1 => {
   const prop_1 = () => props_1.a,
     prop_2 = () => prop_1().b,
     prop_3 = () => prop_1().c,
-    other_2 = _splitProps(prop_1(), ["b", "c"])[1],
+    other_2 = _omit(prop_1(), "b", "c"),
     prop_4 = () => props_1.b,
     def_1 = defaultD,
     prop_5 = () => {
@@ -18,19 +18,19 @@ props_1 => {
       const value_2 = prop_4().e;
       return value_2 === void 0 ? def_2 : value_2;
     },
-    other_3 = _splitProps(prop_4(), ["d", "e"])[1],
-    other_1 = _splitProps(props_1, ["a", "b"])[1];
+    other_3 = _omit(prop_4(), "d", "e"),
+    other_1 = _omit(props_1, "a", "b");
 };"
 `;
 
 exports[`ctf > $component > should transform $component bindings 1`] = `
-"import { splitProps as _splitProps } from "solid-js";
-import { createEffect as _createEffect } from "solid-js";
+"import { omit as _omit } from "solid-js";
+import { createTrackedEffect as _createTrackedEffect } from "solid-js";
 props_1 => {
   const prop_1 = () => props_1.a,
     prop_2 = () => prop_1().b,
     prop_3 = () => prop_1().c,
-    other_2 = _splitProps(prop_1(), ["b", "c"])[1],
+    other_2 = _omit(prop_1(), "b", "c"),
     prop_4 = () => props_1.b,
     def_1 = defaultD,
     prop_5 = () => {
@@ -42,28 +42,28 @@ props_1 => {
       const value_2 = prop_4().e;
       return value_2 === void 0 ? def_2 : value_2;
     },
-    other_3 = _splitProps(prop_4(), ["d", "e"])[1],
-    other_1 = _splitProps(props_1, ["a", "b"])[1];
-  _createEffect(() => {
+    other_3 = _omit(prop_4(), "d", "e"),
+    other_1 = _omit(props_1, "a", "b");
+  _createTrackedEffect(() => {
     console.log(prop_2(), prop_3());
   });
-  _createEffect(() => {
+  _createTrackedEffect(() => {
     console.log(prop_5(), prop_6());
   });
-  _createEffect(() => {
+  _createTrackedEffect(() => {
     console.log(other_1);
   });
 };"
 `;
 
 exports[`ctf > $component > should transform $component bindings 2`] = `
-"import { splitProps as _splitProps } from "solid-js";
-import { createEffect as _createEffect } from "solid-js";
+"import { omit as _omit } from "solid-js";
+import { createTrackedEffect as _createTrackedEffect } from "solid-js";
 props_1 => {
   const prop_1 = () => props_1.a,
     prop_2 = () => prop_1().b,
     prop_3 = () => prop_1().c,
-    other_2 = _splitProps(prop_1(), ["b", "c"])[1],
+    other_2 = _omit(prop_1(), "b", "c"),
     prop_4 = () => props_1.b,
     def_1 = defaultD,
     prop_5 = () => {
@@ -75,36 +75,36 @@ props_1 => {
       const value_2 = prop_4().e;
       return value_2 === void 0 ? def_2 : value_2;
     },
-    other_3 = _splitProps(prop_4(), ["d", "e"])[1],
-    other_1 = _splitProps(props_1, ["a", "b"])[1];
-  _createEffect(() => {
+    other_3 = _omit(prop_4(), "d", "e"),
+    other_1 = _omit(props_1, "a", "b");
+  _createTrackedEffect(() => {
     console.log({
       b: prop_2()
     }, {
       c: prop_3()
     });
   });
-  _createEffect(() => {
+  _createTrackedEffect(() => {
     console.log({
       d: prop_5()
     }, {
       e: prop_6()
     });
   });
-  _createEffect(() => {
+  _createTrackedEffect(() => {
     console.log(other_1);
   });
 };"
 `;
 
 exports[`ctf > $component > should transform $component bindings on $get 1`] = `
-"import { splitProps as _splitProps } from "solid-js";
-import { createEffect as _createEffect } from "solid-js";
+"import { omit as _omit } from "solid-js";
+import { createTrackedEffect as _createTrackedEffect } from "solid-js";
 props_1 => {
   const prop_1 = () => props_1.a,
     prop_2 = () => prop_1().b,
     prop_3 = () => prop_1().c,
-    other_2 = _splitProps(prop_1(), ["b", "c"])[1],
+    other_2 = _omit(prop_1(), "b", "c"),
     prop_4 = () => props_1.b,
     def_1 = defaultD,
     prop_5 = () => {
@@ -116,15 +116,15 @@ props_1 => {
       const value_2 = prop_4().e;
       return value_2 === void 0 ? def_2 : value_2;
     },
-    other_3 = _splitProps(prop_4(), ["d", "e"])[1],
-    other_1 = _splitProps(props_1, ["a", "b"])[1];
-  _createEffect(() => {
+    other_3 = _omit(prop_4(), "d", "e"),
+    other_1 = _omit(props_1, "a", "b");
+  _createTrackedEffect(() => {
     console.log(prop_2, prop_3);
   });
-  _createEffect(() => {
+  _createTrackedEffect(() => {
     console.log(prop_5, prop_6);
   });
-  _createEffect(() => {
+  _createTrackedEffect(() => {
     console.log(other_1);
   });
 };"
@@ -151,13 +151,13 @@ exports[`ctf > $component > should transform $component bindings on $getter 1`] 
       return this.__$get__e();
     }
   };
-import { splitProps as _splitProps } from "solid-js";
-import { createEffect as _createEffect } from "solid-js";
+import { omit as _omit } from "solid-js";
+import { createTrackedEffect as _createTrackedEffect } from "solid-js";
 props_1 => {
   const prop_1 = () => props_1.a,
     prop_2 = () => prop_1().b,
     prop_3 = () => prop_1().c,
-    other_2 = _splitProps(prop_1(), ["b", "c"])[1],
+    other_2 = _omit(prop_1(), "b", "c"),
     prop_4 = () => props_1.b,
     def_1 = defaultD,
     prop_5 = () => {
@@ -169,9 +169,9 @@ props_1 => {
       const value_2 = prop_4().e;
       return value_2 === void 0 ? def_2 : value_2;
     },
-    other_3 = _splitProps(prop_4(), ["d", "e"])[1],
-    other_1 = _splitProps(props_1, ["a", "b"])[1];
-  _createEffect(() => {
+    other_3 = _omit(prop_4(), "d", "e"),
+    other_1 = _omit(props_1, "a", "b");
+  _createTrackedEffect(() => {
     console.log({
       __proto__: proto_1,
       __$get__b: prop_2
@@ -180,7 +180,7 @@ props_1 => {
       __$get__c: prop_3
     });
   });
-  _createEffect(() => {
+  _createTrackedEffect(() => {
     console.log({
       __proto__: proto_3,
       __$get__d: prop_5
@@ -189,7 +189,7 @@ props_1 => {
       __$get__e: prop_6
     });
   });
-  _createEffect(() => {
+  _createTrackedEffect(() => {
     console.log(other_1);
   });
 };"
@@ -216,13 +216,13 @@ exports[`ctf > $component > should transform $component bindings on $property 1`
       return this.__$get__e();
     }
   };
-import { splitProps as _splitProps } from "solid-js";
-import { createEffect as _createEffect } from "solid-js";
+import { omit as _omit } from "solid-js";
+import { createTrackedEffect as _createTrackedEffect } from "solid-js";
 props_1 => {
   const prop_1 = () => props_1.a,
     prop_2 = () => prop_1().b,
     prop_3 = () => prop_1().c,
-    other_2 = _splitProps(prop_1(), ["b", "c"])[1],
+    other_2 = _omit(prop_1(), "b", "c"),
     prop_4 = () => props_1.b,
     def_1 = defaultD,
     prop_5 = () => {
@@ -234,9 +234,9 @@ props_1 => {
       const value_2 = prop_4().e;
       return value_2 === void 0 ? def_2 : value_2;
     },
-    other_3 = _splitProps(prop_4(), ["d", "e"])[1],
-    other_1 = _splitProps(props_1, ["a", "b"])[1];
-  _createEffect(() => {
+    other_3 = _omit(prop_4(), "d", "e"),
+    other_1 = _omit(props_1, "a", "b");
+  _createTrackedEffect(() => {
     console.log({
       __proto__: proto_1,
       __$get__b: prop_2
@@ -245,7 +245,7 @@ props_1 => {
       __$get__c: prop_3
     });
   });
-  _createEffect(() => {
+  _createTrackedEffect(() => {
     console.log({
       __proto__: proto_3,
       __$get__d: prop_5
@@ -254,20 +254,20 @@ props_1 => {
       __$get__e: prop_6
     });
   });
-  _createEffect(() => {
+  _createTrackedEffect(() => {
     console.log(other_1);
   });
 };"
 `;
 
 exports[`ctf > $component > should transform $component bindings on $refMemo 1`] = `
-"import { splitProps as _splitProps } from "solid-js";
-import { createEffect as _createEffect } from "solid-js";
+"import { omit as _omit } from "solid-js";
+import { createTrackedEffect as _createTrackedEffect } from "solid-js";
 props_1 => {
   const prop_1 = () => props_1.a,
     prop_2 = () => prop_1().b,
     prop_3 = () => prop_1().c,
-    other_2 = _splitProps(prop_1(), ["b", "c"])[1],
+    other_2 = _omit(prop_1(), "b", "c"),
     prop_4 = () => props_1.b,
     def_1 = defaultD,
     prop_5 = () => {
@@ -279,15 +279,15 @@ props_1 => {
       const value_2 = prop_4().e;
       return value_2 === void 0 ? def_2 : value_2;
     },
-    other_3 = _splitProps(prop_4(), ["d", "e"])[1],
-    other_1 = _splitProps(props_1, ["a", "b"])[1];
-  _createEffect(() => {
+    other_3 = _omit(prop_4(), "d", "e"),
+    other_1 = _omit(props_1, "a", "b");
+  _createTrackedEffect(() => {
     console.log(prop_2, prop_3);
   });
-  _createEffect(() => {
+  _createTrackedEffect(() => {
     console.log(prop_5, prop_6);
   });
-  _createEffect(() => {
+  _createTrackedEffect(() => {
     console.log(other_1);
   });
 };"
@@ -416,11 +416,11 @@ const value = {
 `;
 
 exports[`ctf > $destructure > should transform $destructure 1`] = `
-"import { splitProps as _splitProps } from "solid-js";
+"import { omit as _omit } from "solid-js";
 let prop_1 = () => x.a,
   prop_2 = () => prop_1().b,
   prop_3 = () => prop_1().c,
-  other_2 = _splitProps(prop_1(), ["b", "c"])[1],
+  other_2 = _omit(prop_1(), "b", "c"),
   prop_4 = () => x.b,
   def_1 = defaultD,
   prop_5 = () => {
@@ -432,17 +432,17 @@ let prop_1 = () => x.a,
     const value_2 = prop_4().e;
     return value_2 === void 0 ? def_2 : value_2;
   },
-  other_3 = _splitProps(prop_4(), ["d", "e"])[1],
-  other_1 = _splitProps(x, ["a", "b"])[1];"
+  other_3 = _omit(prop_4(), "d", "e"),
+  other_1 = _omit(x, "a", "b");"
 `;
 
 exports[`ctf > $destructure > should transform $destructure bindings 1`] = `
-"import { splitProps as _splitProps } from "solid-js";
-import { createEffect as _createEffect } from "solid-js";
+"import { omit as _omit } from "solid-js";
+import { createTrackedEffect as _createTrackedEffect } from "solid-js";
 let prop_1 = () => x.a,
   prop_2 = () => prop_1().b,
   prop_3 = () => prop_1().c,
-  other_2 = _splitProps(prop_1(), ["b", "c"])[1],
+  other_2 = _omit(prop_1(), "b", "c"),
   prop_4 = () => x.b,
   def_1 = defaultD,
   prop_5 = () => {
@@ -454,26 +454,26 @@ let prop_1 = () => x.a,
     const value_2 = prop_4().e;
     return value_2 === void 0 ? def_2 : value_2;
   },
-  other_3 = _splitProps(prop_4(), ["d", "e"])[1],
-  other_1 = _splitProps(x, ["a", "b"])[1];
-_createEffect(() => {
+  other_3 = _omit(prop_4(), "d", "e"),
+  other_1 = _omit(x, "a", "b");
+_createTrackedEffect(() => {
   console.log(prop_2(), prop_3());
 });
-_createEffect(() => {
+_createTrackedEffect(() => {
   console.log(prop_5(), prop_6());
 });
-_createEffect(() => {
+_createTrackedEffect(() => {
   console.log(other_1);
 });"
 `;
 
 exports[`ctf > $destructure > should transform $destructure bindings 2`] = `
-"import { splitProps as _splitProps } from "solid-js";
-import { createEffect as _createEffect } from "solid-js";
+"import { omit as _omit } from "solid-js";
+import { createTrackedEffect as _createTrackedEffect } from "solid-js";
 let prop_1 = () => x.a,
   prop_2 = () => prop_1().b,
   prop_3 = () => prop_1().c,
-  other_2 = _splitProps(prop_1(), ["b", "c"])[1],
+  other_2 = _omit(prop_1(), "b", "c"),
   prop_4 = () => x.b,
   def_1 = defaultD,
   prop_5 = () => {
@@ -485,34 +485,34 @@ let prop_1 = () => x.a,
     const value_2 = prop_4().e;
     return value_2 === void 0 ? def_2 : value_2;
   },
-  other_3 = _splitProps(prop_4(), ["d", "e"])[1],
-  other_1 = _splitProps(x, ["a", "b"])[1];
-_createEffect(() => {
+  other_3 = _omit(prop_4(), "d", "e"),
+  other_1 = _omit(x, "a", "b");
+_createTrackedEffect(() => {
   console.log({
     b: prop_2()
   }, {
     c: prop_3()
   });
 });
-_createEffect(() => {
+_createTrackedEffect(() => {
   console.log({
     d: prop_5()
   }, {
     e: prop_6()
   });
 });
-_createEffect(() => {
+_createTrackedEffect(() => {
   console.log(other_1);
 });"
 `;
 
 exports[`ctf > $destructure > should transform $destructure bindings on $get 1`] = `
-"import { splitProps as _splitProps } from "solid-js";
-import { createEffect as _createEffect } from "solid-js";
+"import { omit as _omit } from "solid-js";
+import { createTrackedEffect as _createTrackedEffect } from "solid-js";
 let prop_1 = () => x.a,
   prop_2 = () => prop_1().b,
   prop_3 = () => prop_1().c,
-  other_2 = _splitProps(prop_1(), ["b", "c"])[1],
+  other_2 = _omit(prop_1(), "b", "c"),
   prop_4 = () => x.b,
   def_1 = defaultD,
   prop_5 = () => {
@@ -524,15 +524,15 @@ let prop_1 = () => x.a,
     const value_2 = prop_4().e;
     return value_2 === void 0 ? def_2 : value_2;
   },
-  other_3 = _splitProps(prop_4(), ["d", "e"])[1],
-  other_1 = _splitProps(x, ["a", "b"])[1];
-_createEffect(() => {
+  other_3 = _omit(prop_4(), "d", "e"),
+  other_1 = _omit(x, "a", "b");
+_createTrackedEffect(() => {
   console.log(prop_2, prop_3);
 });
-_createEffect(() => {
+_createTrackedEffect(() => {
   console.log(prop_5, prop_6);
 });
-_createEffect(() => {
+_createTrackedEffect(() => {
   console.log(other_1);
 });"
 `;
@@ -558,12 +558,12 @@ exports[`ctf > $destructure > should transform $destructure bindings on $getter 
       return this.__$get__e();
     }
   };
-import { splitProps as _splitProps } from "solid-js";
-import { createEffect as _createEffect } from "solid-js";
+import { omit as _omit } from "solid-js";
+import { createTrackedEffect as _createTrackedEffect } from "solid-js";
 let prop_1 = () => x.a,
   prop_2 = () => prop_1().b,
   prop_3 = () => prop_1().c,
-  other_2 = _splitProps(prop_1(), ["b", "c"])[1],
+  other_2 = _omit(prop_1(), "b", "c"),
   prop_4 = () => x.b,
   def_1 = defaultD,
   prop_5 = () => {
@@ -575,9 +575,9 @@ let prop_1 = () => x.a,
     const value_2 = prop_4().e;
     return value_2 === void 0 ? def_2 : value_2;
   },
-  other_3 = _splitProps(prop_4(), ["d", "e"])[1],
-  other_1 = _splitProps(x, ["a", "b"])[1];
-_createEffect(() => {
+  other_3 = _omit(prop_4(), "d", "e"),
+  other_1 = _omit(x, "a", "b");
+_createTrackedEffect(() => {
   console.log({
     __proto__: proto_1,
     __$get__b: prop_2
@@ -586,7 +586,7 @@ _createEffect(() => {
     __$get__c: prop_3
   });
 });
-_createEffect(() => {
+_createTrackedEffect(() => {
   console.log({
     __proto__: proto_3,
     __$get__d: prop_5
@@ -595,7 +595,7 @@ _createEffect(() => {
     __$get__e: prop_6
   });
 });
-_createEffect(() => {
+_createTrackedEffect(() => {
   console.log(other_1);
 });"
 `;
@@ -621,12 +621,12 @@ exports[`ctf > $destructure > should transform $destructure bindings on $propert
       return this.__$get__e();
     }
   };
-import { splitProps as _splitProps } from "solid-js";
-import { createEffect as _createEffect } from "solid-js";
+import { omit as _omit } from "solid-js";
+import { createTrackedEffect as _createTrackedEffect } from "solid-js";
 let prop_1 = () => x.a,
   prop_2 = () => prop_1().b,
   prop_3 = () => prop_1().c,
-  other_2 = _splitProps(prop_1(), ["b", "c"])[1],
+  other_2 = _omit(prop_1(), "b", "c"),
   prop_4 = () => x.b,
   def_1 = defaultD,
   prop_5 = () => {
@@ -638,9 +638,9 @@ let prop_1 = () => x.a,
     const value_2 = prop_4().e;
     return value_2 === void 0 ? def_2 : value_2;
   },
-  other_3 = _splitProps(prop_4(), ["d", "e"])[1],
-  other_1 = _splitProps(x, ["a", "b"])[1];
-_createEffect(() => {
+  other_3 = _omit(prop_4(), "d", "e"),
+  other_1 = _omit(x, "a", "b");
+_createTrackedEffect(() => {
   console.log({
     __proto__: proto_1,
     __$get__b: prop_2
@@ -649,7 +649,7 @@ _createEffect(() => {
     __$get__c: prop_3
   });
 });
-_createEffect(() => {
+_createTrackedEffect(() => {
   console.log({
     __proto__: proto_3,
     __$get__d: prop_5
@@ -658,18 +658,18 @@ _createEffect(() => {
     __$get__e: prop_6
   });
 });
-_createEffect(() => {
+_createTrackedEffect(() => {
   console.log(other_1);
 });"
 `;
 
 exports[`ctf > $destructure > should transform $destructure bindings on $refMemo 1`] = `
-"import { splitProps as _splitProps } from "solid-js";
-import { createEffect as _createEffect } from "solid-js";
+"import { omit as _omit } from "solid-js";
+import { createTrackedEffect as _createTrackedEffect } from "solid-js";
 let prop_1 = () => x.a,
   prop_2 = () => prop_1().b,
   prop_3 = () => prop_1().c,
-  other_2 = _splitProps(prop_1(), ["b", "c"])[1],
+  other_2 = _omit(prop_1(), "b", "c"),
   prop_4 = () => x.b,
   def_1 = defaultD,
   prop_5 = () => {
@@ -681,33 +681,33 @@ let prop_1 = () => x.a,
     const value_2 = prop_4().e;
     return value_2 === void 0 ? def_2 : value_2;
   },
-  other_3 = _splitProps(prop_4(), ["d", "e"])[1],
-  other_1 = _splitProps(x, ["a", "b"])[1];
-_createEffect(() => {
+  other_3 = _omit(prop_4(), "d", "e"),
+  other_1 = _omit(x, "a", "b");
+_createTrackedEffect(() => {
   console.log(prop_2, prop_3);
 });
-_createEffect(() => {
+_createTrackedEffect(() => {
   console.log(prop_5, prop_6);
 });
-_createEffect(() => {
+_createTrackedEffect(() => {
   console.log(other_1);
 });"
 `;
 
-exports[`ctf > $effect, $renderEffect, $computed > should transform $effect, $renderEffect, $computed 1`] = `
+exports[`ctf > $effect, $trackedEffect, $renderEffect > should transform $effect, $trackedEffect, $renderEffect 1`] = `
 "import { createRenderEffect as _createRenderEffect } from "solid-js";
-import { createComputed as _createComputed } from "solid-js";
+import { createTrackedEffect as _createTrackedEffect } from "solid-js";
 import { createEffect as _createEffect } from "solid-js";
 import { createSignal as _createSignal } from "solid-js";
 let [x_1, setx_1] = _createSignal(0);
-_createEffect(() => {
+_createEffect(() => x_1(), value => {
+  console.log('Count', value);
+});
+_createTrackedEffect(() => {
   console.log('Count', x_1());
 });
-_createComputed(() => {
-  console.log('Count', x_1());
-});
-_createRenderEffect(() => {
-  console.log('Count', x_1());
+_createRenderEffect(() => x_1(), value => {
+  console.log('Count', value);
 });"
 `;
 
