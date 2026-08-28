@@ -43,6 +43,22 @@ function App() {
 `),
     ).toMatchSnapshot();
   });
+  it('tracks and writes the same signal in one callback', () => {
+    expect(
+      transform(`
+function App() {
+  let count = $signal(0);
+  $effect(() => {
+    if (count < 10) {
+      count++;
+    }
+    log(count);
+  });
+}
+`),
+    ).toMatchSnapshot();
+  });
+
   it('does not capture module-scope plain values', () => {
     expect(
       transform(`

@@ -222,6 +222,24 @@ function AppEffect_2([count]) {
 "
 `;
 
+exports[`$effect > tracks and writes the same signal in one callback 1`] = `
+"import { createSignal as _createSignal } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
+
+function App() {
+  let [count, setcount_1] = _createSignal(0);
+  _createEffect(() => [count(), setcount_1], AppEffect_1);
+}
+
+function AppEffect_1([count, setcount_1]) {
+    if (count < 10) {
+      setcount_1(current_1 => ++current_1);
+    }
+    log(count);
+  }
+"
+`;
+
 exports[`$effect > transforms $renderEffect the same way 1`] = `
 "import { createSignal as _createSignal } from "solid-js";
 import { createRenderEffect as _createRenderEffect } from "solid-js";
