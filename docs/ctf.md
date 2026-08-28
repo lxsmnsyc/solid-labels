@@ -177,16 +177,19 @@ import { createEffect as _createEffect } from 'solid-js';
 
 function App() {
   let [bar, setbar_1] = _createSignal(() => someValue());
-  _createEffect(() => [bar()], effectCallback_1);
+  _createEffect(() => [bar()], AppEffect_1);
 }
 
-function effectCallback_1([bar]) {
+function AppEffect_1([bar]) {
   foo(bar);
 }
 ```
 
 The callback is hoisted to module level as a named function whenever that is
-safe. It stays inline — with the same array parameter — when the callback:
+safe. Its name comes from the nearest enclosing named scope — `AppEffect_1`
+inside `function App()` (also picked up through `const App = ...`,
+`$component(...)`, object methods, and assignments), with `effectCallback_1`
+as the module-level fallback. It stays inline — with the same array parameter — when the callback:
 
 - writes to a plain (non-signal) outer variable, which must keep closure
   semantics, or

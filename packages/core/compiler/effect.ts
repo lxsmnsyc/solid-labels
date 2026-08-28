@@ -1,4 +1,11 @@
-import { type Node, containsAwaitOrYield, expandParens, isFunctionNode, unwrap } from './ast';
+import {
+  type Node,
+  containsAwaitOrYield,
+  expandParens,
+  isFunctionNode,
+  isWrapper,
+  unwrap,
+} from './ast';
 import type { CaptureInfo, Ctx } from './context';
 import type { Binding, Ref } from './scope';
 import { callArgs } from './variables';
@@ -111,6 +118,51 @@ function analyzeCaptures(ctx: Ctx, call: Node, target: Node, body: Node): Captur
  * capture array cannot carry: no writes to plain outer variables (`blocked`),
  * and no `this` / `super` / meta-property / `arguments` inside the span.
  */
+/**
+ * Derives the hoisted callback's base name from the nearest enclosing named
+ * scope — a named function, or a function expression bound to a variable,
+ * property, method, or assignment — so the module-level function reads as
+ * `AppEffect_1` instead of an anonymous `effectCallback_1`.
+ */
+function hoistBaseName(ref: Ref): string {
+  const parents = ref.parents;
+  for (let i = parents.length - 1; i >= 0; i--) {
+    const node = parents[i];
+    if (!isFunctionNode(node)) {
+      continue;
+    }
+    if (node.id?.type === 'Identifier') {
+      return `${node.id.name}Effect`;
+    }
+    // Wrappers and call expressions (`$component(fn)`, `memo(fn)`) are
+    // transparent: the name comes from whatever the call is bound to.
+    let j = i - 1;
+    while (j >= 0 && (isWrapper(parents[j]) || parents[j].type === 'CallExpression')) {
+      j--;
+    }
+    const parent = parents[j];
+    if (!parent) {
+      continue;
+    }
+    if (parent.type === 'VariableDeclarator' && parent.id.type === 'Identifier') {
+      return `${parent.id.name}Effect`;
+    }
+    if (
+      (parent.type === 'Property' ||
+        parent.type === 'MethodDefinition' ||
+        parent.type === 'PropertyDefinition') &&
+      !parent.computed &&
+      parent.key?.type === 'Identifier'
+    ) {
+      return `${parent.key.name}Effect`;
+    }
+    if (parent.type === 'AssignmentExpression' && parent.left.type === 'Identifier') {
+      return `${parent.left.name}Effect`;
+    }
+  }
+  return 'effectCallback';
+}
+
 function isHoistable(ctx: Ctx, target: Node, blocked: boolean): boolean {
   if (blocked) {
     return false;
@@ -184,7 +236,7 @@ export default function transformEffect(
     s.appendLeft(fnStart, `() => [${entries.join(', ')}], `);
 
     if (isHoistable(ctx, target, blocked)) {
-      const name = ctx.unique('effectCallback');
+      const name = ctx.unique(hoistBaseName(ref));
       s.overwrite(fnStart, body.start, name);
       if (fnEnd > body.end) {
         s.overwrite(body.end, fnEnd, '');
@@ -226,7 +278,7 @@ export default function transformEffect(
   const computeText = `() => [${entries.join(', ')}], `;
 
   if (isHoistable(ctx, expr, blocked)) {
-    const name = ctx.unique('effectCallback');
+    const name = ctx.unique(hoistBaseName(ref));
     s.appendLeft(exprStart, `${computeText}${name}`);
     // The expression is extracted after all reference rewrites are applied;
     // see `extractHoistedCallbacks`.

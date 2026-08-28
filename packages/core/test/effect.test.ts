@@ -152,6 +152,41 @@ $renderEffect(() => {
 `),
     ).toMatchSnapshot();
   });
+  it('names hoisted callbacks after the nearest named scope', () => {
+    expect(
+      transform(`
+const Counter = $component((props) => {
+  let count = $signal(0);
+  $effect(() => {
+    log(count);
+  });
+  return null;
+});
+
+const helpers = {
+  setup() {
+    let count = $signal(0);
+    $effect(() => {
+      log(count);
+    });
+  },
+};
+
+function App() {
+  function inner() {
+    let count = $signal(0);
+    $(log(count));
+  }
+}
+
+let top = $signal(0);
+$effect(() => {
+  log(top);
+});
+`),
+    ).toMatchSnapshot();
+  });
+
   it('rejects callbacks with parameters', () => {
     expect(() => transform('$effect((value) => console.log(value));')).toThrow(
       'callbacks take no parameters',

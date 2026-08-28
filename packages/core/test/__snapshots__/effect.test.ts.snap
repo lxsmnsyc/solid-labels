@@ -6,10 +6,10 @@ import { createEffect as _createEffect } from "solid-js";
 
 function App() {
   let [bar, setbar_1] = _createSignal(() => someValue());
-  _createEffect(() => [bar()], effectCallback_1);
+  _createEffect(() => [bar()], AppEffect_1);
 }
 
-function effectCallback_1([bar]) {
+function AppEffect_1([bar]) {
     foo(bar);
   }
 "
@@ -21,15 +21,15 @@ import { createEffect as _createEffect } from "solid-js";
 
 function App() {
   let [count, setcount_1] = _createSignal(0);
-  _createEffect(() => [setcount_1], effectCallback_1);
-  _createEffect(() => [count(), setcount_1], effectCallback_2);
+  _createEffect(() => [setcount_1], AppEffect_1);
+  _createEffect(() => [count(), setcount_1], AppEffect_2);
 }
 
-function effectCallback_1([setcount_1]) {
+function AppEffect_1([setcount_1]) {
     setcount_1(current_1 => current_1 += 1);
   }
 
-function effectCallback_2([count, setcount_1]) {
+function AppEffect_2([count, setcount_1]) {
     setcount_1(() => compute(count));
   }
 "
@@ -44,10 +44,10 @@ function App(props) {
   let [count, setcount_1] = _createSignal(0);
   const message = _createMemo(() => \`Count: \${count()}\`);
   const step = props.step;
-  _createEffect(() => [message(), count(), step], effectCallback_1);
+  _createEffect(() => [message(), count(), step], AppEffect_1);
 }
 
-function effectCallback_1([message, count, step]) {
+function AppEffect_1([message, count, step]) {
     render(message, count, step);
   }
 "
@@ -86,6 +86,51 @@ function effectCallback_2([b]) {
 "
 `;
 
+exports[`$effect > names hoisted callbacks after the nearest named scope 1`] = `
+"import { createSignal as _createSignal } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
+
+const Counter = (props) => {
+  let [count, setcount_1] = _createSignal(0);
+  _createEffect(() => [count()], CounterEffect_1);
+  return null;
+};
+
+const helpers = {
+  setup() {
+    let [count, setcount_2] = _createSignal(0);
+    _createEffect(() => [count()], setupEffect_1);
+  },
+};
+
+function App() {
+  function inner() {
+    let [count, setcount_3] = _createSignal(0);
+    _createEffect(() => [count()], innerEffect_1);
+  }
+}
+
+let [top, settop_1] = _createSignal(0);
+_createEffect(() => [top()], effectCallback_1);
+
+function CounterEffect_1([count]) {
+    log(count);
+  }
+
+function setupEffect_1([count]) {
+      log(count);
+    }
+
+function innerEffect_1([count]) {
+  log(count);
+}
+
+function effectCallback_1([top]) {
+  log(top);
+}
+"
+`;
+
 exports[`$effect > passes options through 1`] = `
 "import { createSignal as _createSignal } from "solid-js";
 import { createEffect as _createEffect } from "solid-js";
@@ -105,10 +150,10 @@ import { createEffect as _createEffect } from "solid-js";
 
 function App() {
   let [count, setcount_1] = _createSignal(0);
-  _createEffect(() => [count()], effectCallback_1);
+  _createEffect(() => [count()], AppEffect_1);
 }
 
-function effectCallback_1([count]) {
+function AppEffect_1([count]) {
     const id = setInterval(() => poll(), count);
     return () => clearInterval(id);
   }
@@ -163,15 +208,15 @@ import { createEffect as _createEffect } from "solid-js";
 
 function App() {
   let [count, setcount_1] = _createSignal(0);
-  _createEffect(() => [count()], effectCallback_1);
+  _createEffect(() => [count()], AppEffect_1);
 }
 
-function effectCallback_1([count]) {
+function AppEffect_1([count]) {
     outer(count);
-    _createEffect(() => [count], effectCallback_2);
+    _createEffect(() => [count], AppEffect_2);
   }
 
-function effectCallback_2([count]) {
+function AppEffect_2([count]) {
       inner(count);
     }
 "
