@@ -53,6 +53,25 @@ function AppEffect_1([message, count, step]) {
 "
 `;
 
+exports[`$effect > combines $untrack reads with writes to the same signal 1`] = `
+"import { createSignal as _createSignal } from "solid-js";
+import { untrack as _untrack } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
+
+function App() {
+  let [count, setcount_1] = _createSignal(0);
+  let [flag, setflag_1] = _createSignal(false);
+  _createEffect(() => [flag(), count, setcount_1], AppEffect_1);
+}
+
+function AppEffect_1([flag, count, setcount_1]) {
+    if (flag) {
+      setcount_1(() => _untrack(() => count()) + 1);
+    }
+  }
+"
+`;
+
 exports[`$effect > does not capture module-scope plain values 1`] = `
 "import { createSignal as _createSignal } from "solid-js";
 import { createEffect as _createEffect } from "solid-js";
@@ -63,6 +82,28 @@ _createEffect(() => [count()], effectCallback_1);
 
 function effectCallback_1([count]) {
   advance(count, CONFIG.step);
+}
+"
+`;
+
+exports[`$effect > excludes $untrack reads from the tracked source list 1`] = `
+"import { createSignal as _createSignal } from "solid-js";
+import { untrack as _untrack } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
+
+function App() {
+  let [count, setcount_1] = _createSignal(0);
+  let [other, setother_1] = _createSignal(0);
+  _createEffect(() => [other(), count], AppEffect_1);
+  _createEffect(() => [count], AppEffect_2);
+}
+
+function AppEffect_1([other, count]) {
+    log(other, _untrack(() => count()));
+  }
+
+function AppEffect_2([count]) {
+  log(_untrack(() => count()));
 }
 "
 `;
@@ -219,6 +260,24 @@ function AppEffect_1([count]) {
 function AppEffect_2([count]) {
       inner(count);
     }
+"
+`;
+
+exports[`$effect > tracks a signal read both inside and outside $untrack 1`] = `
+"import { createSignal as _createSignal } from "solid-js";
+import { untrack as _untrack } from "solid-js";
+import { createEffect as _createEffect } from "solid-js";
+
+function App() {
+  let [count, setcount_1] = _createSignal(0);
+  _createEffect(() => [count()], AppEffect_1);
+}
+
+function AppEffect_1([count]) {
+    if (count > 0) {
+      log(_untrack(() => count));
+    }
+  }
 "
 `;
 

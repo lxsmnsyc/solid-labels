@@ -245,9 +245,10 @@ export function rewriteReferences(ctx: Ctx): void {
       }
       if (ref.mode === 'read') {
         const region = ctx.regionFor(binding, ref.node.start);
-        if (region) {
+        if (region?.captured.get(binding)?.get === 'value') {
           // Captured by an effect callback: the identifier resolves to the
-          // destructured raw value parameter — leave it untouched.
+          // destructured raw value parameter — leave it untouched. (An
+          // 'accessor' capture keeps the normal `name()` rewrite below.)
           ctx.consumed.add(ref.node);
           continue;
         }

@@ -221,12 +221,14 @@ function App() {
 Signal writes inside the callback work — the compiler captures the setter:
 
 ```js
+let count = $signal(0);
 $effect(() => {
   count += 1;
 });
 ```
 
 ```js
+let [count, setcount_1] = _createSignal(0);
 _createEffect(() => [setcount_1], effectCallback_1);
 
 function effectCallback_1([setcount_1]) {
@@ -240,6 +242,11 @@ Rules:
   compiler.
 - The callback must be synchronous (no `async`, no generators).
 - Module-scope plain values are not captured; they resolve directly.
+- Reads wrapped in `$untrack(...)` are **excluded from the tracked source
+  list**: the signal's accessor is passed through the capture array (a stable
+  identity that never triggers the effect) and the body performs a real
+  untracked read — `untrack(() => count())` — at effect time. A signal read
+  both inside and outside `$untrack` in the same callback is tracked.
 - A function returned from the callback is the **cleanup**: it runs before
   the next application and on dispose, exactly as in `createEffect`. (The
   `$(expr);` statement form discards the expression value — use the callback
@@ -265,14 +272,21 @@ function $untrack<T>(value: T): T;
 Compiles to `untrack`, wrapping the value in an arrow function.
 
 ```js
+let count = $signal(0);
 const value = $untrack(count);
 ```
 
 ```js
+import { createSignal as _createSignal } from 'solid-js';
 import { untrack as _untrack } from 'solid-js';
 
+let [count, setcount_1] = _createSignal(0);
 const value = _untrack(() => count());
 ```
+
+Inside an [`$effect`](#effect-and-rendereffect) callback, `$untrack` also
+changes what the effect tracks: reads wrapped in it are excluded from the
+generated source list.
 
 > Solid 2.0 batches writes by default, so there is no `$batch`. Use `$flush`
 > to apply queued writes synchronously.
@@ -648,7 +662,7 @@ solidLabels({
 ```ts
 import { compile } from 'solid-labels/compiler';
 
-const { code, map } = await compile('App.tsx', source, { dev: true });
+const { code, map } = compile('App.tsx', source, { dev: true });
 ```
 
 The compiler parses with [oxc-parser](https://www.npmjs.com/package/oxc-parser)

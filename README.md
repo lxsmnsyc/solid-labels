@@ -56,7 +56,7 @@ pnpm add solid-labels
 ```ts
 import { compile } from 'solid-labels/compiler';
 
-const { code, map } = await compile('App.tsx', source, { dev: true });
+const { code, map } = compile('App.tsx', source, { dev: true });
 ```
 
 ## Integrations

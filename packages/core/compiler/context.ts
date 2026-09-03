@@ -14,7 +14,13 @@ export interface ReactiveInfo {
 }
 
 export interface CaptureInfo {
-  get: boolean;
+  /**
+   * How reads are captured: `'value'` — read in the compute phase (tracked),
+   * the parameter is the raw value; `'accessor'` — every read sits inside
+   * `$untrack(...)`, the accessor itself is passed through the capture array
+   * (stable identity, never triggers) and body reads stay `name()` calls.
+   */
+  get: false | 'value' | 'accessor';
   set: boolean;
 }
 
@@ -53,6 +59,8 @@ export class Ctx {
   consumed = new Set<Node>();
   reactive = new Map<Binding, ReactiveInfo>();
   regions: EffectRegion[] = [];
+  /** Spans of `$untrack(...)` calls; reads inside them are not tracked by effects. */
+  untrackSpans: [number, number][] = [];
   pendingHoists: PendingHoist[] = [];
   unresolvedByNode = new Map<Node, Ref>();
 

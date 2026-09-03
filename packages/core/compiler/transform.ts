@@ -170,6 +170,17 @@ export default function transformProgram(ctx: Ctx): void {
     }
   }
 
+  // Collected before effect analysis: reads inside $untrack(...) are
+  // excluded from the tracked source list.
+  for (const ref of unresolved) {
+    if (ref.node.name === '$untrack' && !ctx.disabled.$untrack) {
+      const call = isCallee(ref);
+      if (call) {
+        ctx.untrackSpans.push([call.start, call.end]);
+      }
+    }
+  }
+
   for (const ref of effects) {
     if (ctx.consumed.has(ref.node)) {
       continue;

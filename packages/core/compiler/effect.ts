@@ -39,7 +39,8 @@ function analyzeCaptures(ctx: Ctx, call: Node, target: Node, body: Node): Captur
     if (binding.node.start >= target.start && binding.node.end <= target.end) {
       continue;
     }
-    let reads = false;
+    let tracked = false;
+    let untracked = false;
     let writes = false;
     let firstRef = -1;
     for (const bindingRef of binding.refs) {
@@ -51,7 +52,11 @@ function analyzeCaptures(ctx: Ctx, call: Node, target: Node, body: Node): Captur
         firstRef = pos;
       }
       if (bindingRef.mode === 'read') {
-        reads = true;
+        if (insideUntrack(ctx, bindingRef.node)) {
+          untracked = true;
+        } else {
+          tracked = true;
+        }
       } else {
         // Compound updates read through the setter's functional form.
         writes = true;
@@ -65,7 +70,23 @@ function analyzeCaptures(ctx: Ctx, call: Node, target: Node, body: Node): Captur
       if (writes && !reactive.set) {
         ctx.error(binding.node, `Cannot assign to derived variable "${binding.name}"`);
       }
-      const info: CaptureInfo = { get: reads, set: writes };
+      // A read outside $untrack tracks the source; untracked-only reads pass
+      // the accessor through instead so the source list omits the signal.
+      let get: CaptureInfo['get'] = false;
+      if (tracked) {
+        get = 'value';
+      } else if (untracked) {
+        get = 'accessor';
+      }
+      if (get === 'accessor') {
+        // Inside an enclosing effect region that captured the raw value the
+        // accessor no longer exists; the value is already untracked there.
+        const outer = ctx.regionFor(binding, call.start);
+        if (outer?.captured.get(binding)?.get === 'value') {
+          get = 'value';
+        }
+      }
+      const info: CaptureInfo = { get, set: writes };
       captured.set(binding, info);
       captures.push({ binding, info, firstRef });
       continue;
@@ -92,12 +113,16 @@ function analyzeCaptures(ctx: Ctx, call: Node, target: Node, body: Node): Captur
     const { binding, info } = capture;
     const reactive = ctx.reactive.get(binding);
     if (reactive && reactive.kind !== 'raw') {
-      if (info.get) {
+      if (info.get === 'value') {
         // Inside an enclosing effect region the identifier is already a raw
         // captured value; read it plainly there.
         const outer = ctx.regionFor(binding, call.start);
-        const outerRaw = outer?.captured.get(binding)?.get === true;
+        const outerRaw = outer?.captured.get(binding)?.get === 'value';
         entries.push(outerRaw ? binding.name : `${reactive.get}()`);
+        params.push(binding.name);
+      } else if (info.get === 'accessor') {
+        // The accessor itself rides along — stable identity, never triggers.
+        entries.push(binding.name);
         params.push(binding.name);
       }
       if (info.set && reactive.set) {
@@ -118,6 +143,11 @@ function analyzeCaptures(ctx: Ctx, call: Node, target: Node, body: Node): Captur
  * capture array cannot carry: no writes to plain outer variables (`blocked`),
  * and no `this` / `super` / meta-property / `arguments` inside the span.
  */
+/** True when the node sits inside a `$untrack(...)` call span. */
+function insideUntrack(ctx: Ctx, node: Node): boolean {
+  return ctx.untrackSpans.some(([start, end]) => node.start >= start && node.end <= end);
+}
+
 /**
  * Derives the hoisted callback's base name from the nearest enclosing named
  * scope — a named function, or a function expression bound to a variable,

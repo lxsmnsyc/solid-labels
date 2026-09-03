@@ -101,6 +101,11 @@ tracked form — where the callback itself is the tracking scope — is wanted.
 - Output preserves your formatting (span edits, not re-printing), and source
   maps come from `magic-string` in high-resolution mode.
 
+## Compiler API
+
+`compile()` from `solid-labels/compiler` is now synchronous and returns
+`CompileOutput` directly — drop the `await`.
+
 ## Plugin options
 
 `disabled.label` and `disabled.pragma` are gone; only `disabled.ctf` remains:

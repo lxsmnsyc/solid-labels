@@ -59,6 +59,50 @@ function App() {
     ).toMatchSnapshot();
   });
 
+  it('excludes $untrack reads from the tracked source list', () => {
+    expect(
+      transform(`
+function App() {
+  let count = $signal(0);
+  let other = $signal(0);
+  $effect(() => {
+    log(other, $untrack(count));
+  });
+  $(log($untrack(count)));
+}
+`),
+    ).toMatchSnapshot();
+  });
+  it('tracks a signal read both inside and outside $untrack', () => {
+    expect(
+      transform(`
+function App() {
+  let count = $signal(0);
+  $effect(() => {
+    if (count > 0) {
+      log($untrack(count));
+    }
+  });
+}
+`),
+    ).toMatchSnapshot();
+  });
+  it('combines $untrack reads with writes to the same signal', () => {
+    expect(
+      transform(`
+function App() {
+  let count = $signal(0);
+  let flag = $signal(false);
+  $effect(() => {
+    if (flag) {
+      count = $untrack(count) + 1;
+    }
+  });
+}
+`),
+    ).toMatchSnapshot();
+  });
+
   it('does not capture module-scope plain values', () => {
     expect(
       transform(`
