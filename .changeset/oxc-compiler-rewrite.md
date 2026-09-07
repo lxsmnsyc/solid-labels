@@ -1,8 +1,6 @@
 ---
 'solid-labels': major
 'unplugin-solid-labels': major
-'vite-plugin-solid-labels': major
-'rollup-plugin-solid-labels': major
 ---
 
 Rewrite the compiler on Oxc and retarget the API surface at Solid 2.0.
@@ -31,6 +29,10 @@ Breaking changes:
   destructured array; the callback is hoisted to module level when safe.
 - `$signal` adopts the memoized signal convention: non-static initializers
   compile to the writable-derived form `createSignal(() => expr)`.
+- The `vite-plugin-solid-labels` and `rollup-plugin-solid-labels` packages
+  are discontinued. Use `unplugin-solid-labels` instead. It serves Vite and
+  Rollup through `solidLabels.vite(options)` and `solidLabels.rollup(options)`
+  with the same options.
 
 New CTFs for the Solid 2.0 surface: `$trackedEffect`, `$flush`, `$action`,
 `$isPending`, `$latest`, `$refresh`, `$affects`, `$resolve`, `$repeat`,

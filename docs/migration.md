@@ -106,6 +106,21 @@ tracked form — where the callback itself is the tracking scope — is wanted.
 `compile()` from `solid-labels/compiler` is now synchronous and returns
 `CompileOutput` directly — drop the `await`.
 
+## Plugin packages
+
+`vite-plugin-solid-labels` and `rollup-plugin-solid-labels` are discontinued.
+Use `unplugin-solid-labels` for every bundler. The options are the same.
+
+```js
+import solidLabels from 'unplugin-solid-labels';
+
+// Vite
+solidLabels.vite({ ... });
+
+// Rollup
+solidLabels.rollup({ ... });
+```
+
 ## Plugin options
 
 `disabled.label` and `disabled.pragma` are gone; only `disabled.ctf` remains:

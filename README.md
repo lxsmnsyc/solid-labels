@@ -61,9 +61,10 @@ const { code, map } = compile('App.tsx', source, { dev: true });
 
 ## Integrations
 
-- [Vite](https://github.com/lxsmnsyc/solid-labels/tree/main/packages/vite)
-- [Rollup](https://github.com/lxsmnsyc/solid-labels/tree/main/packages/rollup)
 - [Unplugin](https://github.com/lxsmnsyc/solid-labels/tree/main/packages/unplugin)
+  serves Vite, Rollup, webpack, and esbuild through
+  [unplugin](https://github.com/unjs/unplugin) adapters
+  (`solidLabels.vite(options)`, `solidLabels.rollup(options)`, and so on).
 
 ### Disabling features
 

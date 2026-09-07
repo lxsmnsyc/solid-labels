@@ -2,19 +2,23 @@
   "name": "unplugin-solid-labels",
   "version": "0.17.0",
   "private": false,
-  "description": "Rollup plugin for solid-styled",
+  "description": "Unplugin for solid-labels",
   "keywords": [
-    "pridepack"
+    "solid-js",
+    "solid-labels",
+    "unplugin",
+    "vite",
+    "rollup"
   ],
-  "homepage": "https://github.com/lxsmnsyc/solid-styled/packages/rollup",
+  "homepage": "https://github.com/lxsmnsyc/solid-labels/tree/main/packages/unplugin",
   "bugs": {
-    "url": "https://github.com/lxsmnsyc/solid-styled/issues"
+    "url": "https://github.com/lxsmnsyc/solid-labels/issues"
   },
   "license": "MIT",
   "author": "Alexis Munsayac",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lxsmnsyc/solid-styled.git"
+    "url": "https://github.com/lxsmnsyc/solid-labels.git"
   },
   "files": [
     "dist",
@@ -53,12 +57,10 @@
     "dev": "pridepack dev"
   },
   "dependencies": {
-    "@babel/core": "^7.26.9",
     "@rollup/pluginutils": "^5.1.4",
     "unplugin": "^2.2.0"
   },
   "devDependencies": {
-    "@types/babel__core": "^7.20.5",
     "@types/node": "^22.13.4",
     "pridepack": "2.6.1",
     "rollup": "^4.34.8",
