@@ -1,4 +1,11 @@
-import { type Node, isFunctionNode, isStaticExpression, isWrapper, unwrap } from './ast';
+import {
+  type Node,
+  isFunctionNode,
+  isStaticExpression,
+  isWrapper,
+  prependArrow,
+  unwrap,
+} from './ast';
 import type { Ctx } from './context';
 import type { Ref } from './scope';
 
@@ -54,7 +61,7 @@ export function callArgs(ctx: Ctx, call: Node, max: number): Node[] {
 /** Drops the TS type annotation from a declarator id (the initializer changes shape). */
 function removeTypeAnnotation(ctx: Ctx, id: Node): void {
   if (id.typeAnnotation) {
-    ctx.s.remove(id.typeAnnotation.start, id.typeAnnotation.end);
+    ctx.s.overwrite(id.typeAnnotation.start, id.typeAnnotation.end, '');
   }
 }
 
@@ -135,7 +142,7 @@ export function transformSignal(ctx: Ctx, ref: Ref, site: DeclSite): void {
       !isFunctionNode(unwrap(init)) &&
       (!isStaticExpression(init) || containsReactiveRead(ctx, init));
     if (wrap) {
-      ctx.s.prependRight(init.start, '() => ');
+      prependArrow(ctx.s, ctx.code, init);
     }
   }
   ctx.s.overwrite(ref.node.start, ref.node.end, ctx.importIdent('createSignal', 'solid-js'));
@@ -167,7 +174,7 @@ export function transformMemo(ctx: Ctx, ref: Ref, site: DeclSite): void {
   removeTypeAnnotation(ctx, id);
   ctx.s.overwrite(ref.node.start, ref.node.end, ctx.importIdent('createMemo', 'solid-js'));
   if (!isFunctionNode(unwrap(args[0]))) {
-    ctx.s.prependRight(args[0].start, '() => ');
+    prependArrow(ctx.s, ctx.code, args[0]);
   }
   devNameOptions(ctx, call, args, 1, name);
   ctx.consumed.add(ref.node);
@@ -257,7 +264,7 @@ export function transformAccessorCtf(
   removeTypeAnnotation(ctx, id);
   ctx.s.overwrite(ref.node.start, ref.node.end, ctx.importIdent(importName, source));
   if (!isFunctionNode(unwrap(args[0]))) {
-    ctx.s.prependRight(args[0].start, '() => ');
+    prependArrow(ctx.s, ctx.code, args[0]);
   }
   ctx.consumed.add(ref.node);
   ctx.register(binding, { kind: 'accessor', get: id.name as string });
@@ -278,7 +285,7 @@ export function transformArrowCtf(
   }
   ctx.s.overwrite(ref.node.start, ref.node.end, ctx.importIdent(importName, source));
   if (!isFunctionNode(unwrap(args[0]))) {
-    ctx.s.prependRight(args[0].start, '() => ');
+    prependArrow(ctx.s, ctx.code, args[0]);
   }
   ctx.consumed.add(ref.node);
 }

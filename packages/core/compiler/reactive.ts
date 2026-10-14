@@ -207,8 +207,9 @@ function rewriteWrite(ctx: Ctx, binding: Binding, info: ReactiveInfo, ref: Ref):
       `Assignments with await/yield to "${binding.name}" are only supported as statements or arrow bodies`,
     );
   }
-  s.overwrite(ref.node.start, right.start, `${set}(() => `);
-  s.appendLeft(right.end, ')');
+  const object = code[right.start] === '{';
+  s.overwrite(ref.node.start, right.start, `${set}(() => ${object ? '(' : ''}`);
+  s.appendLeft(right.end, object ? '))' : ')');
 }
 
 /**

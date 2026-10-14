@@ -112,4 +112,14 @@ let d = $signal(initial);
       }),
     ).toMatchSnapshot();
   });
+
+  it('wraps object literal values in parentheses', () => {
+    expect(transform('let user = $signal({ name: x() });')).toContain(
+      '_createSignal(() => ({ name: x() }))',
+    );
+    expect(transform('let user = $signal(null);\nuser = { name: "x" };')).toContain(
+      'setuser_1(() => ({ name: "x" }))',
+    );
+    expect(transform('const a = $memo({ b: c() });')).toContain('_createMemo(() => ({ b: c() }))');
+  });
 });

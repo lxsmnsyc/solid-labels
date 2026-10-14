@@ -225,8 +225,10 @@ function extractHoistedCallbacks(ctx: Ctx): void {
   }
   const byDepth = [...ctx.pendingHoists].sort((a, b) => b.body.start - a.body.start);
   for (const pending of byDepth) {
-    pending.text = ctx.s.snip(pending.body.start, pending.body.end).toString();
-    ctx.s.remove(pending.body.start, pending.body.end);
+    // slice/overwrite treat edge insertions the same across magic-string
+    // versions; snip/remove changed in 1.4.
+    pending.text = ctx.s.slice(pending.body.start, pending.body.end);
+    ctx.s.overwrite(pending.body.start, pending.body.end, '');
   }
   let trailer = '';
   for (const pending of ctx.pendingHoists) {
