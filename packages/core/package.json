@@ -5,9 +5,9 @@
   "description": "Simple, reactive labels for SolidJS",
   "keywords": [
     "babel",
-    "solid-js",
     "labels",
-    "reactivity"
+    "reactivity",
+    "solid-js"
   ],
   "homepage": "https://github.com/lxsmnsyc/solid-labels/tree/main/packages/core",
   "bugs": {
@@ -16,14 +16,28 @@
   "license": "MIT",
   "author": "Alexis Munsayac",
   "repository": {
-    "url": "https://github.com/lxsmnsyc/solid-labels.git",
-    "type": "git"
+    "type": "git",
+    "url": "https://github.com/lxsmnsyc/solid-labels.git"
   },
   "files": [
     "dist",
     "src"
   ],
   "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./babel": {
+      "import": "./dist/babel.js",
+      "require": "./dist/babel.cjs"
+    },
+    "./package.json": "./package.json"
+  },
   "publishConfig": {
     "access": "public"
   },
@@ -53,19 +67,5 @@
   },
   "engines": {
     "node": ">=18"
-  },
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.cts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    },
-    "./babel": {
-      "import": "./dist/babel.js",
-      "require": "./dist/babel.cjs"
-    },
-    "./package.json": "./package.json"
   }
 }

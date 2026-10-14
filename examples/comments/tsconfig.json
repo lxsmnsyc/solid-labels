@@ -15,10 +15,7 @@
     "noImplicitReturns": true,
     "jsx": "preserve",
     "jsxImportSource": "solid-js",
-    "types": [
-      "vite/client",
-      "solid-labels"
-    ]
+    "types": ["vite/client", "solid-labels"]
   },
   "include": ["./src"]
 }

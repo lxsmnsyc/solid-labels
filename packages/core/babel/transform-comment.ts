@@ -32,10 +32,7 @@ const CALLBACK_LABEL: Record<string, CallbackLabel> = {
   '@transition': ['startTransition', 'solid-js', false],
 };
 
-function getVariableLabelPreference(
-  state: State,
-  comments: t.Comment[],
-): string | undefined {
+function getVariableLabelPreference(state: State, comments: t.Comment[]): string | undefined {
   let preference: string | undefined;
   for (let i = 0, len = comments.length; i < len; i++) {
     const comment = comments[i];
@@ -85,53 +82,32 @@ const COMMENT_TRAVERSE: babel.Visitor<State> = {
             case '@signal':
               if (t.isIdentifier(declarator.id)) {
                 declarators.push(
-                  signalVariable(
-                    state,
-                    path,
-                    declarator.id,
-                    declarator.init ?? UNDEFINED,
-                  ),
+                  signalVariable(state, path, declarator.id, declarator.init ?? UNDEFINED),
                 );
               }
               break;
             case '@memo':
               if (t.isIdentifier(declarator.id)) {
                 declarators.push(
-                  memoVariable(
-                    state,
-                    path,
-                    declarator.id,
-                    declarator.init ?? UNDEFINED,
-                  ),
+                  memoVariable(state, path, declarator.id, declarator.init ?? UNDEFINED),
                 );
               }
               break;
             case '@deferred':
               if (t.isIdentifier(declarator.id)) {
                 declarators.push(
-                  deferredVariable(
-                    state,
-                    path,
-                    declarator.id,
-                    declarator.init ?? UNDEFINED,
-                  ),
+                  deferredVariable(state, path, declarator.id, declarator.init ?? UNDEFINED),
                 );
               }
               break;
             case '@destructure':
               if (
-                (t.isObjectPattern(declarator.id) ||
-                  t.isArrayPattern(declarator.id)) &&
+                (t.isObjectPattern(declarator.id) || t.isArrayPattern(declarator.id)) &&
                 declarator.init
               ) {
                 declarators = [
                   ...declarators,
-                  ...destructureVariable(
-                    state,
-                    path,
-                    declarator.init,
-                    declarator.id,
-                  ),
+                  ...destructureVariable(state, path, declarator.init, declarator.id),
                 ];
               }
               break;
@@ -142,12 +118,7 @@ const COMMENT_TRAVERSE: babel.Visitor<State> = {
                     path,
                     declarator.id,
                     getImportIdentifier(state, path, 'children', 'solid-js'),
-                    [
-                      t.arrowFunctionExpression(
-                        [],
-                        declarator.init ?? UNDEFINED,
-                      ),
-                    ],
+                    [t.arrowFunctionExpression([], declarator.init ?? UNDEFINED)],
                   ),
                 );
               }
@@ -167,10 +138,7 @@ const COMMENT_TRAVERSE: babel.Visitor<State> = {
     }
     const comments = path.node.leadingComments;
     if (comments) {
-      const [preference, nameOption] = getCallbackLabelPreference(
-        state,
-        comments,
-      );
+      const [preference, nameOption] = getCallbackLabelPreference(state, comments);
       if (preference) {
         const [name, source, named] = CALLBACK_LABEL[preference];
         const callback = t.arrowFunctionExpression([], path.node);
@@ -179,29 +147,18 @@ const COMMENT_TRAVERSE: babel.Visitor<State> = {
           args.push(
             t.unaryExpression('void', t.numericLiteral(0)),
             t.objectExpression([
-              t.objectProperty(
-                t.identifier('name'),
-                t.stringLiteral(nameOption),
-              ),
+              t.objectProperty(t.identifier('name'), t.stringLiteral(nameOption)),
             ]),
           );
         }
-        path.replaceWith(
-          t.callExpression(
-            getImportIdentifier(state, path, name, source),
-            args,
-          ),
-        );
+        path.replaceWith(t.callExpression(getImportIdentifier(state, path, name, source), args));
       }
     }
   },
   ExpressionStatement(path, state) {
     const comments = path.node.leadingComments;
     if (comments) {
-      const [preference, nameOption] = getCallbackLabelPreference(
-        state,
-        comments,
-      );
+      const [preference, nameOption] = getCallbackLabelPreference(state, comments);
       if (preference) {
         const [name, source, named] = CALLBACK_LABEL[preference];
         const callback = t.arrowFunctionExpression([], path.node.expression);
@@ -210,19 +167,11 @@ const COMMENT_TRAVERSE: babel.Visitor<State> = {
           args.push(
             UNDEFINED,
             t.objectExpression([
-              t.objectProperty(
-                t.identifier('name'),
-                t.stringLiteral(nameOption),
-              ),
+              t.objectProperty(t.identifier('name'), t.stringLiteral(nameOption)),
             ]),
           );
         }
-        path.replaceWith(
-          t.callExpression(
-            getImportIdentifier(state, path, name, source),
-            args,
-          ),
-        );
+        path.replaceWith(t.callExpression(getImportIdentifier(state, path, name, source), args));
       }
     }
   },

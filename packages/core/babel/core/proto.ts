@@ -13,9 +13,7 @@ const ROOT_SYMBOL = '__$';
 
 const PROTO_STATES = new WeakMap<t.Node, ProtoObjectState>();
 
-function getProtoState(
-  path: babel.NodePath<t.ObjectExpression>,
-): ProtoObjectState {
+function getProtoState(path: babel.NodePath<t.ObjectExpression>): ProtoObjectState {
   const current = PROTO_STATES.get(path.node);
   if (current) {
     return current;
@@ -27,9 +25,7 @@ function getProtoState(
     init: proto,
     kind: 'const',
   });
-  path.node.properties.push(
-    t.objectProperty(t.identifier('__proto__'), protoID),
-  );
+  path.node.properties.push(t.objectProperty(t.identifier('__proto__'), protoID));
   const state: ProtoObjectState = {
     proto,
     root: path.node,
@@ -64,18 +60,13 @@ function getSetterReplacement(
     key,
     [param],
     t.blockStatement([
-      t.expressionStatement(
-        t.callExpression(source, [t.arrowFunctionExpression([], param)]),
-      ),
+      t.expressionStatement(t.callExpression(source, [t.arrowFunctionExpression([], param)])),
     ]),
     computed,
   );
 }
 
-function getNamespacedKey(
-  name: string,
-  identifier: t.Expression,
-): t.Expression | undefined {
+function getNamespacedKey(name: string, identifier: t.Expression): t.Expression | undefined {
   switch (identifier.type) {
     case 'StringLiteral':
     case 'NumericLiteral':
@@ -108,14 +99,8 @@ function registerProtoGetter(
   const current = getProtoState(path);
   const key = getNamespacedKey(ROOT_GET, identifier);
   if (key) {
-    const targetProperty = t.memberExpression(
-      t.identifier('this'),
-      key,
-      !t.isIdentifier(key),
-    );
-    current.proto.properties.push(
-      getGetterReplacement(identifier, targetProperty, false),
-    );
+    const targetProperty = t.memberExpression(t.identifier('this'), key, !t.isIdentifier(key));
+    current.proto.properties.push(getGetterReplacement(identifier, targetProperty, false));
   }
 }
 
@@ -124,9 +109,7 @@ function addUnoptimizedGetter(
   key: t.Expression,
   source: t.Identifier,
 ): void {
-  property.replaceWith(
-    getGetterReplacement(key, source, property.node.computed),
-  );
+  property.replaceWith(getGetterReplacement(key, source, property.node.computed));
 }
 
 export function addProtoGetter(
@@ -163,14 +146,8 @@ function registerProtoSetter(
   const current = getProtoState(path);
   const key = getNamespacedKey(ROOT_SET, identifier);
   if (key) {
-    const targetProperty = t.memberExpression(
-      t.identifier('this'),
-      key,
-      !t.isIdentifier(key),
-    );
-    current.proto.properties.push(
-      getSetterReplacement(path, identifier, targetProperty, false),
-    );
+    const targetProperty = t.memberExpression(t.identifier('this'), key, !t.isIdentifier(key));
+    current.proto.properties.push(getSetterReplacement(path, identifier, targetProperty, false));
   }
 }
 
@@ -179,9 +156,7 @@ function addUnoptimizedSetter(
   key: t.Expression,
   source: t.Identifier,
 ): void {
-  property.replaceWith(
-    getSetterReplacement(property, key, source, property.node.computed),
-  );
+  property.replaceWith(getSetterReplacement(property, key, source, property.node.computed));
 }
 
 export function addProtoSetter(

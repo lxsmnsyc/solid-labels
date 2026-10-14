@@ -22,13 +22,13 @@ function Counter() {
 becomes
 
 ```js
-import { createSignal as _createSignal } from "solid-js";
+import { createSignal as _createSignal } from 'solid-js';
 
 function Counter() {
   const [_x, _setx] = _createSignal(0);
 
   function increment() {
-    _setx(_current => _current += 1);
+    _setx((_current) => (_current += 1));
   }
 
   return () => _x();
@@ -39,7 +39,9 @@ Chained variable declaration is also supported.
 
 ```js
 // @signal
-let x = 0, y = 0, z = 0;
+let x = 0,
+  y = 0,
+  z = 0;
 ```
 
 ### `@memo`
@@ -60,18 +62,17 @@ function Counter() {
 becomes
 
 ```js
-import { createMemo as _createMemo } from "solid-js";
-import { createSignal as _createSignal } from "solid-js";
+import { createMemo as _createMemo } from 'solid-js';
+import { createSignal as _createSignal } from 'solid-js';
 
 function Counter() {
   //
   let [_x, _setx] = _createSignal(0, {
-    name: "x"
+    name: 'x',
   }); //
 
-
   const _message = _createMemo(() => `Count: ${_x()}`, undefined, {
-    name: "message"
+    name: 'message',
   });
 
   return () => _message();
@@ -82,7 +83,8 @@ Chained variable declaration is also supported.
 
 ```js
 // @memo
-const y = x + 10, z = y / 10;
+const y = x + 10,
+  z = y / 10;
 ```
 
 ### `@effect`, `@computed` and `@renderEffect`
@@ -109,10 +111,10 @@ function Counter() {
 into
 
 ```js
-import { createRenderEffect as _createRenderEffect } from "solid-js";
-import { createComputed as _createComputed } from "solid-js";
-import { createEffect as _createEffect } from "solid-js";
-import { createSignal as _createSignal } from "solid-js";
+import { createRenderEffect as _createRenderEffect } from 'solid-js';
+import { createComputed as _createComputed } from 'solid-js';
+import { createEffect as _createEffect } from 'solid-js';
+import { createSignal as _createSignal } from 'solid-js';
 
 function Counter() {
   const [_x, _setx] = _createSignal(0);
@@ -151,37 +153,46 @@ let x = 0;
 ```
 
 ```js
-import { createRenderEffect as _createRenderEffect } from "solid-js";
-import { createComputed as _createComputed } from "solid-js";
-import { createEffect as _createEffect } from "solid-js";
-import { createSignal as _createSignal } from "solid-js";
+import { createRenderEffect as _createRenderEffect } from 'solid-js';
+import { createComputed as _createComputed } from 'solid-js';
+import { createEffect as _createEffect } from 'solid-js';
+import { createSignal as _createSignal } from 'solid-js';
 
 //
 let [_x, _setx] = _createSignal(0);
 /**/
 
-
-_createEffect(() => {
-  console.log('Count', _x());
-}, undefined, {
-  name: "Effect Log"
-});
+_createEffect(
+  () => {
+    console.log('Count', _x());
+  },
+  undefined,
+  {
+    name: 'Effect Log',
+  },
+);
 /**/
 
-
-_createComputed(() => {
-  console.log('Count', _x());
-}, undefined, {
-  name: "Computed Log"
-});
+_createComputed(
+  () => {
+    console.log('Count', _x());
+  },
+  undefined,
+  {
+    name: 'Computed Log',
+  },
+);
 /**/
 
-
-_createRenderEffect(() => {
-  console.log('Count', _x());
-}, undefined, {
-  name: "Render Effect Log"
-});
+_createRenderEffect(
+  () => {
+    console.log('Count', _x());
+  },
+  undefined,
+  {
+    name: 'Render Effect Log',
+  },
+);
 ```
 
 ### `@mount`, `@cleanup` and `@error`
@@ -205,9 +216,9 @@ function Counter() {
 into
 
 ```js
-import { onError as _onError } from "solid-js";    
-import { onCleanup as _onCleanup } from "solid-js";
-import { onMount as _onMount } from "solid-js";    
+import { onError as _onError } from 'solid-js';
+import { onCleanup as _onCleanup } from 'solid-js';
+import { onMount as _onMount } from 'solid-js';
 
 function Counter() {
   _onMount(() => {
@@ -244,8 +255,8 @@ function Counter() {
 into
 
 ```js
-import { untrack as _untrack } from "solid-js";
-import { batch as _batch } from "solid-js";
+import { untrack as _untrack } from 'solid-js';
+import { batch as _batch } from 'solid-js';
 
 function Counter() {
   _batch(() => {
@@ -271,7 +282,7 @@ Transforms into `createRoot`
 into
 
 ```js
-import { createRoot as _createRoot } from "solid-js";
+import { createRoot as _createRoot } from 'solid-js';
 
 _createRoot(() => {
   element = renderComponent(MyComponent);
@@ -290,7 +301,7 @@ const nodes = props.children;
 ```
 
 ```js
-import { children as _children } from "solid-js";
+import { children as _children } from 'solid-js';
 
 //
 const _nodes = _children(() => props.children);
@@ -312,18 +323,17 @@ effect: {
 ```
 
 ```js
-import { createEffect as _createEffect } from "solid-js";
-import { createDeferred as _createDeferred } from "solid-js";
-import { createSignal as _createSignal } from "solid-js";
+import { createEffect as _createEffect } from 'solid-js';
+import { createDeferred as _createDeferred } from 'solid-js';
+import { createSignal as _createSignal } from 'solid-js';
 
 //
 let [_searchInput, _setsearchInput] = _createSignal('', {
-  name: "searchInput"
+  name: 'searchInput',
 }); //
 
-
 let _deferredSearchInput = _createDeferred(() => _searchInput(), {
-  name: "deferredSearchInput"
+  name: 'deferredSearchInput',
 });
 
 _createEffect(() => {
@@ -345,15 +355,14 @@ let data;
 ```
 
 ```js
-import { startTransition as _startTransition } from "solid-js";
-import { createSignal as _createSignal } from "solid-js";
+import { startTransition as _startTransition } from 'solid-js';
+import { createSignal as _createSignal } from 'solid-js';
 
 //
 let [_data, _setdata] = _createSignal(undefined, {
-  name: "data"
+  name: 'data',
 });
 /**/
-
 
 _startTransition(() => {
   _setdata(() => fetchData());
@@ -370,7 +379,11 @@ Does not support default assignment.
 
 ```js
 // @destructure
-let { a: { b, c }, b: { d, e }, ...f } = x;
+let {
+  a: { b, c },
+  b: { d, e },
+  ...f
+} = x;
 
 effect: {
   console.log(b, c);
@@ -384,18 +397,18 @@ effect: {
 ```
 
 ```js
-import { createEffect as _createEffect } from "solid-js";
-import { splitProps as _splitProps } from "solid-js";
+import { createEffect as _createEffect } from 'solid-js';
+import { splitProps as _splitProps } from 'solid-js';
 //
 const _prop = () => x.a,
   _prop2 = () => _prop().b,
   _prop3 = () => _prop().c,
-  _other2 = _splitProps(_prop(), ["b", "c"])[1],
+  _other2 = _splitProps(_prop(), ['b', 'c'])[1],
   _prop4 = () => x.b,
   _prop5 = () => _prop4().d,
   _prop6 = () => _prop4().e,
-  _other3 = _splitProps(_prop4(), ["d", "e"])[1],
-  _other = _splitProps(x, ["a", "b"])[1];
+  _other3 = _splitProps(_prop4(), ['d', 'e'])[1],
+  _other = _splitProps(x, ['a', 'b'])[1];
 _createEffect(() => {
   console.log(_prop2(), _prop3());
 });
@@ -415,6 +428,6 @@ _createEffect(() => {
 {
   "rules": {
     "no-lone-blocks": "off"
-  },
+  }
 }
 ```

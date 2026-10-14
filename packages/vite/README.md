@@ -41,7 +41,7 @@ solidLabels({
     include: 'src/**/*.{ts,js,tsx,jsx}',
     exclude: 'node_modules/**/*.{ts,js,tsx,jsx}',
   },
-})
+});
 ```
 
 ## Sponsors

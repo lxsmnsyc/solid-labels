@@ -82,9 +82,7 @@ declare global {
   function $children(value: solid.JSX.Element): solid.JSX.Element;
 
   interface Observable<T> {
-    subscribe(
-      observer: ObservableObserver<T>,
-    ): { unsubscribe(): void } | (() => void);
+    subscribe(observer: ObservableObserver<T>): { unsubscribe(): void } | (() => void);
   }
 
   function $observable<T>(value: T): Observable<T>;
@@ -157,9 +155,7 @@ declare global {
   const HydrationScript: typeof solidWeb.HydrationScript;
   const NoHydration: typeof solidWeb.NoHydration;
 
-  function $component<P>(
-    Comp: (props: P) => solid.JSX.Element,
-  ): (props: P) => solid.JSX.Element;
+  function $component<P>(Comp: (props: P) => solid.JSX.Element): (props: P) => solid.JSX.Element;
 }
 
 type Props<T> = T extends (props: infer P) => solid.JSX.Element ? P : never;

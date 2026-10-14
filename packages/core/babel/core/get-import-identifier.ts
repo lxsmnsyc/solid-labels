@@ -15,14 +15,9 @@ export function getImportIdentifier(
   }
   const programParent = path.scope.getProgramParent();
   const uid = programParent.generateUidIdentifier(name);
-  const newPath = (
-    programParent.path as babel.NodePath<t.Program>
-  ).unshiftContainer(
+  const newPath = (programParent.path as babel.NodePath<t.Program>).unshiftContainer(
     'body',
-    t.importDeclaration(
-      [t.importSpecifier(uid, t.identifier(name))],
-      t.stringLiteral(source),
-    ),
+    t.importDeclaration([t.importSpecifier(uid, t.identifier(name))], t.stringLiteral(source)),
   )[0];
   programParent.registerDeclaration(newPath);
   state.hooks.set(target, uid);

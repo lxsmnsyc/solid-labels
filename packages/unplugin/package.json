@@ -4,11 +4,11 @@
   "private": false,
   "description": "Unplugin for solid-labels",
   "keywords": [
+    "rollup",
     "solid-js",
     "solid-labels",
     "unplugin",
-    "vite",
-    "rollup"
+    "vite"
   ],
   "homepage": "https://github.com/lxsmnsyc/solid-labels/tree/main/packages/unplugin",
   "bugs": {
@@ -25,6 +25,16 @@
     "src"
   ],
   "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
   "publishConfig": {
     "access": "public"
   },
@@ -62,15 +72,5 @@
   },
   "engines": {
     "node": ">=18"
-  },
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.cts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs"
-    },
-    "./package.json": "./package.json"
   }
 }

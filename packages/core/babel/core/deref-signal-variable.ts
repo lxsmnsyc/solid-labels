@@ -9,14 +9,8 @@ export function derefSignalVariable(
   stateIdentifier: t.Expression,
 ): t.VariableDeclarator {
   const readIdentifier = generateUniqueName(path, signalIdentifier.name);
-  const writeIdentifier = generateUniqueName(
-    path,
-    `set${signalIdentifier.name}`,
-  );
+  const writeIdentifier = generateUniqueName(path, `set${signalIdentifier.name}`);
   derefSignal(path, signalIdentifier, readIdentifier, writeIdentifier);
 
-  return t.variableDeclarator(
-    t.arrayPattern([readIdentifier, writeIdentifier]),
-    stateIdentifier,
-  );
+  return t.variableDeclarator(t.arrayPattern([readIdentifier, writeIdentifier]), stateIdentifier);
 }

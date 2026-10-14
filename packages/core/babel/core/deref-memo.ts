@@ -22,14 +22,8 @@ function transformGetter(
     return true;
   }
   const key = propertyParent.node.key;
-  assert(
-    t.isExpression(key),
-    unexpectedType(propertyParent.get('key'), key.type, 'Identifier'),
-  );
-  const objectParent = getProperParentPath(
-    propertyParent,
-    t.isObjectExpression,
-  );
+  assert(t.isExpression(key), unexpectedType(propertyParent.get('key'), key.type, 'Identifier'));
+  const objectParent = getProperParentPath(propertyParent, t.isObjectExpression);
   if (!objectParent) {
     return true;
   }
@@ -37,10 +31,7 @@ function transformGetter(
   return false;
 }
 
-function transformReferencePath(
-  ref: babel.NodePath,
-  readIdentifier: t.Identifier,
-): boolean {
+function transformReferencePath(ref: babel.NodePath, readIdentifier: t.Identifier): boolean {
   const parent = getProperParentPath(ref, t.isCallExpression);
   if (parent) {
     const trueCallee = unwrapNode(parent.node.callee, t.isIdentifier);
@@ -78,10 +69,7 @@ export function derefMemo(
   }
   for (const ref of binding.referencePaths) {
     if (transformReferencePath(ref, readIdentifier)) {
-      assert(
-        t.isIdentifier(ref.node),
-        unexpectedType(ref, ref.node.type, 'Identifier'),
-      );
+      assert(t.isIdentifier(ref.node), unexpectedType(ref, ref.node.type, 'Identifier'));
       ref.replaceWith(t.callExpression(readIdentifier, []));
     }
   }

@@ -22,11 +22,7 @@ export function isStatic(
     return isStatic(node.expression);
   }
   // Same as above
-  if (
-    t.isUnaryExpression(node) ||
-    t.isUpdateExpression(node) ||
-    t.isSpreadElement(node)
-  ) {
+  if (t.isUnaryExpression(node) || t.isUpdateExpression(node) || t.isSpreadElement(node)) {
     return isStatic(node.argument);
   }
   if (t.isRestElement(node)) {
@@ -37,7 +33,7 @@ export function isStatic(
   }
   if (t.isLiteral(node)) {
     if (t.isTemplateLiteral(node)) {
-      return node.expressions.every(expr => {
+      return node.expressions.every((expr) => {
         if (t.isExpression(expr)) {
           return isStatic(expr);
         }
@@ -59,7 +55,7 @@ export function isStatic(
   }
   // Arrays and tuples might have static values
   if (t.isArrayExpression(node) || t.isTupleExpression(node)) {
-    return node.elements.every(el => {
+    return node.elements.every((el) => {
       if (el) {
         return isStatic(el);
       }
@@ -67,7 +63,7 @@ export function isStatic(
     });
   }
   if (t.isArrayPattern(node)) {
-    return node.elements.every(el => {
+    return node.elements.every((el) => {
       if (t.isTSParameterProperty(el)) {
         return false;
       }
@@ -82,7 +78,7 @@ export function isStatic(
     });
   }
   if (t.isObjectExpression(node) || t.isRecordExpression(node)) {
-    return node.properties.every(prop => {
+    return node.properties.every((prop) => {
       if (t.isObjectProperty(prop)) {
         if (t.isExpression(prop.value) && isStatic(prop.value)) {
           return true;
@@ -100,7 +96,7 @@ export function isStatic(
     });
   }
   if (t.isObjectPattern(node)) {
-    return node.properties.every(prop => {
+    return node.properties.every((prop) => {
       if (t.isObjectProperty(prop)) {
         if (t.isVoidPattern(prop.value)) {
           return true;
@@ -133,11 +129,7 @@ export function isStatic(
     return node.expressions.every(isStatic);
   }
   if (t.isConditionalExpression(node)) {
-    return (
-      isStatic(node.test) ||
-      isStatic(node.consequent) ||
-      isStatic(node.alternate)
-    );
+    return isStatic(node.test) || isStatic(node.consequent) || isStatic(node.alternate);
   }
   if (t.isBinaryExpression(node)) {
     if (t.isExpression(node.left)) {

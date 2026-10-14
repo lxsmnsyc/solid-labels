@@ -16,14 +16,7 @@ const GETTER_CTF = '$getter';
 const SETTER_CTF = '$setter';
 const PROPERTY_CTF = '$property';
 
-const CALL_CTF = new Set([
-  REF_SIGNAL_CTF,
-  GET_CTF,
-  SET_CTF,
-  GETTER_CTF,
-  SETTER_CTF,
-  PROPERTY_CTF,
-]);
+const CALL_CTF = new Set([REF_SIGNAL_CTF, GET_CTF, SET_CTF, GETTER_CTF, SETTER_CTF, PROPERTY_CTF]);
 
 function transformProperty(
   parent: babel.NodePath<t.CallExpression>,
@@ -36,14 +29,8 @@ function transformProperty(
     return true;
   }
   const key = propertyParent.node.key;
-  assert(
-    t.isExpression(key),
-    unexpectedType(propertyParent.get('key'), key.type, 'Identifier'),
-  );
-  const objectParent = getProperParentPath(
-    propertyParent,
-    t.isObjectExpression,
-  );
+  assert(t.isExpression(key), unexpectedType(propertyParent.get('key'), key.type, 'Identifier'));
+  const objectParent = getProperParentPath(propertyParent, t.isObjectExpression);
   if (!objectParent) {
     return true;
   }
@@ -55,13 +42,7 @@ function transformProperty(
       addProtoGetter(objectParent, propertyParent, key, writeIdentifier);
       break;
     case PROPERTY_CTF:
-      addProtoProperty(
-        objectParent,
-        propertyParent,
-        key,
-        readIdentifier,
-        writeIdentifier,
-      );
+      addProtoProperty(objectParent, propertyParent, key, readIdentifier, writeIdentifier);
       break;
   }
   return false;
@@ -86,9 +67,7 @@ function transformSignalRead(
     }
     switch (trueCallee.name) {
       case REF_SIGNAL_CTF:
-        parent.replaceWith(
-          t.arrayExpression([readIdentifier, writeIdentifier]),
-        );
+        parent.replaceWith(t.arrayExpression([readIdentifier, writeIdentifier]));
         break;
       case SET_CTF:
         parent.replaceWith(writeIdentifier);
@@ -99,12 +78,7 @@ function transformSignalRead(
       case PROPERTY_CTF:
       case SETTER_CTF:
       case GETTER_CTF:
-        return transformProperty(
-          parent,
-          trueCallee.name,
-          readIdentifier,
-          writeIdentifier,
-        );
+        return transformProperty(parent, trueCallee.name, readIdentifier, writeIdentifier);
     }
     return false;
   }
@@ -147,11 +121,7 @@ function transformUpdateExpression(
       t.callExpression(writeIdentifier, [
         t.arrowFunctionExpression(
           [param],
-          t.binaryExpression(
-            ref.node.operator === '++' ? '+' : '-',
-            param,
-            t.numericLiteral(1),
-          ),
+          t.binaryExpression(ref.node.operator === '++' ? '+' : '-', param, t.numericLiteral(1)),
         ),
       ]),
     );
@@ -205,10 +175,7 @@ function transformAssignmentExpression(
   ref.replaceWith(t.callExpression(writeIdentifier, [arg]));
 }
 
-function transformSignalWrite(
-  ref: babel.NodePath,
-  writeIdentifier: t.Identifier,
-): void {
+function transformSignalWrite(ref: babel.NodePath, writeIdentifier: t.Identifier): void {
   if (isPathValid(ref, t.isUpdateExpression)) {
     transformUpdateExpression(ref, writeIdentifier);
     return;
@@ -235,10 +202,7 @@ export function derefSignal(
   // Transform all reads
   for (const ref of binding.referencePaths) {
     if (transformSignalRead(ref, readIdentifier, writeIdentifier)) {
-      assert(
-        t.isIdentifier(ref.node),
-        unexpectedType(ref, ref.node.type, 'Identifier'),
-      );
+      assert(t.isIdentifier(ref.node), unexpectedType(ref, ref.node.type, 'Identifier'));
       ref.replaceWith(t.callExpression(readIdentifier, []));
     }
   }

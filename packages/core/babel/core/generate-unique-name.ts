@@ -1,10 +1,7 @@
 import type * as babel from '@babel/core';
 import * as t from '@babel/types';
 
-export function generateUniqueName(
-  path: babel.NodePath,
-  name: string,
-): t.Identifier {
+export function generateUniqueName(path: babel.NodePath, name: string): t.Identifier {
   let uid;
   let i = 1;
   do {

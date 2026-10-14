@@ -52,32 +52,24 @@ export function destructureVariable(
           const isStaticValue = isStatic(value.right);
           const defValue = isStaticValue
             ? value.right
-            : t.callExpression(
-                getImportIdentifier(state, path, 'createMemo', 'solid-js'),
-                [t.arrowFunctionExpression([], value.right)],
-              );
+            : t.callExpression(getImportIdentifier(state, path, 'createMemo', 'solid-js'), [
+                t.arrowFunctionExpression([], value.right),
+              ]);
           declarators.push(t.variableDeclarator(defaultIdentifier, defValue));
           const valueIdentifier = generateUniqueName(path, 'value');
           access = t.blockStatement([
-            t.variableDeclaration('const', [
-              t.variableDeclarator(valueIdentifier, access),
-            ]),
+            t.variableDeclaration('const', [t.variableDeclarator(valueIdentifier, access)]),
             t.returnStatement(
               t.conditionalExpression(
                 t.binaryExpression('===', valueIdentifier, UNDEFINED),
-                isStaticValue
-                  ? defaultIdentifier
-                  : t.callExpression(defaultIdentifier, []),
+                isStaticValue ? defaultIdentifier : t.callExpression(defaultIdentifier, []),
                 valueIdentifier,
               ),
             ),
           ]);
         }
         declarators.push(
-          t.variableDeclarator(
-            newIdentifier,
-            t.arrowFunctionExpression([], access),
-          ),
+          t.variableDeclarator(newIdentifier, t.arrowFunctionExpression([], access)),
         );
 
         // If the value is an object or array pattern
@@ -86,12 +78,7 @@ export function destructureVariable(
         if (t.isObjectPattern(value) || t.isArrayPattern(value)) {
           declarators = [
             ...declarators,
-            ...destructureVariable(
-              state,
-              path,
-              t.callExpression(newIdentifier, []),
-              value,
-            ),
+            ...destructureVariable(state, path, t.callExpression(newIdentifier, []), value),
           ];
         } else if (t.isIdentifier(value)) {
           // If the value is just a normal identifier
@@ -102,10 +89,7 @@ export function destructureVariable(
           if (t.isIdentifier(value.left)) {
             // If the value has a default value
             derefMemo(path, value.left, newIdentifier);
-          } else if (
-            t.isArrayPattern(value.left) ||
-            t.isObjectPattern(value.left)
-          ) {
+          } else if (t.isArrayPattern(value.left) || t.isObjectPattern(value.left)) {
             // Otherwise it's just another array/object
             declarators = [
               ...declarators,
@@ -119,11 +103,7 @@ export function destructureVariable(
             ];
           }
         } else {
-          throw unexpectedType(
-            path,
-            value.type,
-            'Identifier | ObjectPattern | ArrayPattern',
-          );
+          throw unexpectedType(path, value.type, 'Identifier | ObjectPattern | ArrayPattern');
         }
       } else {
         // or it's a rest element
@@ -142,43 +122,31 @@ export function destructureVariable(
         const keyExpr = t.numericLiteral(i);
 
         const newIdentifier = generateUniqueName(path, 'prop');
-        let access: t.Expression | t.BlockStatement = t.memberExpression(
-          target,
-          keyExpr,
-          true,
-        );
+        let access: t.Expression | t.BlockStatement = t.memberExpression(target, keyExpr, true);
         let defaultIdentifier: t.Identifier | undefined;
         if (t.isAssignmentPattern(property)) {
           defaultIdentifier = generateUniqueName(path, 'def');
           const isStaticValue = isStatic(property.right);
           const defValue = isStaticValue
             ? property.right
-            : t.callExpression(
-                getImportIdentifier(state, path, 'createMemo', 'solid-js'),
-                [t.arrowFunctionExpression([], property.right)],
-              );
+            : t.callExpression(getImportIdentifier(state, path, 'createMemo', 'solid-js'), [
+                t.arrowFunctionExpression([], property.right),
+              ]);
           declarators.push(t.variableDeclarator(defaultIdentifier, defValue));
           const valueIdentifier = generateUniqueName(path, 'value');
           access = t.blockStatement([
-            t.variableDeclaration('const', [
-              t.variableDeclarator(valueIdentifier, access),
-            ]),
+            t.variableDeclaration('const', [t.variableDeclarator(valueIdentifier, access)]),
             t.returnStatement(
               t.conditionalExpression(
                 t.binaryExpression('===', valueIdentifier, UNDEFINED),
-                isStaticValue
-                  ? defaultIdentifier
-                  : t.callExpression(defaultIdentifier, []),
+                isStaticValue ? defaultIdentifier : t.callExpression(defaultIdentifier, []),
                 valueIdentifier,
               ),
             ),
           ]);
         }
         declarators.push(
-          t.variableDeclarator(
-            newIdentifier,
-            t.arrowFunctionExpression([], access),
-          ),
+          t.variableDeclarator(newIdentifier, t.arrowFunctionExpression([], access)),
         );
 
         properties.push(keyExpr);
@@ -188,10 +156,7 @@ export function destructureVariable(
         } else if (t.isAssignmentPattern(property)) {
           if (t.isIdentifier(property.left)) {
             derefMemo(path, property.left, newIdentifier);
-          } else if (
-            t.isArrayPattern(property.left) ||
-            t.isObjectPattern(property.left)
-          ) {
+          } else if (t.isArrayPattern(property.left) || t.isObjectPattern(property.left)) {
             // Otherwise it's just another array/object
             declarators = [
               ...declarators,
@@ -208,12 +173,7 @@ export function destructureVariable(
           // Otherwise it's just another array/object
           declarators = [
             ...declarators,
-            ...destructureVariable(
-              state,
-              path,
-              t.callExpression(newIdentifier, []),
-              property,
-            ),
+            ...destructureVariable(state, path, t.callExpression(newIdentifier, []), property),
           ];
         } else if (t.isRestElement(property)) {
           const trueIdentifier = unwrapNode(property.argument, t.isIdentifier);
@@ -229,18 +189,15 @@ export function destructureVariable(
     otherIdentifier,
     properties.length
       ? t.memberExpression(
-          t.callExpression(
-            getImportIdentifier(state, path, 'splitProps', 'solid-js'),
-            [
-              defaultValue == null
-                ? target
-                : t.callExpression(
-                    getImportIdentifier(state, path, 'mergeProps', 'solid-js'),
-                    [target, defaultValue],
-                  ),
-              t.arrayExpression(properties),
-            ],
-          ),
+          t.callExpression(getImportIdentifier(state, path, 'splitProps', 'solid-js'), [
+            defaultValue == null
+              ? target
+              : t.callExpression(getImportIdentifier(state, path, 'mergeProps', 'solid-js'), [
+                  target,
+                  defaultValue,
+                ]),
+            t.arrayExpression(properties),
+          ]),
           t.numericLiteral(1),
           true,
         )

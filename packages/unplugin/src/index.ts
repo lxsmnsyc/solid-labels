@@ -18,11 +18,7 @@ export interface SolidLabelsPluginOptions extends Options {
 }
 
 // From: https://github.com/bluwy/whyframe/blob/master/packages/jsx/src/index.js#L27-L37
-function repushPlugin(
-  plugins: Plugin[],
-  pluginName: string,
-  pluginNames: string[],
-): void {
+function repushPlugin(plugins: Plugin[], pluginName: string, pluginNames: string[]): void {
   const namesSet = new Set(pluginNames);
 
   let baseIndex = -1;
@@ -38,12 +34,7 @@ function repushPlugin(
       targetPlugin = current;
     }
   }
-  if (
-    targetPlugin &&
-    baseIndex !== -1 &&
-    targetIndex !== -1 &&
-    baseIndex < targetIndex
-  ) {
+  if (targetPlugin && baseIndex !== -1 && targetIndex !== -1 && baseIndex < targetIndex) {
     plugins.splice(targetIndex, 1);
     plugins.splice(baseIndex, 0, targetPlugin);
   }
@@ -54,76 +45,74 @@ const DEFAULT_EXCLUDE = 'node_modules/**/*.{jsx,tsx,ts,js,mjs,cjs}';
 
 const FILE_FILTER = /\.[mc]?tsx?$/i;
 
-const solidLabelsPlugin = createUnplugin(
-  (rawOptions?: SolidLabelsPluginOptions) => {
-    const options = rawOptions ?? {};
-    const filter = createFilter(
-      options.filter?.include ?? DEFAULT_INCLUDE,
-      options.filter?.exclude ?? DEFAULT_EXCLUDE,
-    );
+const solidLabelsPlugin = createUnplugin((rawOptions?: SolidLabelsPluginOptions) => {
+  const options = rawOptions ?? {};
+  const filter = createFilter(
+    options.filter?.include ?? DEFAULT_INCLUDE,
+    options.filter?.exclude ?? DEFAULT_EXCLUDE,
+  );
 
-    let env: string;
+  let env: string;
 
-    return {
-      name: 'solid-labels',
-      transformInclude(id): boolean {
-        return filter(id);
-      },
-      async transform(code, id): Promise<TransformResult> {
-        const plugins: NonNullable<
-          NonNullable<babel.TransformOptions['parserOpts']>['plugins']
-        > = ['jsx'];
-        if (FILE_FILTER.test(id)) {
-          plugins.push('typescript');
-        }
-        const result = await babel.transformAsync(code, {
-          plugins: [
-            [
-              solidLabelsBabel,
-              {
-                disabled: options.disabled,
-                dev: env === 'development' || options.dev,
-              },
-            ],
+  return {
+    name: 'solid-labels',
+    transformInclude(id): boolean {
+      return filter(id);
+    },
+    async transform(code, id): Promise<TransformResult> {
+      const plugins: NonNullable<NonNullable<babel.TransformOptions['parserOpts']>['plugins']> = [
+        'jsx',
+      ];
+      if (FILE_FILTER.test(id)) {
+        plugins.push('typescript');
+      }
+      const result = await babel.transformAsync(code, {
+        plugins: [
+          [
+            solidLabelsBabel,
+            {
+              disabled: options.disabled,
+              dev: env === 'development' || options.dev,
+            },
           ],
-          parserOpts: {
-            plugins,
-          },
-          filename: path.basename(id),
-          ast: false,
-          sourceMaps: true,
-          configFile: false,
-          babelrc: false,
-          sourceFileName: id,
-        });
-
-        if (result) {
-          return {
-            code: result.code ?? '',
-            map: result.map,
-          };
-        }
-        return undefined;
-      },
-      vite: {
-        enforce: 'pre',
-        configResolved(config): void {
-          env = config.mode === 'production' ? 'production' : 'development';
-
-          // run our plugin before the following plugins:
-          // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-          repushPlugin(config.plugins as Plugin[], 'solid-labels', [
-            // https://github.com/withastro/astro/blob/main/packages/astro/src/vite-plugin-jsx/index.ts#L173
-            'astro:jsx',
-            // https://github.com/solidjs/vite-plugin-solid/blob/master/src/index.ts#L305
-            'solid',
-            // https://github.com/solidjs/solid-start/blob/main/packages/start/vite/plugin.js#L118
-            'solid-start-file-system-router',
-          ]);
+        ],
+        parserOpts: {
+          plugins,
         },
+        filename: path.basename(id),
+        ast: false,
+        sourceMaps: true,
+        configFile: false,
+        babelrc: false,
+        sourceFileName: id,
+      });
+
+      if (result) {
+        return {
+          code: result.code ?? '',
+          map: result.map,
+        };
+      }
+      return undefined;
+    },
+    vite: {
+      enforce: 'pre',
+      configResolved(config): void {
+        env = config.mode === 'production' ? 'production' : 'development';
+
+        // run our plugin before the following plugins:
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+        repushPlugin(config.plugins as Plugin[], 'solid-labels', [
+          // https://github.com/withastro/astro/blob/main/packages/astro/src/vite-plugin-jsx/index.ts#L173
+          'astro:jsx',
+          // https://github.com/solidjs/vite-plugin-solid/blob/master/src/index.ts#L305
+          'solid',
+          // https://github.com/solidjs/solid-start/blob/main/packages/start/vite/plugin.js#L118
+          'solid-start-file-system-router',
+        ]);
       },
-    };
-  },
-);
+    },
+  };
+});
 
 export default solidLabelsPlugin;

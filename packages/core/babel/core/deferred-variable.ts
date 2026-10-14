@@ -17,26 +17,17 @@ export function deferredVariable(
   if (state.opts.dev) {
     if (optionsIdentifier) {
       args.push(
-        t.callExpression(
-          t.memberExpression(t.identifier('Object'), t.identifier('assign')),
-          [
-            t.objectExpression([
-              t.objectProperty(
-                t.identifier('name'),
-                t.stringLiteral(deferredIdentifier.name),
-              ),
-            ]),
-            optionsIdentifier,
-          ],
-        ),
+        t.callExpression(t.memberExpression(t.identifier('Object'), t.identifier('assign')), [
+          t.objectExpression([
+            t.objectProperty(t.identifier('name'), t.stringLiteral(deferredIdentifier.name)),
+          ]),
+          optionsIdentifier,
+        ]),
       );
     } else {
       args.push(
         t.objectExpression([
-          t.objectProperty(
-            t.identifier('name'),
-            t.stringLiteral(deferredIdentifier.name),
-          ),
+          t.objectProperty(t.identifier('name'), t.stringLiteral(deferredIdentifier.name)),
         ]),
       );
     }

@@ -13,8 +13,5 @@ export function accessorVariable(
 
   derefMemo(path, accessorIdentifier, readIdentifier);
 
-  return t.variableDeclarator(
-    readIdentifier,
-    t.callExpression(callee, replacement),
-  );
+  return t.variableDeclarator(readIdentifier, t.callExpression(callee, replacement));
 }

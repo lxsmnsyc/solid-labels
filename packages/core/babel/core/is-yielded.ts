@@ -6,9 +6,7 @@ export function isYielded(node: t.Expression | t.SpreadElement): boolean {
     return true;
   }
   if (t.isTemplateLiteral(node)) {
-    return node.expressions.some(
-      expr => t.isExpression(expr) && isYielded(expr),
-    );
+    return node.expressions.some((expr) => t.isExpression(expr) && isYielded(expr));
   }
   if (
     t.isLiteral(node) ||
@@ -29,11 +27,7 @@ export function isYielded(node: t.Expression | t.SpreadElement): boolean {
   if (t.isTaggedTemplateExpression(node)) {
     return isYielded(node.tag) || isYielded(node.quasi);
   }
-  if (
-    t.isUnaryExpression(node) ||
-    t.isUpdateExpression(node) ||
-    t.isSpreadElement(node)
-  ) {
+  if (t.isUnaryExpression(node) || t.isUpdateExpression(node) || t.isSpreadElement(node)) {
     return isYielded(node.argument);
   }
   if (
@@ -49,7 +43,7 @@ export function isYielded(node: t.Expression | t.SpreadElement): boolean {
   }
   // Check for elements
   if (t.isArrayExpression(node) || t.isTupleExpression(node)) {
-    return node.elements.some(el => el != null && isYielded(el));
+    return node.elements.some((el) => el != null && isYielded(el));
   }
   // Skip arrow function
   if (t.isAssignmentExpression(node)) {
@@ -67,27 +61,16 @@ export function isYielded(node: t.Expression | t.SpreadElement): boolean {
     }
     return isYielded(node.right);
   }
-  if (
-    t.isCallExpression(node) ||
-    t.isOptionalCallExpression(node) ||
-    t.isNewExpression(node)
-  ) {
+  if (t.isCallExpression(node) || t.isOptionalCallExpression(node) || t.isNewExpression(node)) {
     if (t.isExpression(node.callee) && isYielded(node.callee)) {
       return true;
     }
     return node.arguments.some(
-      arg =>
-        arg &&
-        (t.isSpreadElement(arg) || t.isExpression(arg)) &&
-        isYielded(arg),
+      (arg) => arg && (t.isSpreadElement(arg) || t.isExpression(arg)) && isYielded(arg),
     );
   }
   if (t.isConditionalExpression(node)) {
-    return (
-      isYielded(node.test) ||
-      isYielded(node.consequent) ||
-      isYielded(node.alternate)
-    );
+    return isYielded(node.test) || isYielded(node.consequent) || isYielded(node.alternate);
   }
   if (t.isLogicalExpression(node)) {
     return isYielded(node.left) || isYielded(node.right);
@@ -95,16 +78,14 @@ export function isYielded(node: t.Expression | t.SpreadElement): boolean {
   if (t.isMemberExpression(node) || t.isOptionalMemberExpression(node)) {
     return (
       isYielded(node.object) ||
-      (node.computed &&
-        t.isExpression(node.property) &&
-        isYielded(node.property))
+      (node.computed && t.isExpression(node.property) && isYielded(node.property))
     );
   }
   if (t.isSequenceExpression(node)) {
     return node.expressions.some(isYielded);
   }
   if (t.isObjectExpression(node) || t.isRecordExpression(node)) {
-    return node.properties.some(prop => {
+    return node.properties.some((prop) => {
       if (t.isObjectProperty(prop)) {
         if (t.isExpression(prop.value) && isYielded(prop.value)) {
           return true;

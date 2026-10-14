@@ -13,8 +13,7 @@ export function memoVariable(
   optionsIdentifier?: t.Expression,
 ): t.VariableDeclarator {
   const normalIdentifier =
-    t.isArrowFunctionExpression(stateIdentifier) ||
-    t.isFunctionExpression(stateIdentifier)
+    t.isArrowFunctionExpression(stateIdentifier) || t.isFunctionExpression(stateIdentifier)
       ? stateIdentifier
       : t.arrowFunctionExpression([], stateIdentifier);
 
@@ -24,26 +23,17 @@ export function memoVariable(
     exprs.push(UNDEFINED);
     if (optionsIdentifier) {
       exprs.push(
-        t.callExpression(
-          t.memberExpression(t.identifier('Object'), t.identifier('assign')),
-          [
-            t.objectExpression([
-              t.objectProperty(
-                t.identifier('name'),
-                t.stringLiteral(memoIdentifier.name),
-              ),
-            ]),
-            optionsIdentifier,
-          ],
-        ),
+        t.callExpression(t.memberExpression(t.identifier('Object'), t.identifier('assign')), [
+          t.objectExpression([
+            t.objectProperty(t.identifier('name'), t.stringLiteral(memoIdentifier.name)),
+          ]),
+          optionsIdentifier,
+        ]),
       );
     } else {
       exprs.push(
         t.objectExpression([
-          t.objectProperty(
-            t.identifier('name'),
-            t.stringLiteral(memoIdentifier.name),
-          ),
+          t.objectProperty(t.identifier('name'), t.stringLiteral(memoIdentifier.name)),
         ]),
       );
     }

@@ -11,8 +11,8 @@ function $signal<T>(
   options?: {
     equals?: false | ((prev: T, next: T) => boolean);
     name?: string;
-    internal?: boolean,
-  }
+    internal?: boolean;
+  },
 ): T;
 ```
 
@@ -25,10 +25,10 @@ let count = $signal(0);
 becomes
 
 ```js
-import { createSignal as _createSignal } from "solid-js";
+import { createSignal as _createSignal } from 'solid-js';
 
 let [_count, _setcount] = _createSignal(0, {
-  name: "count"
+  name: 'count',
 });
 ```
 
@@ -39,11 +39,11 @@ let [_count, _setcount] = _createSignal(0, {
 ```ts
 function $memo<T>(
   value: T,
-  options?: { equals?: false | ((prev: T, next: T) => boolean); name?: string }
+  options?: { equals?: false | ((prev: T, next: T) => boolean); name?: string },
 ): T;
 function $memo<T>(
   value: T,
-  options?: { equals?: false | ((prev: T, next: T) => boolean); name?: string }
+  options?: { equals?: false | ((prev: T, next: T) => boolean); name?: string },
 ): T;
 ```
 
@@ -57,15 +57,15 @@ const message = $memo(`Count: ${count}`);
 becomes
 
 ```js
-import { createMemo as _createMemo } from "solid-js";
-import { createSignal as _createSignal } from "solid-js";
+import { createMemo as _createMemo } from 'solid-js';
+import { createSignal as _createSignal } from 'solid-js';
 
 let [_count, _setcount] = _createSignal(0, {
-  name: "count"
+  name: 'count',
 });
 
 const _message = _createMemo(() => `Count: ${_count()}`, undefined, {
-  name: "message"
+  name: 'message',
 });
 ```
 
@@ -89,16 +89,16 @@ $(console.log(message));
 compiles into
 
 ```js
-import { createEffect as _createEffect } from "solid-js";
-import { createMemo as _createMemo } from "solid-js";
-import { createSignal as _createSignal } from "solid-js";
+import { createEffect as _createEffect } from 'solid-js';
+import { createMemo as _createMemo } from 'solid-js';
+import { createSignal as _createSignal } from 'solid-js';
 
 let [_count, _setcount] = _createSignal(0, {
-  name: "count"
+  name: 'count',
 });
 
 const _message = _createMemo(() => `Count: ${_count()}`, undefined, {
-  name: "message"
+  name: 'message',
 });
 
 _createEffect(() => console.log(_message()));
@@ -126,13 +126,13 @@ effect: {
 compiles into
 
 ```js
-import { batch as _batch } from "solid-js";
-import { untrack as _untrack } from "solid-js";
-import { createEffect as _createEffect } from "solid-js";
-import { createSignal as _createSignal } from "solid-js";
+import { batch as _batch } from 'solid-js';
+import { untrack as _untrack } from 'solid-js';
+import { createEffect as _createEffect } from 'solid-js';
+import { createSignal as _createSignal } from 'solid-js';
 
 let [_count, _setcount] = _createSignal(0, {
-  name: "count"
+  name: 'count',
 });
 
 _createEffect(() => {
@@ -172,13 +172,13 @@ $renderEffect(() => {
 ```
 
 ```js
-import { createRenderEffect as _createRenderEffect } from "solid-js";
-import { createComputed as _createComputed } from "solid-js";
-import { createEffect as _createEffect } from "solid-js";
-import { createSignal as _createSignal } from "solid-js";
+import { createRenderEffect as _createRenderEffect } from 'solid-js';
+import { createComputed as _createComputed } from 'solid-js';
+import { createEffect as _createEffect } from 'solid-js';
+import { createSignal as _createSignal } from 'solid-js';
 
 let [_x, _setx] = _createSignal(0, {
-  name: "x"
+  name: 'x',
 });
 
 _createEffect(() => {
@@ -213,9 +213,9 @@ $root(renderApp());
 ```
 
 ```js
-import { createRoot as _createRoot } from "solid-js";
+import { createRoot as _createRoot } from 'solid-js';
 
-const cleanup = _createRoot(dispose => {
+const cleanup = _createRoot((dispose) => {
   renderApp();
   return dispose;
 });
@@ -229,7 +229,7 @@ _createRoot(() => renderApp());
 function $selector<T, U>(
   source: T,
   fn?: (a: U, b: T) => boolean,
-  options?: { name?: string }
+  options?: { name?: string },
 ): (key: U) => boolean;
 ```
 
@@ -248,12 +248,12 @@ effect: {
 ```
 
 ```js
-import { createEffect as _createEffect } from "solid-js";
-import { createSelector as _createSelector } from "solid-js";
-import { createSignal as _createSignal } from "solid-js";
+import { createEffect as _createEffect } from 'solid-js';
+import { createSelector as _createSelector } from 'solid-js';
+import { createSignal as _createSignal } from 'solid-js';
 
 let [_selectedID, _setselectedID] = _createSignal(undefined, {
-  name: "selectedID"
+  name: 'selectedID',
 });
 
 let isSelected = _createSelector(() => _selectedID());
@@ -271,7 +271,7 @@ _createEffect(() => {
 function $on<T, U>(
   deps: T,
   fn: (input: T, prevInput: T, prevValue?: U) => U,
-  options?: { defer?: boolean }
+  options?: { defer?: boolean },
 ): (prevValue?: U) => U;
 ```
 
@@ -284,23 +284,28 @@ effect: $on(selectedID, (value) => {
   if (userID === value) {
     selectUser(userID);
   }
-})
+});
 ```
 
 ```js
-import { on as _on } from "solid-js";
-import { createEffect as _createEffect } from "solid-js";
-import { createSignal as _createSignal } from "solid-js";
+import { on as _on } from 'solid-js';
+import { createEffect as _createEffect } from 'solid-js';
+import { createSignal as _createSignal } from 'solid-js';
 
 let [_selectedID, _setselectedID] = _createSignal(undefined, {
-  name: "selectedID"
+  name: 'selectedID',
 });
 
-_createEffect(_on(() => _selectedID(), value => {
-  if (userID === value) {
-    selectUser(userID);
-  }
-}));
+_createEffect(
+  _on(
+    () => _selectedID(),
+    (value) => {
+      if (userID === value) {
+        selectUser(userID);
+      }
+    },
+  ),
+);
 ```
 
 ### `$deferred`
@@ -328,16 +333,16 @@ effect: {
 ```
 
 ```js
-import { createEffect as _createEffect } from "solid-js";
-import { createDeferred as _createDeferred } from "solid-js";
-import { createSignal as _createSignal } from "solid-js";
+import { createEffect as _createEffect } from 'solid-js';
+import { createDeferred as _createDeferred } from 'solid-js';
+import { createSignal as _createSignal } from 'solid-js';
 
 let [_searchInput, _setsearchInput] = _createSignal('', {
-  name: "searchInput"
+  name: 'searchInput',
 });
 
 let _deferredSearchInput = _createDeferred(() => _searchInput(), {
-  name: "deferredSearchInput"
+  name: 'deferredSearchInput',
 });
 
 _createEffect(() => {
@@ -377,11 +382,11 @@ const counter$ = $observable(count);
 ```
 
 ```js
-import { observable as _observable } from "solid-js";
-import { createSignal as _createSignal } from "solid-js";
+import { observable as _observable } from 'solid-js';
+import { createSignal as _createSignal } from 'solid-js';
 
 let [_count, _setcount] = _createSignal(0, {
-  name: "count"
+  name: 'count',
 });
 
 const counter$ = _observable(() => _count());
@@ -391,7 +396,7 @@ const counter$ = _observable(() => _count());
 
 ```ts
 function $from<T>(observable: Observable<T>): T;
-function $from<T>(produce: ((setter: Setter<T>) => () => void)): T;
+function $from<T>(produce: (setter: Setter<T>) => () => void): T;
 ```
 
 Compiles to `from`. Automatically treats variable reads as accessor calls like `$memo`.
@@ -407,13 +412,13 @@ effect: {
 ```
 
 ```js
-import { createEffect as _createEffect } from "solid-js";
-import { from as _from } from "solid-js";
-import { observable as _observable } from "solid-js";
-import { createSignal as _createSignal } from "solid-js";
+import { createEffect as _createEffect } from 'solid-js';
+import { from as _from } from 'solid-js';
+import { observable as _observable } from 'solid-js';
+import { createSignal as _createSignal } from 'solid-js';
 
 let [_count, _setcount] = _createSignal(0, {
-  name: "count"
+  name: 'count',
 });
 
 const counter$ = _observable(() => _count());
@@ -440,7 +445,11 @@ Destructures an object while retaining reactivity. This partially compiles to `s
 Does not support default assignment.
 
 ```js
-let { a: { b, c }, b: { d = defaultD, e = defaultE }, ...f } = $destructure(x);
+let {
+  a: { b, c },
+  b: { d = defaultD, e = defaultE },
+  ...f
+} = $destructure(x);
 
 effect: {
   console.log(b, c);
@@ -454,12 +463,12 @@ effect: {
 ```
 
 ```js
-import { splitProps as _splitProps } from "solid-js";
-import { createEffect as _createEffect } from "solid-js";
+import { splitProps as _splitProps } from 'solid-js';
+import { createEffect as _createEffect } from 'solid-js';
 let _prop = () => x.a,
   _prop2 = () => _prop().b,
   _prop3 = () => _prop().c,
-  _other2 = _splitProps(_prop(), ["b", "c"])[1],
+  _other2 = _splitProps(_prop(), ['b', 'c'])[1],
   _prop4 = () => x.b,
   _def = defaultD,
   _prop5 = () => {
@@ -471,8 +480,8 @@ let _prop = () => x.a,
     const _value2 = _prop4().e;
     return _value2 === undefined ? _def2 : _value2;
   },
-  _other3 = _splitProps(_prop4(), ["d", "e"])[1],
-  _other = _splitProps(x, ["a", "b"])[1];
+  _other3 = _splitProps(_prop4(), ['d', 'e'])[1],
+  _other = _splitProps(x, ['a', 'b'])[1];
 _createEffect(() => {
   console.log(_prop2(), _prop3());
 });
@@ -497,7 +506,7 @@ const mergedObject = $merge(a, b, c, d);
 ```
 
 ```js
-import { mergeProps as _mergeProps } from "solid-js";
+import { mergeProps as _mergeProps } from 'solid-js';
 
 const mergedObject = _mergeProps(a, b, c, d);
 ```
@@ -513,28 +522,30 @@ $component(({ [x]: { y, ...z } = { y: 10 }, ...a }) => (
     {z}
     {a}
   </>
-))
+));
 ```
 
 ```js
-import { mergeProps as _mergeProps } from "solid-js";
-import { splitProps as _splitProps } from "solid-js";
-_props => {
+import { mergeProps as _mergeProps } from 'solid-js';
+import { splitProps as _splitProps } from 'solid-js';
+(_props) => {
   const _def = {
-      y: 10
+      y: 10,
     },
     _prop = () => {
       const _value = _props[x];
       return _value === undefined ? _def : _value;
     },
     _prop2 = () => _prop().y,
-    _other2 = _splitProps(_mergeProps(_prop(), _def), ["y"])[1],
+    _other2 = _splitProps(_mergeProps(_prop(), _def), ['y'])[1],
     _other = _splitProps(_props, [x])[1];
-  return <>
-    {_prop2()}
-    {_other2}
-    {_other}
-  </>;
+  return (
+    <>
+      {_prop2()}
+      {_other2}
+      {_other}
+    </>
+  );
 };
 ```
 
@@ -566,15 +577,18 @@ list = ['Hello'];
 ```
 
 ```js
-import { createEffect as _createEffect } from "solid-js";
-import { mapArray as _mapArray } from "solid-js";
-import { createSignal as _createSignal } from "solid-js";
+import { createEffect as _createEffect } from 'solid-js';
+import { mapArray as _mapArray } from 'solid-js';
+import { createSignal as _createSignal } from 'solid-js';
 
 let [_list, _setlist] = _createSignal([], {
-  name: "list"
+  name: 'list',
 });
 
-const _squaredList = _mapArray(() => _list(), value => value ** 2);
+const _squaredList = _mapArray(
+  () => _list(),
+  (value) => value ** 2,
+);
 
 _createEffect(() => {
   console.log('1st value', _squaredList()[0]);
@@ -609,15 +623,18 @@ list = ['Hello'];
 ```
 
 ```js
-import { createEffect as _createEffect } from "solid-js";
-import { indexArray as _indexArray } from "solid-js";
-import { createSignal as _createSignal } from "solid-js";
+import { createEffect as _createEffect } from 'solid-js';
+import { indexArray as _indexArray } from 'solid-js';
+import { createSignal as _createSignal } from 'solid-js';
 
 let [_list, _setlist] = _createSignal([], {
-  name: "list"
+  name: 'list',
 });
 
-const _squaredList = _indexArray(() => _list(), value => value() ** 2);
+const _squaredList = _indexArray(
+  () => _list(),
+  (value) => value() ** 2,
+);
 
 _createEffect(() => {
   console.log('1st value', _squaredList()[0]);
@@ -641,7 +658,7 @@ const elementID = $uid();
 ```
 
 ```ts
-import { createUniqueId as _createUniqueId } from "solid-js";
+import { createUniqueId as _createUniqueId } from 'solid-js';
 
 const elementID = _createUniqueId();
 ```
@@ -649,7 +666,9 @@ const elementID = _createUniqueId();
 ### `$lazy`
 
 ```ts
-function $lazy<T extends Component<any>>(fn: Promise<{ default: T }>): T & {
+function $lazy<T extends Component<any>>(
+  fn: Promise<{ default: T }>,
+): T & {
   preload: () => void;
 };
 ```
@@ -661,7 +680,7 @@ const LazyComponent = $lazy(import('./LazyComponent'));
 ```
 
 ```js
-import { lazy as _lazy } from "solid-js";
+import { lazy as _lazy } from 'solid-js';
 
 const LazyComponent = _lazy(() => import('./LazyComponent'));
 ```
@@ -679,7 +698,7 @@ const nodes = $children(props.children);
 ```
 
 ```js
-import { children as _children } from "solid-js";
+import { children as _children } from 'solid-js';
 
 const _nodes = _children(() => props.children);
 ```
@@ -701,8 +720,8 @@ const value = $useContext(CounterContext);
 ```
 
 ```js
-import { useContext as _useContext } from "solid-js";
-import { createContext as _createContext } from "solid-js";
+import { useContext as _useContext } from 'solid-js';
+import { createContext as _createContext } from 'solid-js';
 
 const CounterContext = _createContext(0);
 
@@ -712,15 +731,15 @@ const value = _useContext(CounterContext);
 ### Transition
 
 ```ts
-function $startTransition(fn: () => unknown): Promise<void>
-function $useTransition(): Transition
+function $startTransition(fn: () => unknown): Promise<void>;
+function $useTransition(): Transition;
 ```
 
 ### Owner
 
 ```ts
-function $owner(): Owner | null
-function $runWithOwner<T>(o: Owner, fn: () => T): T
+function $owner(): Owner | null;
+function $runWithOwner<T>(o: Owner, fn: () => T): T;
 ```
 
 Compiles to `useTransition` and `startTransition`.
@@ -748,10 +767,10 @@ const [value, setValue] = $refSignal(count);
 compiles into
 
 ```js
-import { createSignal as _createSignal } from "solid-js";
+import { createSignal as _createSignal } from 'solid-js';
 
 let [_count, _setcount] = _createSignal(0, {
-  name: "count"
+  name: 'count',
 });
 
 const [value, setValue] = [_count, _setcount];
@@ -774,22 +793,22 @@ getMessage();
 compiles into
 
 ```js
-import { createMemo as _createMemo } from "solid-js";    
-import { createSignal as _createSignal } from "solid-js";
+import { createMemo as _createMemo } from 'solid-js';
+import { createSignal as _createSignal } from 'solid-js';
 
 let [_count, _setcount] = _createSignal(0, {
-  name: "count"
+  name: 'count',
 });
 
 const _message = _createMemo(() => `Count: ${_count()}`, undefined, {
-  name: "message"
+  name: 'message',
 });
 
 const getMessage = _message;
 getMessage();
 ```
 
-`$refMemo` also works  with `memo:` label and `@memo` comment.
+`$refMemo` also works with `memo:` label and `@memo` comment.
 
 ### `$get` and `$set`
 
@@ -813,15 +832,15 @@ getCount();
 compiles into
 
 ```js
-import { createMemo as _createMemo } from "solid-js";
-import { createSignal as _createSignal } from "solid-js";
+import { createMemo as _createMemo } from 'solid-js';
+import { createSignal as _createSignal } from 'solid-js';
 
 let [_count, _setcount] = _createSignal(0, {
-  name: "count"
+  name: 'count',
 });
 
 const _message = _createMemo(() => `Count: ${_count()}`, undefined, {
-  name: "message"
+  name: 'message',
 });
 
 const getMessage = _message;
@@ -846,10 +865,10 @@ setCount(10);
 compiles into
 
 ```js
-import { createSignal as _createSignal } from "solid-js";
+import { createSignal as _createSignal } from 'solid-js';
 
 let [_count, _setcount] = _createSignal(0, {
-  name: "count"
+  name: 'count',
 });
 
 const setCount = _setcount;
@@ -873,7 +892,7 @@ compiles into
 ```js
 let [_count, _setcount] = useCounter();
 
-_setcount(_current => _current += 10);
+_setcount((_current) => (_current += 10));
 ```
 
 You can provide any kind of get/set tuples.
@@ -913,7 +932,7 @@ effect: {
 compiles into
 
 ```js
-import { createEffect as _createEffect } from "solid-js";
+import { createEffect as _createEffect } from 'solid-js';
 
 const _count = useCounterValue();
 
@@ -937,16 +956,16 @@ const obj = {
 ```
 
 ```js
-import { createSignal as _createSignal } from "solid-js";
+import { createSignal as _createSignal } from 'solid-js';
 const _proto = {
   get count() {
     return this.__$get$count();
-  }
+  },
 };
 let [_count, _setcount] = _createSignal(0);
 const obj = {
   __proto__: _proto,
-  __$get$count: _count
+  __$get$count: _count,
 };
 ```
 
@@ -963,16 +982,16 @@ const obj = {
 ```
 
 ```js
-import { createSignal as _createSignal } from "solid-js";
+import { createSignal as _createSignal } from 'solid-js';
 const _proto = {
   set count(_param) {
     this.__$set$count(() => _param);
-  }
+  },
 };
 let [_count, _setcount] = _createSignal(0);
 const obj = {
   __proto__: _proto,
-  __$set$count: _setcount
+  __$set$count: _setcount,
 };
 ```
 
@@ -991,8 +1010,8 @@ const obj = {
 ```
 
 ```js
-import { createMemo as _createMemo } from "solid-js";
-import { createSignal as _createSignal } from "solid-js";
+import { createMemo as _createMemo } from 'solid-js';
+import { createSignal as _createSignal } from 'solid-js';
 const _proto = {
   get count() {
     return this.__$get$count();
@@ -1002,7 +1021,7 @@ const _proto = {
   },
   get message() {
     return this.__$get$message();
-  }
+  },
 };
 let [_count, _setcount] = _createSignal(0);
 const _message = _createMemo(() => `Count: ${_count()}`);
@@ -1010,7 +1029,7 @@ const obj = {
   __proto__: _proto,
   __$get$count: _count,
   __$set$count: _setcount,
-  __$get$message: _message
+  __$get$message: _message,
 };
 ```
 

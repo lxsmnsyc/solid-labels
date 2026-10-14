@@ -43,11 +43,7 @@ const NAMESPACE_COMPONENTS: Record<string, ComponentImport> = {
 
 const COMPONENT_TRAVERSE: Visitor<State> = {
   Expression(p, state) {
-    if (
-      t.isIdentifier(p.node) &&
-      !p.scope.hasBinding(p.node.name) &&
-      p.node.name in COMPONENTS
-    ) {
+    if (t.isIdentifier(p.node) && !p.scope.hasBinding(p.node.name) && p.node.name in COMPONENTS) {
       const [name, source] = COMPONENTS[p.node.name];
       p.replaceWith(getImportIdentifier(state, p, name, source));
     }
@@ -65,11 +61,7 @@ const COMPONENT_TRAVERSE: Visitor<State> = {
       const identifier = getImportIdentifier(state, p, name, source);
       replacement = t.jsxIdentifier(identifier.name);
     }
-    if (
-      t.isJSXIdentifier(id) &&
-      !p.scope.hasBinding(id.name) &&
-      id.name in COMPONENTS
-    ) {
+    if (t.isJSXIdentifier(id) && !p.scope.hasBinding(id.name) && id.name in COMPONENTS) {
       const [name, source] = COMPONENTS[id.name];
       const identifier = getImportIdentifier(state, p, name, source);
       replacement = t.jsxIdentifier(identifier.name);

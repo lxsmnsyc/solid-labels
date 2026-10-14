@@ -5,9 +5,7 @@ export function unexpectedType<T>(
   received: string,
   expected: string,
 ): Error {
-  return path.buildCodeFrameError(
-    `Unexpected '${received}' (Expected: ${expected})`,
-  );
+  return path.buildCodeFrameError(`Unexpected '${received}' (Expected: ${expected})`);
 }
 
 export function unexpectedMissingParent<T>(path: babel.NodePath<T>): Error {

@@ -4,12 +4,12 @@
   "private": false,
   "description": "Simple, reactive labels for SolidJS",
   "keywords": [
-    "solid-js",
-    "solid-labels",
-    "vite",
     "babel",
     "labels",
-    "reactivity"
+    "reactivity",
+    "solid-js",
+    "solid-labels",
+    "vite"
   ],
   "homepage": "https://github.com/lxsmnsyc/solid-labels/tree/main/packages/vite",
   "bugs": {
@@ -18,14 +18,24 @@
   "license": "MIT",
   "author": "Alexis Munsayac",
   "repository": {
-    "url": "https://github.com/lxsmnsyc/solid-labels.git",
-    "type": "git"
+    "type": "git",
+    "url": "https://github.com/lxsmnsyc/solid-labels.git"
   },
   "files": [
     "dist",
     "src"
   ],
   "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
   "publishConfig": {
     "access": "public"
   },
@@ -50,15 +60,5 @@
   },
   "engines": {
     "node": ">=18"
-  },
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.cts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs"
-    },
-    "./package.json": "./package.json"
   }
 }

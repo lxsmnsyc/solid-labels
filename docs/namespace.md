@@ -11,9 +11,9 @@ Alias for [`<For>`](https://www.solidjs.com/docs/latest#%3Cfor%3E)
 ```
 
 ```jsx
-import { For as _For } from "solid-js";
+import { For as _For } from 'solid-js';
 <_For each={state.list} fallback={<div>Loading...</div>}>
-  {item => <div>{item}</div>}
+  {(item) => <div>{item}</div>}
 </_For>;
 ```
 
@@ -28,9 +28,9 @@ Alias for [`<Index>`](https://www.solidjs.com/docs/latest#%3Cindex%3E)
 ```
 
 ```jsx
-import { Index as _Index } from "solid-js";
+import { Index as _Index } from 'solid-js';
 <_Index each={state.list} fallback={<div>Loading...</div>}>
-  {item => <div>{item()}</div>}
+  {(item) => <div>{item()}</div>}
 </_Index>;
 ```
 
@@ -40,23 +40,23 @@ Alias for [`<Switch>` and `<Match>`](https://www.solidjs.com/docs/latest#%3Cswit
 
 ```jsx
 <solid:switch fallback={<div>Not Found</div>}>
-  <solid:match when={state.route === "home"}>
+  <solid:match when={state.route === 'home'}>
     <Home />
   </solid:match>
-  <solid:match when={state.route === "settings"}>
+  <solid:match when={state.route === 'settings'}>
     <Settings />
   </solid:match>
 </solid:switch>
 ```
 
 ```jsx
-import { Match as _Match } from "solid-js";
-import { Switch as _Switch } from "solid-js";
+import { Match as _Match } from 'solid-js';
+import { Switch as _Switch } from 'solid-js';
 <_Switch fallback={<div>Not Found</div>}>
-  <_Match when={state.route === "home"}>
+  <_Match when={state.route === 'home'}>
     <Home />
   </_Match>
-  <_Match when={state.route === "settings"}>
+  <_Match when={state.route === 'settings'}>
     <Settings />
   </_Match>
 </_Switch>;
@@ -73,9 +73,9 @@ Alias for [`<Show>`](https://www.solidjs.com/docs/latest#%3Cshow%3E)
 ```
 
 ```jsx
-import { Show as _Show } from "solid-js";
+import { Show as _Show } from 'solid-js';
 <_Show when={state.user} fallback={<div>Loading...</div>}>
-  {user => <div>{user.firstName}</div>}
+  {(user) => <div>{user.firstName}</div>}
 </_Show>;
 ```
 
@@ -84,15 +84,13 @@ import { Show as _Show } from "solid-js";
 Alias for [`<ErrorBoundary>`](https://www.solidjs.com/docs/latest#%3Cerrorboundary%3E)
 
 ```jsx
-<solid:error-boundary
-  fallback={(err, reset) => <div onClick={reset}>Error: {err.toString()}</div>}
->
+<solid:error-boundary fallback={(err, reset) => <div onClick={reset}>Error: {err.toString()}</div>}>
   <MyComp />
 </solid:error-boundary>
 ```
 
 ```jsx
-import { ErrorBoundary as _ErrorBoundary } from "solid-js";
+import { ErrorBoundary as _ErrorBoundary } from 'solid-js';
 <_ErrorBoundary fallback={(err, reset) => <div onClick={reset}>Error: {err.toString()}</div>}>
   <MyComp />
 </_ErrorBoundary>;
@@ -109,7 +107,7 @@ Alias for [`<Suspense>`](https://www.solidjs.com/docs/latest#%3Csuspense%3E)
 ```
 
 ```jsx
-import { Suspense as _Suspense } from "solid-js";
+import { Suspense as _Suspense } from 'solid-js';
 <_Suspense fallback={<div>Loading...</div>}>
   <AsyncComponent />
 </_Suspense>;
@@ -117,7 +115,7 @@ import { Suspense as _Suspense } from "solid-js";
 
 ## `<solid:suspense-list>`
 
-Alias for [`<SuspenseList>`](https://www.solidjs.com/docs/latest#%3Csuspenselist%3E-(experimental))
+Alias for [`<SuspenseList>`](<https://www.solidjs.com/docs/latest#%3Csuspenselist%3E-(experimental)>)
 
 ```jsx
 <solid:suspense-list revealOrder="forwards" tail="collapsed">
@@ -132,8 +130,8 @@ Alias for [`<SuspenseList>`](https://www.solidjs.com/docs/latest#%3Csuspenselist
 ```
 
 ```jsx
-import { Suspense as _Suspense } from "solid-js";
-import { SuspenseList as _SuspenseList } from "solid-js";
+import { Suspense as _Suspense } from 'solid-js';
+import { SuspenseList as _SuspenseList } from 'solid-js';
 <_SuspenseList revealOrder="forwards" tail="collapsed">
   <ProfileDetails user={resource.user} />
   <_Suspense fallback={<h2>Loading posts...</h2>}>
@@ -154,7 +152,7 @@ Alias for [`<Dynamic>`](https://www.solidjs.com/docs/latest#%3Cdynamic%3E)
 ```
 
 ```jsx
-import { Dynamic as _Dynamic } from "solid-js/web";
+import { Dynamic as _Dynamic } from 'solid-js/web';
 <_Dynamic component={state.component} someProp={state.something} />;
 ```
 
@@ -163,14 +161,14 @@ import { Dynamic as _Dynamic } from "solid-js/web";
 Alias for [`<Portal>`](https://www.solidjs.com/docs/latest#%3Cportal%3E)
 
 ```jsx
-<solid:portal mount={document.getElementById("modal")}>
+<solid:portal mount={document.getElementById('modal')}>
   <div>My Content</div>
 </solid:portal>
 ```
 
 ```jsx
-import { Portal as _Portal } from "solid-js/web";
-<_Portal mount={document.getElementById("modal")}>
+import { Portal as _Portal } from 'solid-js/web';
+<_Portal mount={document.getElementById('modal')}>
   <div>My Content</div>
 </_Portal>;
 ```
@@ -186,7 +184,7 @@ Alias for `<Assets>`
 ```
 
 ```jsx
-import { Assets as _Assets } from "solid-js/web";
+import { Assets as _Assets } from 'solid-js/web';
 <_Assets>
   <link rel="stylesheet" href="/styles.css" />
 </_Assets>;
@@ -210,14 +208,15 @@ const App = () => {
       <body>{/*... rest of App*/}</body>
     </html>
   );
-}
+};
 ```
 
 ```jsx
-import { HydrationScript as _HydrationScript } from "solid-js/web";
+import { HydrationScript as _HydrationScript } from 'solid-js/web';
 
 const App = () => {
-  return <html lang="en">
+  return (
+    <html lang="en">
       <head>
         <title>🔥 Solid SSR 🔥</title>
         <meta charset="UTF-8" />
@@ -225,10 +224,9 @@ const App = () => {
         <link rel="stylesheet" href="/styles.css" />
         <_HydrationScript />
       </head>
-      <body>{
-        /*... rest of App*/
-      }</body>
-    </html>;
+      <body>{/*... rest of App*/}</body>
+    </html>
+  );
 };
 ```
 
@@ -243,7 +241,7 @@ Alias for `<NoHydration>`
 ```
 
 ```jsx
-import { NoHydration as _NoHydration } from "solid-js/web";
+import { NoHydration as _NoHydration } from 'solid-js/web';
 <_NoHydration>
   <ImNotHydrated />
 </_NoHydration>;
