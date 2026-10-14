@@ -1,6 +1,6 @@
 {
   "name": "unplugin-solid-labels",
-  "version": "0.17.0",
+  "version": "0.17.1",
   "private": false,
   "description": "Unplugin for solid-labels",
   "keywords": [
@@ -59,7 +59,7 @@
   },
   "peerDependencies": {
     "rollup": "^3 || ^4",
-    "solid-labels": "^0.17",
+    "solid-labels": "^0.17.1",
     "vite": "^3 || ^4 || ^5 || ^6 || ^7 || ^8"
   },
   "peerDependenciesMeta": {
