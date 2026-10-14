@@ -47,11 +47,11 @@ jobs:
 
       - name: Create release pull request or publish
         if: steps.changesets.outputs.enabled == 'true'
-        uses: changesets/action@v1
+        # v2 of the action is the one that works with Changesets 3.
+        uses: changesets/action@v2
         with:
-          version: pnpm run version
-          publish: pnpm run release
-          title: 'chore: release packages'
-          commit: 'chore: release packages'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          version-script: pnpm run version
+          publish-script: pnpm run release
+          pr-title: 'chore: release packages'
+          commit-message: 'chore: release packages'
+          create-github-releases: true
