@@ -37,7 +37,8 @@
   "scripts": {
     "prepublishOnly": "tsdown",
     "build": "tsdown",
-    "watch": "tsdown --watch"
+    "watch": "tsdown --watch",
+    "test": "vitest run"
   },
   "dependencies": {
     "magic-string": "^1.2.2",
