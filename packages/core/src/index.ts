@@ -1,13 +1,13 @@
 import type * as solid from 'solid-js';
-import type * as solidStore from 'solid-js/store';
-import type * as solidWeb from 'solid-js/web';
+import type * as solidWeb from '@solidjs/web';
 
 declare global {
   type Accessor<T> = solid.Accessor<T>;
   type Setter<T> = solid.Setter<T>;
   type Context<T> = solid.Context<T>;
-  type ObservableObserver<T> = solid.ObservableObserver<T>;
   type Component<T extends Record<string, any> = {}> = solid.Component<T>;
+
+  // Reactive variables
 
   function $signal<T>(): T | undefined;
   function $signal<T>(
@@ -15,7 +15,8 @@ declare global {
     options?: {
       equals?: false | ((prev: T, next: T) => boolean);
       name?: string;
-      internal?: boolean;
+      ownedWrite?: boolean;
+      unobserved?: () => void;
     },
   ): T;
 
@@ -24,20 +25,14 @@ declare global {
     options?: {
       equals?: false | ((prev: T, next: T) => boolean);
       name?: string;
+      lazy?: boolean;
+      unobserved?: () => void;
     },
   ): T;
-  function $memo<T>(
-    value: T,
-    options?: {
-      equals?: false | ((prev: T, next: T) => boolean);
-      name?: string;
-    },
-  ): T;
-
-  function $untrack<T>(value: T): T;
-  function $batch<T>(value: T): T;
 
   function $<T>(value: T): T;
+
+  // Refs and derefs
 
   function $derefSignal<T>(value: [Accessor<T>, Setter<T>]): T;
   function $refSignal<T>(value: T): [Accessor<T>, Setter<T>];
@@ -48,30 +43,19 @@ declare global {
   function $set<T>(value: T): Setter<T>;
 
   // Object property transforms
+
   function $getter<T>(value: T): T;
   function $setter<T>(value: T): T;
   function $property<T>(value: T): T;
 
-  function $selector<T, U>(
-    source: T,
-    fn?: (a: U, b: T) => boolean,
-    options?: { name?: string },
-  ): (key: U) => boolean;
+  // Effects — the callback reads captured plain values; the compiler
+  // generates the tracked compute phase from the identifiers it captures.
 
-  function $on<T, U>(
-    deps: T,
-    fn: (input: T, prevInput: T, prevValue?: U) => U,
-    options?: { defer?: boolean },
-  ): (prevValue?: U) => U;
+  function $effect(callback: () => (() => void) | void, options?: solid.EffectOptions): void;
+  function $renderEffect(callback: () => (() => void) | void, options?: solid.EffectOptions): void;
 
-  function $deferred<T>(
-    source: T,
-    options?: {
-      equals?: false | ((prev: T, next: T) => boolean);
-      name?: string;
-      timeoutMs?: number;
-    },
-  ): T;
+  function $untrack<T>(value: T): T;
+  function $resolve<T>(value: T): Promise<Awaited<T>>;
 
   function $lazy<T extends Component<any>>(
     fn: Promise<{ default: T }>,
@@ -79,101 +63,108 @@ declare global {
     preload: () => void;
   };
 
-  function $children(value: solid.JSX.Element): solid.JSX.Element;
-
-  interface Observable<T> {
-    subscribe(
-      observer: ObservableObserver<T>,
-    ): { unsubscribe(): void } | (() => void);
-  }
-
-  function $observable<T>(value: T): Observable<T>;
-  function $from<T>(observable: Observable<T>): T;
-  function $from<T>(produce: (setter: Setter<T>) => () => void): T;
+  function $children(value: solid.Element): solid.Element;
 
   function $mapArray<T, U>(
     arr: readonly T[] | undefined | null | false,
     mapFn: (v: T, i: Accessor<number>) => U,
     options?: {
+      keyed?: true;
       fallback?: Accessor<any>;
+      name?: string;
     },
   ): U[];
-  function $indexArray<T, U>(
+  function $mapArray<T, U>(
     arr: readonly T[] | undefined | null | false,
     mapFn: (v: Accessor<T>, i: number) => U,
-    options?: {
+    options: {
+      keyed: false;
       fallback?: Accessor<any>;
+      name?: string;
+    },
+  ): U[];
+  function $repeat<U>(
+    count: number,
+    mapFn: (i: number) => U,
+    options?: {
+      from?: number;
+      fallback?: Accessor<any>;
+      name?: string;
     },
   ): U[];
 
   function $destructure<T>(value: T): T;
 
-  // Auto imports
+  function $component<P>(Comp: (props: P) => solid.Element): (props: P) => solid.Element;
 
-  const $effect: typeof solid.createEffect;
-  const $computed: typeof solid.createComputed;
-  const $renderEffect: typeof solid.createRenderEffect;
+  // Auto-import aliases
 
-  const $useContext: typeof solid.useContext;
-  const $createContext: typeof solid.createContext;
+  const $trackedEffect: typeof solid.createTrackedEffect;
+  const $reaction: typeof solid.createReaction;
+  const $root: typeof solid.createRoot;
+  const $flush: typeof solid.flush;
+
+  const $settled: typeof solid.onSettled;
+  const $cleanup: typeof solid.onCleanup;
+
+  const $action: typeof solid.action;
+  const $isPending: typeof solid.isPending;
+  const $latest: typeof solid.latest;
+  const $refresh: typeof solid.refresh;
+  const $affects: typeof solid.affects;
 
   const $uid: typeof solid.createUniqueId;
-  const $root: typeof solid.createRoot;
-  const $resource: typeof solid.createResource;
-  const $merge: typeof solid.mergeProps;
-
-  const $reaction: typeof solid.createReaction;
-  const $mount: typeof solid.onMount;
-  // @deprecated
-  const $error: typeof solid.onError;
-  const $cleanup: typeof solid.onCleanup;
-  const $catchError: typeof solid.catchError;
-
-  const $startTransition: typeof solid.startTransition;
-  const $useTransition: typeof solid.useTransition;
-
+  const $merge: typeof solid.merge;
+  const $omit: typeof solid.omit;
+  const $useContext: typeof solid.useContext;
+  const $createContext: typeof solid.createContext;
   const $owner: typeof solid.getOwner;
   const $runWithOwner: typeof solid.runWithOwner;
 
-  // store
-  const $store: typeof solidStore.createStore;
-  const $mutable: typeof solidStore.createMutable;
-  const $produce: typeof solidStore.produce;
-  const $reconcile: typeof solidStore.reconcile;
-  const $unwrap: typeof solidStore.unwrap;
+  const $store: typeof solid.createStore;
+  const $projection: typeof solid.createProjection;
+  const $optimistic: typeof solid.createOptimistic;
+  const $optimisticStore: typeof solid.createOptimisticStore;
+  const $reconcile: typeof solid.reconcile;
+  const $snapshot: typeof solid.snapshot;
+  const $deep: typeof solid.deep;
 
-  // components
+  // Components
+
   const For: typeof solid.For;
   const Show: typeof solid.Show;
   const Switch: typeof solid.Switch;
   const Match: typeof solid.Match;
-  const Index: typeof solid.Index;
-  const ErrorBoundary: typeof solid.ErrorBoundary;
-  const Suspense: typeof solid.Suspense;
-  const SuspenseList: typeof solid.SuspenseList;
+  const Repeat: typeof solid.Repeat;
+  const Errored: typeof solid.Errored;
+  const Loading: typeof solid.Loading;
+  const Reveal: typeof solid.Reveal;
   const Dynamic: typeof solidWeb.Dynamic;
   const Portal: typeof solidWeb.Portal;
-  const Assets: typeof solidWeb.Assets;
   const HydrationScript: typeof solidWeb.HydrationScript;
+  const Hydration: typeof solidWeb.Hydration;
   const NoHydration: typeof solidWeb.NoHydration;
-
-  function $component<P>(
-    Comp: (props: P) => solid.JSX.Element,
-  ): (props: P) => solid.JSX.Element;
 }
 
-type Props<T> = T extends (props: infer P) => solid.JSX.Element ? P : never;
+type Props<T> = T extends (props: infer P) => any ? P : never;
 
-declare module 'solid-js' {
-  // biome-ignore lint/style/noNamespace: <explanation>
+declare module '@solidjs/web' {
+  // JSX namespace augmentation
   namespace JSX {
     interface IntrinsicElements {
-      'solid:error-boundary': Props<typeof ErrorBoundary>;
-      'solid:suspense': Props<typeof Suspense>;
-      'solid:suspense-list': Props<typeof SuspenseList>;
-      'solid:portal': Props<typeof solidWeb.Portal>;
-      'solid:assets': Props<typeof solidWeb.Assets>;
+      'solid:for': Props<typeof For>;
+      'solid:show': Props<typeof Show>;
+      'solid:switch': Props<typeof Switch>;
+      'solid:match': Props<typeof Match>;
+      'solid:repeat': Props<typeof Repeat>;
+      'solid:errored': Props<typeof Errored>;
+      'solid:loading': Props<typeof Loading>;
+      'solid:reveal': Props<typeof Reveal>;
+      // `Props<typeof Dynamic>` would be circular through IntrinsicElements.
+      'solid:dynamic': Record<string, unknown>;
+      'solid:portal': Props<typeof Portal>;
       'solid:hydration-script': Props<typeof solidWeb.HydrationScript>;
+      'solid:hydration': Props<typeof solidWeb.Hydration>;
       'solid:no-hydration': Props<typeof solidWeb.NoHydration>;
     }
   }

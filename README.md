@@ -1,4 +1,3 @@
-
 # `solid-labels`
 
 [![NPM](https://img.shields.io/npm/v/solid-labels.svg)](https://www.npmjs.com/package/solid-labels) [![JavaScript Style Guide](https://badgen.net/badge/code%20style/airbnb/ff5a5f?icon=airbnb)](https://github.com/airbnb/javascript)
@@ -10,6 +9,8 @@
     style="width: 80%; height: auto;"
   />
 </p>
+
+> This version targets **Solid 2.0** (`solid-js@2.0.0-rc.1` and `@solidjs/web@2.0.0-rc.1`). For Solid 1.x, use `solid-labels@0.17` or older.
 
 ## Install
 
@@ -27,21 +28,20 @@ pnpm add solid-labels
 
 ## Features
 
-- 🏷 Labels: Turn labels into SolidJS utility calls!
-- 💬 Comments: Turn comments into SolidJS utility calls, too!
 - ⏱ Compile-time Functions: Use functions that are evaluated during compile-time!
 - 📦 Auto Imports: No need to import SolidJS utilities, explicitly!
+- ⚡ Oxc-powered: native-speed parsing, span-based output, high-resolution source maps!
 - 🤝 JS and TS Friendly!
+
+> Labels (`signal: x = 0`) and comment pragmas (`/* @signal */`) were removed
+> in 1.0 — see the [migration guide](https://github.com/LXSMNSYC/solid-labels/tree/main/docs/migration.md).
 
 ## Usage
 
-- [Labels](https://github.com/LXSMNSYC/solid-labels/tree/main/docs/labels.md)
-[![Open in CodeSandbox](https://img.shields.io/badge/Open%20in-CodeSandbox-blue?style=flat-square&logo=codesandbox)](https://codesandbox.io/s/github/LXSMNSYC/solid-labels/tree/main/examples/labels)
-- [Comments](https://github.com/LXSMNSYC/solid-labels/tree/main/docs/comments.md)
-[![Open in CodeSandbox](https://img.shields.io/badge/Open%20in-CodeSandbox-blue?style=flat-square&logo=codesandbox)](https://codesandbox.io/s/github/LXSMNSYC/solid-labels/tree/main/examples/comments)
 - [Compile-Time Functions](https://github.com/LXSMNSYC/solid-labels/tree/main/docs/ctf.md)
-[![Open in CodeSandbox](https://img.shields.io/badge/Open%20in-CodeSandbox-blue?style=flat-square&logo=codesandbox)](https://codesandbox.io/s/github/LXSMNSYC/solid-labels/tree/main/examples/ctf)
+  [![Open in CodeSandbox](https://img.shields.io/badge/Open%20in-CodeSandbox-blue?style=flat-square&logo=codesandbox)](https://codesandbox.io/s/github/LXSMNSYC/solid-labels/tree/main/examples/ctf)
 - [Solid Namespace](https://github.com/LXSMNSYC/solid-labels/tree/main/docs/namespace.md)
+- [Migration from 0.x](https://github.com/LXSMNSYC/solid-labels/tree/main/docs/migration.md)
 
 ### Typescript
 
@@ -51,25 +51,20 @@ pnpm add solid-labels
 /// <reference types="solid-labels" />
 ```
 
-### Babel
+### Programmatic
 
-`.babelrc`
+```ts
+import { compile } from 'solid-labels/compiler';
 
-```json
-{
-  "plugins": [
-    ["solid-labels/babel", { "dev": false }]
-  ]
-}
+const { code, map } = compile('App.tsx', source, { dev: true });
 ```
-
-[!INFO]: You don't have to use this if you're using Vite or Rollup plugins
 
 ## Integrations
 
-- [Vite](https://github.com/lxsmnsyc/solid-labels/tree/main/packages/vite)
-- [Rollup](https://github.com/lxsmnsyc/solid-labels/tree/main/packages/rollup)
 - [Unplugin](https://github.com/lxsmnsyc/solid-labels/tree/main/packages/unplugin)
+  serves Vite, Rollup, webpack, and esbuild through
+  [unplugin](https://github.com/unjs/unplugin) adapters
+  (`solidLabels.vite(options)`, `solidLabels.rollup(options)`, and so on).
 
 ### Disabling features
 
@@ -78,22 +73,12 @@ You can disable some features by passing `disabled` option to the plugin options
 ```js
 {
   disabled: {
-    labels: {
-      signal: true,
-    },
-    pragma: {
-      '@signal': true,
-    },
     ctf: {
       $signal: true,
     },
   }
 }
 ```
-
-## Limitations
-
-- Detecting shadowed identifier for `signal` and `memo`.
 
 ## Sponsors
 

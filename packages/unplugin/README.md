@@ -27,12 +27,6 @@ import solidLabels from 'unplugin-solid-labels';
 solidLabels.vite({
   dev: true, // defaults to false
   disabled: {
-    labels: {
-      signal: true,
-    },
-    pragma: {
-      '@signal': true,
-    },
     ctf: {
       $signal: true,
     },
@@ -41,7 +35,7 @@ solidLabels.vite({
     include: 'src/**/*.{ts,js,tsx,jsx}',
     exclude: 'node_modules/**/*.{ts,js,tsx,jsx}',
   },
-})
+});
 ```
 
 ## Sponsors

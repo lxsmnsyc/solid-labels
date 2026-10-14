@@ -1,6 +1,6 @@
 {
   "exclude": ["node_modules"],
-  "include": ["src", "types", "babel"],
+  "include": ["src", "types", "compiler"],
   "compilerOptions": {
     "module": "ESNext",
     "lib": ["ESNext", "DOM"],

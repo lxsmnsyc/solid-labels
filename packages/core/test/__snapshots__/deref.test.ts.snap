@@ -1,0 +1,16 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`$derefMemo > adopts external accessors 1`] = `
+"
+const message = useMessage();
+console.log(message());
+"
+`;
+
+exports[`$derefSignal > adopts external signal tuples 1`] = `
+"
+let [count, setcount_1] = useCounter();
+console.log(count());
+setcount_1(() => 10);
+"
+`;

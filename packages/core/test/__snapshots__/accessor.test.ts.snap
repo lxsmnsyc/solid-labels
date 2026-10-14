@@ -1,0 +1,38 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`accessor CTFs > transforms $children 1`] = `
+"import { children as _children } from "solid-js";
+
+const nodes = _children(() => props.children);
+console.log(nodes());
+"
+`;
+
+exports[`accessor CTFs > transforms $mapArray 1`] = `
+"import { createSignal as _createSignal } from "solid-js";
+import { mapArray as _mapArray } from "solid-js";
+
+let [list, setlist_1] = _createSignal([]);
+const squares = _mapArray(() => list(), (value) => value ** 2);
+console.log(squares());
+"
+`;
+
+exports[`accessor CTFs > transforms $mapArray 2`] = `
+"import { createSignal as _createSignal } from "solid-js";
+import { mapArray as _mapArray } from "solid-js";
+
+let [list, setlist_1] = _createSignal([]);
+const squares = _mapArray(() => list(), (value, index) => value ** 2, { keyed: false });
+"
+`;
+
+exports[`accessor CTFs > transforms $repeat 1`] = `
+"import { createSignal as _createSignal } from "solid-js";
+import { repeat as _repeat } from "solid-js";
+
+let [total, settotal_1] = _createSignal(10);
+const rows = _repeat(() => total(), (index) => index * 2);
+console.log(rows());
+"
+`;

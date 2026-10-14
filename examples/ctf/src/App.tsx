@@ -1,4 +1,5 @@
-import type { Accessor, JSX, Setter } from 'solid-js';
+import type { JSX } from '@solidjs/web';
+import type { Accessor, Setter } from 'solid-js';
 
 function useCounter(): [Accessor<number>, Setter<number>] {
   const count = $signal(0);
