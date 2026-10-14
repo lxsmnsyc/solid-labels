@@ -22,39 +22,16 @@
   },
   "files": [
     "dist",
-    "babel",
-    "core"
+    "src"
   ],
   "type": "module",
-  "main": "./dist/cjs/production/index.cjs",
-  "module": "./dist/esm/production/index.mjs",
-  "types": "./dist/types/index.d.ts",
-  "typesVersions": {
-    "*": {}
-  },
-  "exports": {
-    ".": {
-      "development": {
-        "require": "./dist/cjs/development/index.cjs",
-        "import": "./dist/esm/development/index.mjs"
-      },
-      "require": "./dist/cjs/production/index.cjs",
-      "import": "./dist/esm/production/index.mjs",
-      "types": "./dist/types/index.d.ts"
-    }
-  },
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
-    "prepublishOnly": "pridepack clean && pridepack build",
-    "build": "pridepack build",
-    "type-check": "pridepack check",
-    "lint": "pridepack lint",
-    "clean": "pridepack clean",
-    "watch": "pridepack watch",
-    "start": "pridepack start",
-    "dev": "pridepack dev"
+    "prepublishOnly": "tsdown",
+    "build": "tsdown",
+    "watch": "tsdown --watch"
   },
   "dependencies": {
     "@rollup/pluginutils": "^5.1.4",
@@ -62,11 +39,11 @@
   },
   "devDependencies": {
     "@types/node": "^22.13.4",
-    "pridepack": "2.6.1",
     "rollup": "^4.34.8",
-    "solid-labels": "0.17.0",
+    "solid-labels": "workspace:*",
+    "tsdown": "^0.23.1",
     "tslib": "^2.8.1",
-    "typescript": "^5.8.2",
+    "typescript": "^7.0.2",
     "vite": "^6.1.1"
   },
   "peerDependencies": {
@@ -83,6 +60,10 @@
     }
   },
   "engines": {
-    "node": ">=10"
+    "node": ">=18"
+  },
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./package.json": "./package.json"
   }
 }

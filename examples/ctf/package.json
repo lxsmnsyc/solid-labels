@@ -17,9 +17,9 @@
   },
   "devDependencies": {
     "@solidjs/vite-plugin": "^3.0.0-next.32",
-    "solid-labels": "0.17.0",
-    "typescript": "^5.8.2",
+    "solid-labels": "workspace:*",
+    "typescript": "^7.0.2",
     "vite": "^8.0.0",
-    "unplugin-solid-labels": "0.17.0"
+    "unplugin-solid-labels": "workspace:*"
   }
 }
