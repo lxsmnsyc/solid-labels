@@ -8,17 +8,18 @@
     "serve": "vite preview"
   },
   "devDependencies": {
-    "solid-labels": "0.17.0",
-    "typescript": "^5.8.2",
-    "vite": "^6.1.1",
-    "vite-plugin-solid": "^2.11.2",
-    "vite-plugin-solid-labels": "0.17.0"
+    "@types/node": "^26.6.5",
+    "solid-labels": "workspace:*",
+    "typescript": "^6.0.3",
+    "vite": "^8.3.4",
+    "vite-plugin-solid": "^2.11.14",
+    "vite-plugin-solid-labels": "workspace:*"
   },
   "private": true,
   "publishConfig": {
     "access": "restricted"
   },
   "dependencies": {
-    "solid-js": "^1.9.3"
+    "solid-js": "^1.9.17"
   }
 }

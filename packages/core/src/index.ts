@@ -165,7 +165,6 @@ declare global {
 type Props<T> = T extends (props: infer P) => solid.JSX.Element ? P : never;
 
 declare module 'solid-js' {
-  // biome-ignore lint/style/noNamespace: <explanation>
   namespace JSX {
     interface IntrinsicElements {
       'solid:error-boundary': Props<typeof ErrorBoundary>;

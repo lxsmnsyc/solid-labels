@@ -240,7 +240,7 @@ const CTF_TRAVERSE: babel.Visitor<State> = {
                 }
               }
               path.replaceWith(
-                signalVariable(state, path, id, argument || UNDEFINED, options),
+                signalVariable(state, path, id, argument ?? UNDEFINED, options),
               );
             } else if (
               trueCallee.name === MEMO_CTF ||

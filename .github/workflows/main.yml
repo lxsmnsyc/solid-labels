@@ -1,33 +1,35 @@
 name: CI
+
 on:
-  - push
+  push:
+  pull_request:
+
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
+
       - uses: pnpm/action-setup@v4
         with:
-          version: 8
-          run_install: true
+          version: 12
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: "pnpm"
+          node-version: 24
+          cache: pnpm
 
-      - name: Clean
-        run: pnpm recursive run clean
-        env:
-          CI: true
+      - name: Install
+        run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: pnpm recursive run build
-        env:
-          CI: true
+        run: pnpm -r --filter "./packages/*" build
 
-      - name: Begin Tests
-        run: pnpm recursive run test
-        env:
-          CI: true
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Format
+        run: pnpm run format:check
+
+      - name: Test
+        run: pnpm -r --filter "./packages/*" --if-present test

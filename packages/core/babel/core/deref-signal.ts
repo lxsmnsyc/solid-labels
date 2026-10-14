@@ -215,7 +215,6 @@ function transformSignalWrite(
   }
   if (isPathValid(ref, t.isAssignmentExpression)) {
     transformAssignmentExpression(ref, writeIdentifier);
-    return;
   }
 }
 

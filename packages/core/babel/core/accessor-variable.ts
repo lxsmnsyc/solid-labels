@@ -7,7 +7,7 @@ export function accessorVariable(
   path: babel.NodePath,
   accessorIdentifier: t.Identifier,
   callee: t.Identifier,
-  replacement: Array<t.Expression | t.SpreadElement | t.ArgumentPlaceholder>,
+  replacement: (t.Expression | t.SpreadElement | t.ArgumentPlaceholder)[],
 ): t.VariableDeclarator {
   const readIdentifier = generateUniqueName(path, accessorIdentifier.name);
 

@@ -55,10 +55,11 @@ const DEFAULT_EXCLUDE = 'node_modules/**/*.{jsx,tsx,ts,js,mjs,cjs}';
 const FILE_FILTER = /\.[mc]?tsx?$/i;
 
 const solidLabelsPlugin = createUnplugin(
-  (options: SolidLabelsPluginOptions = {}) => {
+  (rawOptions?: SolidLabelsPluginOptions) => {
+    const options = rawOptions ?? {};
     const filter = createFilter(
-      options.filter?.include || DEFAULT_INCLUDE,
-      options.filter?.exclude || DEFAULT_EXCLUDE,
+      options.filter?.include ?? DEFAULT_INCLUDE,
+      options.filter?.exclude ?? DEFAULT_EXCLUDE,
     );
 
     let env: string;
@@ -98,7 +99,7 @@ const solidLabelsPlugin = createUnplugin(
 
         if (result) {
           return {
-            code: result.code || '',
+            code: result.code ?? '',
             map: result.map,
           };
         }
@@ -107,9 +108,10 @@ const solidLabelsPlugin = createUnplugin(
       vite: {
         enforce: 'pre',
         configResolved(config): void {
-          env = config.mode !== 'production' ? 'development' : 'production';
+          env = config.mode === 'production' ? 'production' : 'development';
 
           // run our plugin before the following plugins:
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion
           repushPlugin(config.plugins as Plugin[], 'solid-labels', [
             // https://github.com/withastro/astro/blob/main/packages/astro/src/vite-plugin-jsx/index.ts#L173
             'astro:jsx',

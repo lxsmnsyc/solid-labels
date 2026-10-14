@@ -50,7 +50,10 @@ function getVariableLabelPreference(
 
 const LABEL_PATTERN = /^@\w+( .*)?$/;
 
-function getCallbackLabelPreference(state: State, comments: t.Comment[]) {
+function getCallbackLabelPreference(
+  state: State,
+  comments: t.Comment[],
+): [string | undefined, string | undefined] {
   let preference: string | undefined;
   let nameOption: string | undefined;
   for (let i = 0, len = comments.length; i < len; i++) {

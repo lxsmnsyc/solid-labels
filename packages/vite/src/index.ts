@@ -7,8 +7,8 @@ export type {
   SolidLabelsPluginOptions,
 } from 'unplugin-solid-labels';
 
-const solidLabelsPlugin = solidLabelsUnplugin.vite as (
+const solidLabelsPlugin: (
   options: SolidLabelsPluginOptions,
-) => Plugin;
+) => Plugin | Plugin[] = solidLabelsUnplugin.vite;
 
 export default solidLabelsPlugin;

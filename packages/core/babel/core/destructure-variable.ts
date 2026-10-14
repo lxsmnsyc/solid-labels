@@ -232,12 +232,12 @@ export function destructureVariable(
           t.callExpression(
             getImportIdentifier(state, path, 'splitProps', 'solid-js'),
             [
-              defaultValue != null
-                ? t.callExpression(
+              defaultValue == null
+                ? target
+                : t.callExpression(
                     getImportIdentifier(state, path, 'mergeProps', 'solid-js'),
                     [target, defaultValue],
-                  )
-                : target,
+                  ),
               t.arrayExpression(properties),
             ],
           ),

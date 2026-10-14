@@ -7,8 +7,8 @@ export type {
   SolidLabelsPluginOptions,
 } from 'unplugin-solid-labels';
 
-const solidLabelsPlugin = solidLabelsUnplugin.rollup as (
+const solidLabelsPlugin: (
   options: SolidLabelsPluginOptions,
-) => Plugin;
+) => Plugin | Plugin[] = solidLabelsUnplugin.rollup;
 
 export default solidLabelsPlugin;

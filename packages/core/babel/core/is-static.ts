@@ -71,6 +71,10 @@ export function isStatic(
       if (t.isTSParameterProperty(el)) {
         return false;
       }
+      // `void` discard patterns bind nothing
+      if (t.isVoidPattern(el)) {
+        return true;
+      }
       if (el) {
         return isStatic(el);
       }
@@ -98,6 +102,9 @@ export function isStatic(
   if (t.isObjectPattern(node)) {
     return node.properties.every(prop => {
       if (t.isObjectProperty(prop)) {
+        if (t.isVoidPattern(prop.value)) {
+          return true;
+        }
         if (!t.isTSTypeParameter(prop.value) && isStatic(prop.value)) {
           return true;
         }
