@@ -1,3 +1,9 @@
 packages:
   - 'packages/**/*'
   - 'examples/**/*'
+
+strictPeerDependencies: false
+preferWorkspacePackages: true
+linkWorkspacePackages: true
+allowBuilds:
+  esbuild: false
