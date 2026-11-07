@@ -673,7 +673,7 @@ export function analyze(program: Node): Analysis {
         eachChild(node, resolve);
         break;
     }
-    ancestors = ancestors!.up;
+    ancestors = ancestors.up;
     if (mapped) {
       scopeStack.pop();
     }
