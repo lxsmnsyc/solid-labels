@@ -38,7 +38,8 @@
     "prepublishOnly": "tsdown",
     "build": "tsdown",
     "watch": "tsdown --watch",
-    "test": "vitest run"
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p ."
   },
   "dependencies": {
     "magic-string": "^1.2.2",

@@ -99,7 +99,7 @@ function analyzeCaptures(ctx: Ctx, call: Node, target: Node, body: Node): Captur
       continue;
     }
     if (binding.scope !== ctx.analysis.module || reactive) {
-      const info: CaptureInfo = { get: true, set: false };
+      const info: CaptureInfo = { get: 'plain', set: false };
       captured.set(binding, info);
       captures.push({ binding, info, firstRef });
     }

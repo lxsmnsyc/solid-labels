@@ -10,7 +10,7 @@
     "changeset": "changeset",
     "version": "changeset version",
     "release": "pnpm -r --filter \"./packages/*\" build && changeset publish",
-    "lint": "oxlint",
+    "lint": "pnpm -r --filter \"./packages/*\" build && oxlint",
     "format": "oxfmt",
     "format:check": "oxfmt --check"
   },
