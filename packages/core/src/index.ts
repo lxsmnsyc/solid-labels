@@ -99,6 +99,7 @@ declare global {
 
   // Auto-import aliases
 
+  // oxlint-disable-next-line typescript/no-deprecated -- compile-time alias maps to createTrackedEffect; solid recommends createEffect(compute, effect) or onSettled
   const $trackedEffect: typeof solid.createTrackedEffect;
   const $reaction: typeof solid.createReaction;
   const $root: typeof solid.createRoot;
@@ -139,6 +140,7 @@ declare global {
   const Errored: typeof solid.Errored;
   const Loading: typeof solid.Loading;
   const Reveal: typeof solid.Reveal;
+  // oxlint-disable-next-line typescript/no-deprecated -- compile-time alias maps to Dynamic; solid recommends dynamic()
   const Dynamic: typeof solidWeb.Dynamic;
   const Portal: typeof solidWeb.Portal;
   const HydrationScript: typeof solidWeb.HydrationScript;
