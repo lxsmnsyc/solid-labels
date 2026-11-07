@@ -47,6 +47,8 @@ export interface PendingHoist {
  * analysis, auto-import registry, reactive binding registry, effect capture
  * regions, and callbacks pending module-level hoisting.
  */
+function ignoreSpan(): void {}
+
 export class Ctx {
   s: MagicString;
   code: string;
@@ -63,6 +65,8 @@ export class Ctx {
   /** Spans of `$untrack(...)` calls; reads inside them are not tracked by effects. */
   untrackSpans: [number, number][] = [];
   pendingHoists: PendingHoist[] = [];
+  /** Runs the structural rewrite of every CTF reference inside a span. Set by `transformProgram`. */
+  processWithin: (start: number, end: number) => void = ignoreSpan;
   unresolvedByNode = new Map<Node, Ref>();
 
   constructor(

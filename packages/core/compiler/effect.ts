@@ -219,6 +219,11 @@ function isHoistable(ctx: Ctx, target: Node, blocked: boolean): boolean {
  * When the callback captures nothing that blocks it, the callback is hoisted
  * to module level as a named function.
  */
+/** True when the expression would parse as a block, declaration or class at the start of a statement. */
+export function startsStatementBadly(text: string): boolean {
+  return /^(\{|function\b|class\b|async\s+function\b)/.test(text);
+}
+
 export default function transformEffect(
   ctx: Ctx,
   ref: Ref,
@@ -320,7 +325,9 @@ export default function transformEffect(
       statement: true,
     });
   } else {
-    s.appendLeft(exprStart, `${computeText}([${params.join(', ')}]) => { `);
-    s.appendLeft(exprEnd, '; }');
+    // A statement cannot start with `{`, `function` or `class`.
+    const open = startsStatementBadly(code.slice(exprStart, exprEnd)) ? '(' : '';
+    s.appendLeft(exprStart, `${computeText}([${params.join(', ')}]) => { ${open}`);
+    s.appendLeft(exprEnd, `${open ? ')' : ''}; }`);
   }
 }

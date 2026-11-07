@@ -1,18 +1,19 @@
 import type { Ctx } from './context';
+import { takeJSXNameEdits } from './jsx';
 
 /**
- * Renders a source span into a string, applying pending read rewrites for
- * reactive bindings whose references fall inside the span. Those references
- * are marked consumed so the main rewrite phase skips them — the caller is
- * about to overwrite the span with the rendered text.
+ * Renders a source span into a string with every pending rewrite inside it
+ * applied: CTF calls, JSX component names and reads of reactive bindings.
+ * Those references are marked consumed so the main rewrite phase skips them.
+ * The caller is about to overwrite a range that covers the span, so the edits
+ * made here only feed the returned text.
  */
 export default function renderSlice(ctx: Ctx, start: number, end: number): string {
-  interface Edit {
-    start: number;
-    end: number;
-    text: string;
+  const { s } = ctx;
+  ctx.processWithin(start, end);
+  for (const edit of takeJSXNameEdits(ctx, start, end)) {
+    s.overwrite(edit.node.start, edit.node.end, edit.text);
   }
-  const edits: Edit[] = [];
   for (const [binding, info] of ctx.reactive) {
     if (info.kind === 'raw') {
       continue;
@@ -29,28 +30,11 @@ export default function renderSlice(ctx: Ctx, start: number, end: number): strin
       }
       ctx.consumed.add(ref.node);
       if (ref.shorthand) {
-        edits.push({
-          start: ref.node.start,
-          end: ref.node.end,
-          text: `${binding.name}: ${info.get}()`,
-        });
+        s.overwrite(ref.node.start, ref.node.end, `${binding.name}: ${info.get}()`);
       } else {
-        edits.push({
-          start: ref.node.end,
-          end: ref.node.end,
-          text: '()',
-        });
+        s.appendLeft(ref.node.end, '()');
       }
     }
   }
-  edits.sort((a, b) => a.start - b.start);
-  let result = '';
-  let cursor = start;
-  for (const edit of edits) {
-    result += ctx.code.slice(cursor, edit.start);
-    result += edit.text;
-    cursor = edit.end;
-  }
-  result += ctx.code.slice(cursor, end);
-  return result;
+  return s.slice(start, end);
 }

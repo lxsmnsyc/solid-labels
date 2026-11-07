@@ -3,7 +3,7 @@ import { unwrap } from './ast';
 import transformComponent from './component';
 import type { Ctx } from './context';
 import { transformDestructure } from './destructure';
-import transformEffect from './effect';
+import transformEffect, { startsStatementBadly } from './effect';
 import transformJSXComponents from './jsx';
 import { REF_CTFS, rewriteReferences } from './reactive';
 import { ACCESSOR_CTF, ARROW_CTF, AUTO_ALIAS, COMPONENTS } from './registry';
@@ -60,13 +60,18 @@ export default function transformProgram(ctx: Ctx): void {
   const unresolved = [...ctx.analysis.unresolved].sort((a, b) => a.node.start - b.node.start);
   const effects: Ref[] = [];
 
-  for (const ref of unresolved) {
+  const done = new Set<Ref>();
+  function processRef(ref: Ref): void {
+    if (done.has(ref)) {
+      return;
+    }
+    done.add(ref);
     if (ctx.consumed.has(ref.node)) {
-      continue;
+      return;
     }
     const name = ref.node.name as string;
     if (ctx.disabled[name]) {
-      continue;
+      return;
     }
     if (name === '$effect' || name === '$renderEffect') {
       if (isCallee(ref)) {
@@ -74,7 +79,7 @@ export default function transformProgram(ctx: Ctx): void {
       } else {
         ctx.error(ref.node, `${name} must be called directly`);
       }
-      continue;
+      return;
     }
     if (name === '$signal') {
       const site = findDeclarator(ref);
@@ -82,7 +87,7 @@ export default function transformProgram(ctx: Ctx): void {
         ctx.error(ref.node, '$signal must initialize a variable declaration');
       }
       transformSignal(ctx, ref, site);
-      continue;
+      return;
     }
     if (name === '$memo') {
       const site = findDeclarator(ref);
@@ -90,19 +95,19 @@ export default function transformProgram(ctx: Ctx): void {
         ctx.error(ref.node, '$memo must initialize a variable declaration');
       }
       transformMemo(ctx, ref, site);
-      continue;
+      return;
     }
     if (name === '$') {
       const site = findDeclarator(ref);
       if (site) {
         transformMemo(ctx, ref, site);
-        continue;
+        return;
       }
       const call = isCallee(ref);
       if (call && isStatementCall(ref, call)) {
         // Compiled like $effect; deferred so every reactive binding is known.
         effects.push(ref);
-        continue;
+        return;
       }
       ctx.error(ref.node, '$ must initialize a variable declaration or be used as a statement');
     }
@@ -112,7 +117,7 @@ export default function transformProgram(ctx: Ctx): void {
         ctx.error(ref.node, '$derefSignal must initialize a variable declaration');
       }
       transformDerefSignal(ctx, ref, site);
-      continue;
+      return;
     }
     if (name === '$derefMemo') {
       const site = findDeclarator(ref);
@@ -120,7 +125,7 @@ export default function transformProgram(ctx: Ctx): void {
         ctx.error(ref.node, '$derefMemo must initialize a variable declaration');
       }
       transformDerefMemo(ctx, ref, site);
-      continue;
+      return;
     }
     if (name === '$destructure') {
       const site = findDeclarator(ref);
@@ -128,7 +133,7 @@ export default function transformProgram(ctx: Ctx): void {
         ctx.error(ref.node, '$destructure must initialize a variable declaration');
       }
       transformDestructure(ctx, ref, site);
-      continue;
+      return;
     }
     if (name in ACCESSOR_CTF) {
       const site = findDeclarator(ref);
@@ -137,7 +142,7 @@ export default function transformProgram(ctx: Ctx): void {
       }
       const [importName, source, maxArgs] = ACCESSOR_CTF[name];
       transformAccessorCtf(ctx, ref, site, importName, source, maxArgs);
-      continue;
+      return;
     }
     if (name === '$component') {
       const call = isCallee(ref);
@@ -145,7 +150,7 @@ export default function transformProgram(ctx: Ctx): void {
         ctx.error(ref.node, '$component must be called directly');
       }
       transformComponent(ctx, ref, call);
-      continue;
+      return;
     }
     if (name in ARROW_CTF) {
       const call = isCallee(ref);
@@ -154,20 +159,41 @@ export default function transformProgram(ctx: Ctx): void {
       }
       const [importName, source, maxArgs] = ARROW_CTF[name];
       transformArrowCtf(ctx, ref, call, importName, source, maxArgs);
-      continue;
+      return;
     }
     if (name in AUTO_ALIAS) {
       if (ref.exported) {
-        continue;
+        return;
       }
       const [importName, source] = AUTO_ALIAS[name];
       replaceAlias(ctx, ref, importName, source);
-      continue;
+      return;
     }
     if (name in COMPONENTS && !ref.exported) {
       const [importName, source] = COMPONENTS[name];
       replaceAlias(ctx, ref, importName, source);
     }
+  }
+
+  // Rendering a span to text (destructure defaults) needs the CTFs inside it
+  // rewritten first, so it can read the edited text back from the span.
+  ctx.processWithin = (start, end) => {
+    for (const ref of unresolved) {
+      if (ref.node.start >= start && ref.node.end <= end) {
+        processRef(ref);
+      }
+    }
+    // An effect callback may be hoisted out of its span, which is about to be
+    // replaced by text, so effects inside it are not supported.
+    for (const ref of effects) {
+      if (ref.node.start >= start && ref.node.end <= end) {
+        ctx.error(ref.node, `${ref.node.name} cannot be used inside a destructuring default`);
+      }
+    }
+  };
+
+  for (const ref of unresolved) {
+    processRef(ref);
   }
 
   // Collected before effect analysis: reads inside $untrack(...) are
@@ -233,9 +259,15 @@ function extractHoistedCallbacks(ctx: Ctx): void {
   let trailer = '';
   for (const pending of ctx.pendingHoists) {
     const header = `function ${pending.name}([${pending.params.join(', ')}]) `;
-    let body = pending.text;
+    const text = pending.text ?? '';
+    let body = text;
     if (pending.concise) {
-      body = pending.statement ? `{\n  ${pending.text};\n}` : `{\n  return ${pending.text};\n}`;
+      if (pending.statement) {
+        const wrap = startsStatementBadly(text);
+        body = `{\n  ${wrap ? '(' : ''}${text}${wrap ? ')' : ''};\n}`;
+      } else {
+        body = `{\n  return ${text};\n}`;
+      }
     }
     trailer += `\n${header}${body}\n`;
   }
