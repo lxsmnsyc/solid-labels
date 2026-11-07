@@ -1,0 +1,55 @@
+name: Check
+
+on:
+  push:
+    branches:
+      - '1.0'
+    # Roadmaps, debates, proposals and decisions are not build inputs.
+    paths-ignore:
+      - 'docs/**'
+  pull_request:
+    branches:
+      - '1.0'
+    # A draft runs nothing. Pull requests stay drafts until their review is clean,
+    # so CI runs once as the last gate before the merge.
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths-ignore:
+      - 'docs/**'
+
+# A new push to a pull request cancels the run of the push before it.
+# Runs on pushes are never cancelled.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm -r --filter "./packages/*" build
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Format
+        run: pnpm run format:check
+
+      - name: Typecheck
+        run: pnpm -C packages/core typecheck
+
+      - name: Test
+        run: pnpm -r --filter "./packages/*" --if-present test

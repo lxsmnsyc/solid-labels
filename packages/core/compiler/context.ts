@@ -18,9 +18,10 @@ export interface CaptureInfo {
    * How reads are captured: `'value'` — read in the compute phase (tracked),
    * the parameter is the raw value; `'accessor'` — every read sits inside
    * `$untrack(...)`, the accessor itself is passed through the capture array
-   * (stable identity, never triggers) and body reads stay `name()` calls.
+   * (stable identity, never triggers) and body reads stay `name()` calls;
+   * `'plain'` — a non-reactive outer value passed through the capture array.
    */
-  get: false | 'value' | 'accessor';
+  get: false | 'value' | 'accessor' | 'plain';
   set: boolean;
 }
 
