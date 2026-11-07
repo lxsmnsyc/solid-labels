@@ -100,14 +100,10 @@ function devNameOptions(
 
 /** True when the span reads a reactive variable (rewritten in a later phase). */
 function containsReactiveRead(ctx: Ctx, node: Node): boolean {
-  for (const [binding, info] of ctx.reactive) {
-    if (info.kind === 'raw') {
-      continue;
-    }
-    for (const bindingRef of binding.refs) {
-      if (bindingRef.node.start >= node.start && bindingRef.node.end <= node.end) {
-        return true;
-      }
+  for (const bindingRef of ctx.refsIn(node.start, node.end)) {
+    const info = ctx.reactive.get(bindingRef.binding!);
+    if (info && info.kind !== 'raw') {
+      return true;
     }
   }
   return false;

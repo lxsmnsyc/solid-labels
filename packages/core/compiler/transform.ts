@@ -252,27 +252,23 @@ function extractHoistedCallbacks(ctx: Ctx): void {
   if (ctx.pendingHoists.length === 0) {
     return;
   }
-  const byDepth = [...ctx.pendingHoists].sort((a, b) => b.body.start - a.body.start);
-  for (const pending of byDepth) {
-    // slice/overwrite treat edge insertions the same across magic-string
-    // versions; snip/remove changed in 1.4.
-    pending.text = ctx.s.slice(pending.body.start, pending.body.end);
-    ctx.s.overwrite(pending.body.start, pending.body.end, '');
-  }
-  let trailer = '';
+  // Each body moves to the end of the output with its edits intact, so no
+  // span is re-read through MagicString#slice (linear in the chunk count).
+  const end = ctx.code.length;
   for (const pending of ctx.pendingHoists) {
-    const header = `function ${pending.name}([${pending.params.join(', ')}]) `;
-    const text = pending.text ?? '';
-    let body = text;
+    const header = `\nfunction ${pending.name}([${pending.params.join(', ')}]) `;
     if (pending.concise) {
-      if (pending.statement) {
-        const wrap = startsStatementBadly(text);
-        body = `{\n  ${wrap ? '(' : ''}${text}${wrap ? ')' : ''};\n}`;
-      } else {
-        body = `{\n  return ${text};\n}`;
-      }
+      // A statement cannot start with `{`, `function` or `class`.
+      const wrap =
+        pending.statement &&
+        startsStatementBadly(ctx.code.slice(pending.body.start, pending.body.end));
+      const open = pending.statement ? '{\n  ' : '{\n  return ';
+      ctx.s.prependRight(pending.body.start, header + open + (wrap ? '(' : ''));
+      ctx.s.appendLeft(pending.body.end, `${wrap ? ')' : ''};\n}\n`);
+    } else {
+      ctx.s.prependRight(pending.body.start, header);
+      ctx.s.appendLeft(pending.body.end, '\n');
     }
-    trailer += `\n${header}${body}\n`;
+    ctx.s.move(pending.body.start, pending.body.end, end);
   }
-  ctx.s.append(trailer);
 }

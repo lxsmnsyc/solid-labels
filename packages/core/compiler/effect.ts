@@ -34,37 +34,32 @@ function analyzeCaptures(ctx: Ctx, call: Node, target: Node, body: Node): Captur
   const captured = new Map<Binding, CaptureInfo>();
   let blocked = false;
 
-  for (const binding of ctx.analysis.bindings) {
-    // Declared inside the callback: not free.
+  // Group the references inside the body by binding.
+  const byBinding = new Map<
+    Binding,
+    { tracked: boolean; untracked: boolean; writes: boolean; firstRef: number }
+  >();
+  for (const bindingRef of ctx.refsIn(body.start, body.end)) {
+    const binding = bindingRef.binding!;
     if (binding.node.start >= target.start && binding.node.end <= target.end) {
       continue;
     }
-    let tracked = false;
-    let untracked = false;
-    let writes = false;
-    let firstRef = -1;
-    for (const bindingRef of binding.refs) {
-      const pos = bindingRef.node.start;
-      if (pos < body.start || bindingRef.node.end > body.end) {
-        continue;
-      }
-      if (firstRef === -1 || pos < firstRef) {
-        firstRef = pos;
-      }
-      if (bindingRef.mode === 'read') {
-        if (insideUntrack(ctx, bindingRef.node)) {
-          untracked = true;
-        } else {
-          tracked = true;
-        }
+    let entry = byBinding.get(binding);
+    if (!entry) {
+      entry = { tracked: false, untracked: false, writes: false, firstRef: bindingRef.node.start };
+      byBinding.set(binding, entry);
+    }
+    if (bindingRef.mode === 'read') {
+      if (insideUntrack(ctx, bindingRef.node)) {
+        entry.untracked = true;
       } else {
-        // Compound updates read through the setter's functional form.
-        writes = true;
+        entry.tracked = true;
       }
+    } else {
+      entry.writes = true;
     }
-    if (firstRef === -1) {
-      continue;
-    }
+  }
+  for (const [binding, { tracked, untracked, writes, firstRef }] of byBinding) {
     const reactive = ctx.reactive.get(binding);
     if (reactive && reactive.kind !== 'raw') {
       if (writes && !reactive.set) {
@@ -145,7 +140,7 @@ function analyzeCaptures(ctx: Ctx, call: Node, target: Node, body: Node): Captur
  */
 /** True when the node sits inside a `$untrack(...)` call span. */
 function insideUntrack(ctx: Ctx, node: Node): boolean {
-  return ctx.untrackSpans.some(([start, end]) => node.start >= start && node.end <= end);
+  return ctx.insideUntrack(node.start, node.end);
 }
 
 /**
@@ -200,8 +195,8 @@ function isHoistable(ctx: Ctx, target: Node, blocked: boolean): boolean {
   const hasThis = ctx.analysis.thisSpans.some(
     ([start, end]) => start >= target.start && end <= target.end,
   );
-  const hasArguments = ctx.analysis.unresolved.some(
-    (r) => r.node.name === 'arguments' && r.node.start >= target.start && r.node.end <= target.end,
+  const hasArguments = ctx.argumentsRefs.some(
+    (r) => r.node.start >= target.start && r.node.end <= target.end,
   );
   return !(hasThis || hasArguments);
 }
@@ -264,7 +259,7 @@ export default function transformEffect(
     );
 
     const { entries, params, captured, blocked } = analyzeCaptures(ctx, call, target, body);
-    ctx.regions.push({ start: body.start, end: body.end, captured });
+    ctx.addRegion({ start: body.start, end: body.end, captured });
 
     ctx.consumed.add(ref.node);
     s.overwrite(ref.node.start, ref.node.end, ctx.importIdent(importName, 'solid-js'));
@@ -306,7 +301,7 @@ export default function transformEffect(
   );
 
   const { entries, params, captured, blocked } = analyzeCaptures(ctx, call, expr, expr);
-  ctx.regions.push({ start: expr.start, end: expr.end, captured });
+  ctx.addRegion({ start: expr.start, end: expr.end, captured });
 
   ctx.consumed.add(ref.node);
   s.overwrite(ref.node.start, ref.node.end, ctx.importIdent(importName, 'solid-js'));
