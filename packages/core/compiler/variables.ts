@@ -19,16 +19,15 @@ export interface DeclSite {
  * call used (possibly through TS wrappers) as a variable initializer.
  */
 export function findDeclarator(ref: Ref): DeclSite | null {
-  const parents = ref.parents;
-  const call = parents[parents.length - 1];
+  const call = ref.up?.node;
   if (call?.type !== 'CallExpression' || unwrap(call.callee) !== ref.node) {
     return null;
   }
-  let index = parents.length - 2;
-  while (index >= 0 && isWrapper(parents[index])) {
-    index--;
+  let outer = ref.up!.up;
+  while (outer && isWrapper(outer.node)) {
+    outer = outer.up;
   }
-  const declarator = parents[index];
+  const declarator = outer?.node;
   if (declarator?.type === 'VariableDeclarator' && unwrap(declarator.init) === call) {
     return { declarator, call };
   }
@@ -37,7 +36,7 @@ export function findDeclarator(ref: Ref): DeclSite | null {
 
 /** Returns the call expression when the reference is its direct callee. */
 export function isCallee(ref: Ref): Node | null {
-  const call = ref.parents[ref.parents.length - 1];
+  const call = ref.up?.node;
   if (call?.type === 'CallExpression' && unwrap(call.callee) === ref.node) {
     return call;
   }

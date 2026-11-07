@@ -156,9 +156,8 @@ function insideUntrack(ctx: Ctx, node: Node): boolean {
  * `AppEffect_1` instead of an anonymous `effectCallback_1`.
  */
 function hoistBaseName(ref: Ref): string {
-  const parents = ref.parents;
-  for (let i = parents.length - 1; i >= 0; i--) {
-    const node = parents[i];
+  for (let link = ref.up; link; link = link.up) {
+    const node = link.node;
     if (!isFunctionNode(node)) {
       continue;
     }
@@ -167,11 +166,11 @@ function hoistBaseName(ref: Ref): string {
     }
     // Wrappers and call expressions (`$component(fn)`, `memo(fn)`) are
     // transparent: the name comes from whatever the call is bound to.
-    let j = i - 1;
-    while (j >= 0 && (isWrapper(parents[j]) || parents[j].type === 'CallExpression')) {
-      j--;
+    let outer = link.up;
+    while (outer && (isWrapper(outer.node) || outer.node.type === 'CallExpression')) {
+      outer = outer.up;
     }
-    const parent = parents[j];
+    const parent = outer?.node;
     if (!parent) {
       continue;
     }

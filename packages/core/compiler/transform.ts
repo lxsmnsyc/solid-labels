@@ -21,8 +21,7 @@ import {
 
 /** True when the call is the entire expression statement — the `$(expr);` form. */
 function isStatementCall(ref: Ref, call: Node): boolean {
-  const parents = ref.parents;
-  const maybeStatement = parents[parents.length - 2];
+  const maybeStatement = ref.up?.up?.node;
   return (
     maybeStatement?.type === 'ExpressionStatement' && unwrap(maybeStatement.expression) === call
   );

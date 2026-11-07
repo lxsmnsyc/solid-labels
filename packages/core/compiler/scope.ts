@@ -5,13 +5,22 @@ export type RefMode = 'read' | 'write' | 'readwrite';
 export interface Ref {
   node: Node;
   mode: RefMode;
-  /** Ancestor chain, outermost first, excluding the identifier itself. */
-  parents: Node[];
+  /**
+   * Innermost ancestor, excluding the identifier itself. Walk `.up` for the
+   * outer ones. Links are shared between references, not copied.
+   */
+  up: Ancestor | null;
   binding: Binding | null;
   /** Set when the identifier is the value of a shorthand object property. */
   shorthand?: Node;
   /** Set when the identifier is a local name in an export specifier. */
   exported?: boolean;
+}
+
+/** One link of the persistent ancestor chain: a node and the link of its parent. */
+export interface Ancestor {
+  node: Node;
+  up: Ancestor | null;
 }
 
 export interface Binding {
@@ -334,7 +343,7 @@ export function analyze(program: Node): Analysis {
   // ---------------------------------------------------------------------------
 
   const scopeStack: Scope[] = [moduleScope];
-  const parentStack: Node[] = [];
+  let ancestors: Ancestor | null = null;
 
   /** Resolves a name through the current scope stack, innermost first. */
   function lookup(name: string): Binding | null {
@@ -349,8 +358,8 @@ export function analyze(program: Node): Analysis {
 
   /**
    * Records a reference: attached to its binding when resolved, otherwise
-   * pushed to `analysis.unresolved`. The ancestor chain is snapshotted from
-   * the current traversal stack (excluding the identifier itself).
+   * pushed to `analysis.unresolved`. The ancestor chain is the current
+   * traversal chain (excluding the identifier itself), shared by link.
    */
   function reference(
     node: Node,
@@ -359,12 +368,11 @@ export function analyze(program: Node): Analysis {
   ): void {
     analysis.names.add(node.name);
     const binding = lookup(node.name);
-    const parents =
-      parentStack[parentStack.length - 1] === node ? parentStack.slice(0, -1) : parentStack.slice();
+    const up = ancestors?.node === node ? ancestors.up : ancestors;
     const ref: Ref = {
       node,
       mode,
-      parents,
+      up,
       binding,
       shorthand: extra?.shorthand,
       exported: extra?.exported,
@@ -525,7 +533,7 @@ export function analyze(program: Node): Analysis {
     if (mapped) {
       scopeStack.push(mapped);
     }
-    parentStack.push(node);
+    ancestors = { node, up: ancestors };
     switch (node.type) {
       case 'Identifier':
         reference(node, 'read');
@@ -665,7 +673,7 @@ export function analyze(program: Node): Analysis {
         eachChild(node, resolve);
         break;
     }
-    parentStack.pop();
+    ancestors = ancestors!.up;
     if (mapped) {
       scopeStack.pop();
     }
@@ -674,11 +682,11 @@ export function analyze(program: Node): Analysis {
     }
   }
 
-  parentStack.push(program);
+  ancestors = { node: program, up: null };
   for (const stmt of program.body) {
     resolve(stmt);
   }
-  parentStack.pop();
+  ancestors = null;
 
   return analysis;
 }

@@ -19,8 +19,6 @@ interface RefCtfUse {
   callee: Node;
   /** Property node when the call is an object property value. */
   property: Node | null;
-  /** Index of the call node inside ref.parents. */
-  callIndex: number;
 }
 
 /**
@@ -29,13 +27,12 @@ interface RefCtfUse {
  * object property for `$getter` / `$setter` / `$property`.
  */
 function detectRefCtf(ctx: Ctx, ref: Ref): RefCtfUse | null {
-  const parents = ref.parents;
   // Ascend through expression wrappers to the call.
-  let index = parents.length - 1;
-  while (index >= 0 && isWrapper(parents[index])) {
-    index--;
+  let callLink = ref.up;
+  while (callLink && isWrapper(callLink.node)) {
+    callLink = callLink.up;
   }
-  const call = parents[index];
+  const call = callLink?.node;
   if (call?.type !== 'CallExpression') {
     return null;
   }
@@ -53,20 +50,19 @@ function detectRefCtf(ctx: Ctx, ref: Ref): RefCtfUse | null {
     return null;
   }
   // Is the call an object property value?
-  let propIndex = index - 1;
-  while (propIndex >= 0 && isWrapper(parents[propIndex])) {
-    propIndex--;
+  let propLink = callLink!.up;
+  while (propLink && isWrapper(propLink.node)) {
+    propLink = propLink.up;
   }
-  const maybeProp = parents[propIndex];
+  const maybeProp = propLink?.node;
   const property =
     maybeProp?.type === 'Property' &&
-    propIndex >= 1 &&
-    parents[propIndex - 1].type === 'ObjectExpression' &&
+    propLink!.up?.node.type === 'ObjectExpression' &&
     maybeProp.value !== undefined &&
     unwrap(maybeProp.value) === call
       ? maybeProp
       : null;
-  return { name: callee.name, call, callee, property, callIndex: index };
+  return { name: callee.name, call, callee, property };
 }
 
 /** Source text of a property key, bracketed when computed. */
@@ -190,10 +186,10 @@ function rewriteWrite(
   }
   const set = info.set;
   const { s, code } = ctx;
-  const parent = ref.parents[ref.parents.length - 1];
+  const parent = ref.up?.node;
   if (parent?.type === 'UpdateExpression') {
     const current = ctx.unique('current');
-    const grand = ref.parents[ref.parents.length - 2];
+    const grand = ref.up?.up?.node;
     const unused =
       grand?.type === 'ExpressionStatement' ||
       (grand?.type === 'ForStatement' && grand.update === parent);
@@ -235,18 +231,21 @@ function rewriteWrite(
   );
   if (containsAwaitOrYield(right)) {
     const tmp = ctx.unique('tmp');
-    const grand = ref.parents[ref.parents.length - 2];
+    const grand = ref.up?.up?.node;
     if (grand?.type === 'ExpressionStatement') {
       s.overwrite(ref.node.start, rightStart, `const ${tmp} = `);
       closers.push({ order: assign.start, at: rightEnd, text: `;\n${set}(() => ${tmp})` });
       return;
     }
     // Concise arrow body: `async () => (count = await value())`
-    const arrowIndex = ref.parents.findIndex(
-      (p) => p.type === 'ArrowFunctionExpression' && unwrap(p.body) === assign,
-    );
-    if (arrowIndex !== -1) {
-      const arrow = ref.parents[arrowIndex];
+    let arrow: Node | null = null;
+    for (let link = ref.up; link; link = link.up) {
+      if (link.node.type === 'ArrowFunctionExpression' && unwrap(link.node.body) === assign) {
+        arrow = link.node;
+        break;
+      }
+    }
+    if (arrow) {
       const [bodyStart, bodyEnd] = expandParens(code, assign.start, assign.end, arrow.start);
       s.overwrite(bodyStart, rightStart, `{ const ${tmp} = `);
       s.overwrite(rightEnd, bodyEnd, `; return ${set}(() => ${tmp}); }`);
