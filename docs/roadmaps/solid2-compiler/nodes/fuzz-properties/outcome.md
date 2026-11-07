@@ -3,6 +3,7 @@
 ## Built
 
 `packages/core/test/fuzz.test.ts` with two properties over `arbitraries.ts`:
+
 - `programArb({ jsx: true | false })`: `compile()` throws `CompileError` or returns code that oxc parses without errors.
 - `straightLineArb()`: the compiled `source` run on solid-js 2.0 gives the same `observe` as `plain`.
 
