@@ -1,7 +1,7 @@
 ---
 id: fix-signal-writes
 title: Fix signal write rewrites: parenthesized right-hand sides and postfix updates
-status: todo
+status: active
 priority: must
 type: fix
 story:
