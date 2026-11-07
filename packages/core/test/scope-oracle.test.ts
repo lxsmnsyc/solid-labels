@@ -52,10 +52,9 @@ function theirs(program: any): Pairs {
  *   has no JSX references. `programArb({ jsx: false })` emits none.
  * - `typescript`: type-space names. `jsx: false` emits no TS syntax, and the
  *   source is parsed as `jsx`.
- * - `classes`: the generator emits no class syntax. Known disagreement,
- *   listed in `KNOWN_DISAGREEMENTS` below.
- * - `default-param-shadow`: the generator does not put a body `var` under a
- *   parameter default's name. Known disagreement, listed below.
+ * - `classes` and `default-param-shadow`: the generator emits no class syntax
+ *   and never puts a body `var` under a parameter default's name. The hand
+ *   corpus below covers both.
  * - `this`, `super`, `new.target`, `import.meta`: not identifiers, neither
  *   side records them as references.
  */
@@ -121,30 +120,19 @@ const AGREEING = [
   'for (var v of []) { v }; v;',
   '{ function q(){} } q;',
   'function f(a, b = a, ...c){ return [a,b,c]; }',
+  // A parameter default must not see a body `var`.
+  'function f(x=y){ var y=1; return x; } var y;',
+  // The inner name of a class expression is a binding inside the class.
+  'const o = class C { m(){ return C; } };',
+  'const o = class C extends C { static s = C; };',
+  // A function expression's name is outside its parameters.
+  '(function f(f) { return f; })',
+  '(function f(a = f){ var f = 1; return f; })',
 ];
-
-/**
- * Real disagreements found by hand-written probes. Each is an `it.fails`, so
- * the test turns red once `analyze` is fixed and the case can move to AGREEING.
- */
-const KNOWN_DISAGREEMENTS = {
-  // A parameter default that names something the body also declares with `var`
-  // resolves to the body `var`; it must resolve to the outer binding.
-  'default-param-shadow': 'function f(x=y){ var y=1; return x; } var y;',
-  // The inner name of a class expression is not a binding, so `C` in the body
-  // is reported as unresolved (a global candidate).
-  'class-expression-name': 'const o = class C { m(){ return C; } };',
-};
 
 describe('scope oracle: hand-written programs', () => {
   for (const source of AGREEING) {
     it(`agrees on ${source}`, () => {
-      expect(compare(source)).toEqual({ missing: [], extra: [], different: [] });
-    });
-  }
-
-  for (const [name, source] of Object.entries(KNOWN_DISAGREEMENTS)) {
-    it.fails(`known disagreement: ${name}`, () => {
       expect(compare(source)).toEqual({ missing: [], extra: [], different: [] });
     });
   }
