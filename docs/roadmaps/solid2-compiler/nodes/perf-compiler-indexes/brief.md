@@ -1,7 +1,7 @@
 ---
 id: perf-compiler-indexes
 title: Remove the quadratic scans in the compiler
-status: active
+status: done
 priority: should
 type: refactor
 story:

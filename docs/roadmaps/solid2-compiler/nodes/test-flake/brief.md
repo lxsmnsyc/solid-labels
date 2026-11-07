@@ -1,7 +1,7 @@
 ---
 id: test-flake
 title: Find and fix the core test that fails under load
-status: active
+status: done
 priority: should
 type: fix
 story:

@@ -1,7 +1,7 @@
 ---
 id: fix-scope-edges
 title: Fix scope analysis for class and function expression names and parameter defaults
-status: todo
+status: active
 priority: should
 type: fix
 story:

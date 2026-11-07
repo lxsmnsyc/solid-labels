@@ -1,7 +1,7 @@
 ---
 id: scope-oracle
 title: Oracle test for scope analysis against eslint-scope
-status: active
+status: done
 priority: should
 type: feature
 story:

@@ -1,7 +1,7 @@
 ---
 id: fuzz-properties
 title: Compiler properties: no-crash and run-the-output oracle
-status: active
+status: done
 priority: should
 type: feature
 story:

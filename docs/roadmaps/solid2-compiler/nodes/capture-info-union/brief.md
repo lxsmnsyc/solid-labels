@@ -1,7 +1,7 @@
 ---
 id: capture-info-union
 title: Make CaptureInfo and ReactiveInfo discriminated unions
-status: todo
+status: active
 priority: could
 type: refactor
 story:
