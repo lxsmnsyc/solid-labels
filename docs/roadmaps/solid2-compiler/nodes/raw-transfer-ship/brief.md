@@ -54,3 +54,5 @@ Pass `experimentalRawTransfer: rawTransferSupported()` to `parseSync` in `packag
 ## Sizing
 
 S: one option and a typed options object.
+
+- PR: #57. ctf 800 183 -> 145 ms (-21%), plain-show 800 28.3 -> 14.3 ms (-50%), beyond 3x MAD over 20 pairs. Snapshots unchanged. Self-review, one round, clean.

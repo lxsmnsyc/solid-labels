@@ -64,3 +64,5 @@ depends_on:
 ## Sizing
 
 M: one data structure, six readers.
+
+- PR: #56 (draft). Output identical; oracle passed at FC_RUNS=1000 on magic-string 1.2.2 and 1.4.5 before `test/reference-compiler/` was removed. Benchmark gain missed: ctf 800 183 -> 186 ms, plain-show 800 29.5 -> 28.9 ms, GC about 8-9% before and after. Maintainer decides keep or close.
