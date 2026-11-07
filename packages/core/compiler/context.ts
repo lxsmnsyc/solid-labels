@@ -42,13 +42,13 @@ export interface PendingHoist {
   text?: string;
 }
 
+function ignoreSpan(): void {}
+
 /**
  * Mutable state for one compile pass: the MagicString being edited, scope
  * analysis, auto-import registry, reactive binding registry, effect capture
  * regions, and callbacks pending module-level hoisting.
  */
-function ignoreSpan(): void {}
-
 export class Ctx {
   s: MagicString;
   code: string;

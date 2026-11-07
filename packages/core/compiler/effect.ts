@@ -206,6 +206,11 @@ function isHoistable(ctx: Ctx, target: Node, blocked: boolean): boolean {
   return !(hasThis || hasArguments);
 }
 
+/** True when the expression would parse as a block, declaration or class at the start of a statement. */
+export function startsStatementBadly(text: string): boolean {
+  return /^(\{|function\b|class\b|async\s+function\b)/.test(text);
+}
+
 /**
  * `$effect(() => { ... })` (also `$renderEffect` and the `$(expr);`
  * statement) — two-phase compilation:
@@ -219,11 +224,6 @@ function isHoistable(ctx: Ctx, target: Node, blocked: boolean): boolean {
  * When the callback captures nothing that blocks it, the callback is hoisted
  * to module level as a named function.
  */
-/** True when the expression would parse as a block, declaration or class at the start of a statement. */
-export function startsStatementBadly(text: string): boolean {
-  return /^(\{|function\b|class\b|async\s+function\b)/.test(text);
-}
-
 export default function transformEffect(
   ctx: Ctx,
   ref: Ref,

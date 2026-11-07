@@ -1,16 +1,22 @@
 import fc from 'fast-check';
 import { parseSync } from 'oxc-parser';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { createRequire } from 'node:module';
+import { dirname, join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { CompileError, compile } from '../compiler';
 import { programArb, straightLineArb } from './arbitraries';
 
-// Node resolves solid-js to the server build, where signals do not update. The
-// browser build is the reactive one.
-const serverPath = fileURLToPath(import.meta.resolve('solid-js'));
-const solid = (await import(
-  pathToFileURL(serverPath.replace(/server(\.dev)?\.js$/, 'solid.js')).href
-)) as Record<string, unknown>;
+// Node resolves solid-js to the server build, where signals do not update. Load
+// the file of the `browser` export condition, which is the reactive build.
+const require = createRequire(import.meta.url);
+const solidDir = dirname(require.resolve('solid-js/package.json'));
+const solidPackage = require('solid-js/package.json') as {
+  exports: Record<string, { browser: { default: string } }>;
+};
+const solidFile = join(solidDir, solidPackage.exports['.'].browser.default);
+expect(solidFile.endsWith('solid.js')).toBe(true);
+const solid = (await import(pathToFileURL(solidFile).href)) as Record<string, unknown>;
 
 const RUNS = Number(process.env.FC_RUNS ?? 100);
 // Long runs (FC_RUNS) need more than the default 5 seconds.

@@ -187,7 +187,10 @@ export default function transformProgram(ctx: Ctx): void {
     // replaced by text, so effects inside it are not supported.
     for (const ref of effects) {
       if (ref.node.start >= start && ref.node.end <= end) {
-        ctx.error(ref.node, `${ref.node.name} cannot be used inside a destructuring default`);
+        ctx.error(
+          ref.node,
+          `${ref.node.name} cannot be used inside a destructuring default; move the effect out of the default`,
+        );
       }
     }
   };
