@@ -46,8 +46,10 @@
     "oxc-parser": "^0.157.0"
   },
   "devDependencies": {
+    "@fast-check/vitest": "^0.5.0",
     "@solidjs/web": "2.0.0-rc.21",
     "@types/node": "^26.6.6",
+    "fast-check": "^4.10.2",
     "solid-js": "2.0.0-rc.21",
     "tsdown": "^0.23.7",
     "tslib": "^2.9.1",

@@ -219,12 +219,18 @@ importers:
         specifier: ^0.157.0
         version: 0.157.0
     devDependencies:
+      '@fast-check/vitest':
+        specifier: ^0.5.0
+        version: 0.5.0(vitest@5.1.0(@types/node@26.6.6)(vite@8.3.6(@types/node@26.6.6)(yaml@2.9.1)))
       '@solidjs/web':
         specifier: 2.0.0-rc.21
         version: 2.0.0-rc.21(solid-js@2.0.0-rc.21)
       '@types/node':
         specifier: ^26.6.6
         version: 26.6.6
+      fast-check:
+        specifier: ^4.10.2
+        version: 4.10.2
       solid-js:
         specifier: 2.0.0-rc.21
         version: 2.0.0-rc.21
@@ -445,6 +451,11 @@ packages:
 
   '@emnapi/wasi-threads@2.2.0':
     resolution: {integrity: sha512-JP7OYH38Q7+pyTAe14raZHLQIK7BDKbdwji+Xi3pcd/6QkJYQH3SX4wu6EplGrGJWRepoNzedfm0G3B9Z4e9Rw==}
+
+  '@fast-check/vitest@0.5.0':
+    resolution: {integrity: sha512-Kgbj2smuq1P4OhGKuPATs5i2fAxNmGbJ/zSmTrzWhQSLUrHREbKWgv9WGbNUOXcx77q6joLVMmTygyXuwP2Bog==}
+    peerDependencies:
+      vitest: ^4.1.0 || ^5.0.0
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
@@ -1597,6 +1608,10 @@ packages:
     resolution: {integrity: sha512-KfYbmpRm0VbLjEvVa9yGwCi9GI34xvi7A/HXYWQO65CSD2u3MczUJSuwXKFIxlGsgBQizV9q5J9NHj4VG0n+pA==}
     engines: {node: '>=12.0.0'}
 
+  fast-check@4.10.2:
+    resolution: {integrity: sha512-iK2f+YrcmoeGqk6fA0ea2bptcu/itMIm4NfEozq6N25+aG6h7s5HZbB/k1aV7b5w5sFLMCbbtRUsTVR+BgC3xw==}
+    engines: {node: '>=12.17.0'}
+
   fast-string-truncated-width@3.0.3:
     resolution: {integrity: sha512-0jjjIEL6+0jag3l2XWWizO64/aZVtpiGE3t0Zgqxv0DPuxiMjvB3M24fCyhZUO4KomJQPj3LTSUnDP3GpdwC0g==}
 
@@ -1827,6 +1842,9 @@ packages:
   postcss@8.5.32:
     resolution: {integrity: sha512-LJlKCCAUFKOuZxipUdYw1NzIITEsPcgyOG9LkvRJvuKj/bRzbuRY0ARXvL0pWGpsZvn8jku+LMep2eU0seHp8g==}
     engines: {node: ^10 || ^12 || >=14}
+
+  pure-rand@8.4.2:
+    resolution: {integrity: sha512-vvuOGgcuPJAirlHvuQw1TrOiw7ptaIXXmIbNuiNOY6lNGJJH49PQ1Kj4nd783nPdQhQdicgOjVI2yI/9BD6/Ng==}
 
   quansync@1.0.0:
     resolution: {integrity: sha512-5xZacEEufv3HSTPQuchrvV6soaiACMFnq1H8wkVioctoH3TRha9Sz66lOxRwPK/qZj7HPiSveih9yAyh98gvqA==}
@@ -2403,6 +2421,11 @@ snapshots:
     dependencies:
       tslib: 2.9.1
     optional: true
+
+  '@fast-check/vitest@0.5.0(vitest@5.1.0(@types/node@26.6.6)(vite@8.3.6(@types/node@26.6.6)(yaml@2.9.1)))':
+    dependencies:
+      fast-check: 4.10.2
+      vitest: 5.1.0(@types/node@26.6.6)(vite@8.3.6(@types/node@26.6.6)(yaml@2.9.1))
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
@@ -3083,6 +3106,10 @@ snapshots:
 
   expect-type@1.4.0: {}
 
+  fast-check@4.10.2:
+    dependencies:
+      pure-rand: 8.4.2
+
   fast-string-truncated-width@3.0.3: {}
 
   fast-string-width@3.0.2:
@@ -3301,6 +3328,8 @@ snapshots:
       nanoid: 3.3.20
       picocolors: 1.1.1
       source-map-js: 1.2.2
+
+  pure-rand@8.4.2: {}
 
   quansync@1.0.0: {}
 
