@@ -43,6 +43,7 @@ The program generator (`fuzz-generator`, PR #42) found that about 27% of generat
 
 Confirmed on `1.0` at f1768b8 by the orchestrator:
 
+0. **A bare signal or memo as the right side of a write.** `a = b;` compiles to `seta_1(() => b)();` and `a += b;` to `seta_1(current_1 => current_1 += b)();`: the read is not called and `()` lands after the setter call, which throws at runtime. Present since the oxc rewrite (also before `fix-signal-writes`). Cause: `rewriteWrite` appends `)` at `right.end` with `appendLeft`, then the read rewrite appends `()` at the same offset with `appendLeft`, so it lands after the `)`. The read's `()` must go before the write's `)` whatever order the bindings are processed in (for example the write closes with `appendRight`, or reads are rewritten first). Found by the fresh review of PR #42: in an oracle run over 300 `straightLineArb` programs, 51 gave wrong values and 102 threw.
 1. **Nested write with a postfix right side.** `s = t++;` compiles to `sets_1(() => (() => { ... return tmp_1; })();`, missing a `)`. Same for `s += t++`. Cause: the outer write appends `)` at `right.end` (`appendLeft`), then the inner postfix rewrite calls `s.overwrite(parent.start, parent.end, ...)` over the same span, which drops the appended text. Fix the order of edits or the overwrite so outer insertions survive (for example overwrite with `contentOnly: true`, or edit only the operator and operand spans).
 2. **JSX component in a destructure default.** `const { x = <Show when={1}>a</Show> } = $destructure(props)` and `$component(({ x = <Show>...</Show> }) => x)` throw `MagicStringError: cannot split a chunk that has already been edited`. Cause: `destructure.ts` overwrites the whole declarator or parameter with text from `renderSlice`, and `transformJSXComponents` later edits the `Show` name inside that span. `renderSlice` must apply the JSX name rewrites for its span too, and mark them done.
 3. **Object literals in `$memo`.** The generator reports `createMemo(() => { g0: g0(), k: 1 })` (block body instead of an object) and an unbalanced paren when an object literal is an operand. Simple cases such as `$memo({ g0, k: 1 })` compile correctly, so take the failing programs from the generator (run `programArb` with the property below) and shrink them first.
@@ -50,8 +51,9 @@ Confirmed on `1.0` at f1768b8 by the orchestrator:
 
 ## Acceptance
 
-- [ ] `test/nested-rewrites.test.ts`: one example test per class above, each checking the output parses (and, for writes, runs on solid-js with the right values).
+- [ ] `test/nested-rewrites.test.ts`: one example test per class above (class 0 runs `a = b`, `a = m`, `a += b`, `a -= m` on solid-js and checks values), each checking the output parses (and, for writes, runs on solid-js with the right values).
 - [ ] Property, in the same file: for `programArb()` (tsx and jsx), `compile()` throws only `CompileError` or returns code that parses, with 100 runs, and with `FC_RUNS=2000` locally.
+- [ ] Oracle, in the same file: for `straightLineArb()`, running the compiled `source` and `plain` gives equal `observe` arrays, 100 runs.
 - [ ] Remove the generator's avoidance of JSX components in destructure and component defaults (`test/arbitraries.ts`), so the property covers it. The contract is unchanged.
 - [ ] Existing snapshots unchanged.
 - [ ] Patch changeset.
