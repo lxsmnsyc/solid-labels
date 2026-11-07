@@ -48,6 +48,8 @@ depends_on:
 - Add `packageManager` to the root `package.json` from `npm view pnpm version`.
 - The repo-setup audit (`agent-skills:repo-setup`, `scripts/audit.py`) on `1.0` reports `missing pnpm`, `migrate check workflow` and `missing release workflow`. The release workflow waits for the open question in `GOAL.md`; leave it out unless the maintainer answered.
 
+- PR: #38 (stacked on #36). Fresh review: clean, no blocking or should-fix findings.
+
 ## Acceptance
 
 - [ ] `pnpm lint` exits 0.
