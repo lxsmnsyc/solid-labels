@@ -59,3 +59,5 @@ S: two tests over a frozen generator.
 ## Notes for the worker
 
 - Running compiled output: write it to a temp `.mjs` inside the package or evaluate it with the `solid-js` exports passed in. `solid-js` resolves from `packages/core`.
+
+- PR: #50. Both properties pass at FC_RUNS=5000. Duplicates the two properties already in `nested-rewrites.test.ts`; maintainer decides keep or close. Revert check only partial (reactive.ts revert also drops nested-rewrite fixes).

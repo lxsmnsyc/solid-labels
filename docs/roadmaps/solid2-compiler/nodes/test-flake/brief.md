@@ -53,3 +53,5 @@ depends_on:
 ## Sizing
 
 S: one reproduction, one targeted change.
+
+- PR: #51. Cause: timeouts from `sample()` generating 1000 programs per call; now sized per test, `testTimeout` 30 s. 20 of 20 loaded runs pass. `scope-oracle`'s 120 s property was not in the loaded runs (not on 1.0 yet).
