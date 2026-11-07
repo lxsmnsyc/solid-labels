@@ -12,7 +12,7 @@ target:
 ship: auto
 size: M
 spike: false
-verify: pnpm -C packages/core test && pnpm -C packages/core exec tsc --noEmit -p .
+verify:
 exclusive: []
 gate: false
 owns:

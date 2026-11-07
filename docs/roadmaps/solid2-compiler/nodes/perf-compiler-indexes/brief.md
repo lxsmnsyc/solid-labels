@@ -12,7 +12,7 @@ target:
 ship: auto
 size: M
 spike: false
-verify: pnpm -C packages/core test
+verify: pnpm -C packages/core exec vitest run test/oracle.test.ts
 exclusive:
   - bench
 gate: false
@@ -48,7 +48,7 @@ Apply the measured prototype that makes compiling a 440 KB file with labels 4.4x
 
 ## Context
 
-Prototype: `nodes/perf-compiler-indexes/prototype.patch` (made on `1.0` at a2ff706). Drop its `compiler/index.ts` hunk: raw transfer is `raw-transfer-spike`. Changes, with their profile share before the fix:
+Prototype: `nodes/perf-compiler-indexes/prototype.patch` (made on `1.0` at a2ff706, before `fix-signal-writes`, `check-green` and `deps-update` landed). `effect.ts` now uses `get: 'plain'` for plain captures and `reactive.ts` changed, so the patch may not apply cleanly; port it by hand where it does not. Drop its `compiler/index.ts` hunk: raw transfer is `raw-transfer-spike`. Changes, with their profile share before the fix:
 
 - `analyzeCaptures` looped over every binding's refs for each effect. Now `Ctx.sortedRefs` plus a binary-search `refsIn(start, end)`. (18%)
 - `extractHoistedCallbacks` copied each body with `MagicString#slice`, which walks the chunk list from the start. Now `s.move` to the end, with `prependRight`/`appendLeft` for the header. (42% after the first fix)

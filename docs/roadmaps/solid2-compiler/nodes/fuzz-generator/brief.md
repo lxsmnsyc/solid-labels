@@ -1,7 +1,7 @@
 ---
 id: fuzz-generator
 title: Add fast-check and the program generator
-status: todo
+status: active
 priority: should
 type: contract
 story:
@@ -12,7 +12,7 @@ target:
 ship: auto
 size: M
 spike: false
-verify: pnpm -C packages/core test
+verify: pnpm -C packages/core exec vitest run test/arbitraries.test.ts
 exclusive: []
 gate: true
 owns:

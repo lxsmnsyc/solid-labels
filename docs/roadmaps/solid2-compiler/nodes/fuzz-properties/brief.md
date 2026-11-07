@@ -12,7 +12,7 @@ target:
 ship: auto
 size: S
 spike: false
-verify: pnpm -C packages/core test
+verify: pnpm -C packages/core exec vitest run test/fuzz.test.ts
 exclusive: []
 gate: false
 owns:

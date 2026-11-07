@@ -39,6 +39,7 @@ Decide whether `parseSync(..., { experimentalRawTransfer: rawTransferSupported()
 ## Context
 
 - In the analysis session it cut the no-label file from 24.6 to 14.4 ms and the 440 KB file from 195 to 121 ms, with all tests passing.
+- `deps-update` moved oxc-parser from 0.146 to 0.157; check first whether 0.157 types the option.
 - Problems: the option is not in oxc-parser 0.146's `ParserOptions` type, so `tsc` fails; raw transfer reserves a large buffer; the API is experimental and may change in minor oxc versions.
 
 ## Acceptance

@@ -1,7 +1,7 @@
 ---
 id: deps-update
 title: Update dependencies to latest
-status: active
+status: done
 priority: must
 type: chore
 story:

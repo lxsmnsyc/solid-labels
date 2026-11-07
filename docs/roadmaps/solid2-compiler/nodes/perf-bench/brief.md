@@ -1,7 +1,7 @@
 ---
 id: perf-bench
 title: Add the compile benchmark and record the baseline
-status: todo
+status: active
 priority: should
 type: chore
 story:

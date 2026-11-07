@@ -1,7 +1,7 @@
 ---
 id: check-green
 title: Make typecheck and lint pass on 1.0 and align the check workflow
-status: active
+status: done
 priority: must
 type: fix
 story:

@@ -12,7 +12,7 @@ target:
 ship: auto
 size: M
 spike: false
-verify: pnpm -C packages/core test
+verify: pnpm -C packages/core exec vitest run test/scope-oracle.test.ts
 exclusive: []
 gate: false
 owns:

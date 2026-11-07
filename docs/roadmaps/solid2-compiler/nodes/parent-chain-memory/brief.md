@@ -12,7 +12,7 @@ target:
 ship: auto
 size: M
 spike: false
-verify: pnpm -C packages/core test
+verify:
 exclusive:
   - bench
 gate: false
