@@ -1,7 +1,12 @@
 import { pathToFileURL } from 'node:url';
 const root = process.argv[2];
 const { compile } = await import(pathToFileURL(root + '/packages/core/dist/compiler.js'));
-const { parseSync } = await import(pathToFileURL(root + '/node_modules/.pnpm/node_modules/oxc-parser/src-js/index.js').href).catch(async () => import(pathToFileURL(root + '/packages/core/node_modules/oxc-parser/src-js/index.js')));
+const { parseSync } = await import(
+  pathToFileURL(root + '/node_modules/.pnpm/node_modules/oxc-parser/src-js/index.js').href
+).catch(
+  async () =>
+    import(pathToFileURL(root + '/packages/core/node_modules/oxc-parser/src-js/index.js')),
+);
 function component(i) {
   return `
 export function App${i}(props) {
@@ -22,7 +27,10 @@ function plain(i) {
 }
 const hrt = () => Number(process.hrtime.bigint()) / 1e6;
 for (const n of [10, 50, 200, 800]) {
-  for (const [label, gen] of [['ctf', component], ['plain', plain]]) {
+  for (const [label, gen] of [
+    ['ctf', component],
+    ['plain', plain],
+  ]) {
     let code = '';
     for (let i = 0; i < n; i++) code += gen(i);
     for (let w = 0; w < 3; w++) compile('a.tsx', code);
@@ -33,6 +41,8 @@ for (const n of [10, 50, 200, 800]) {
     t = hrt();
     for (let r = 0; r < runs; r++) parseSync('a.tsx', code, { lang: 'tsx', sourceType: 'module' });
     const tp = (hrt() - t) / runs;
-    console.log(`${label} n=${n} bytes=${code.length} compile=${tc.toFixed(2)}ms parse=${tp.toFixed(2)}ms ratio=${(tc/tp).toFixed(1)}x`);
+    console.log(
+      `${label} n=${n} bytes=${code.length} compile=${tc.toFixed(2)}ms parse=${tp.toFixed(2)}ms ratio=${(tc / tp).toFixed(1)}x`,
+    );
   }
 }

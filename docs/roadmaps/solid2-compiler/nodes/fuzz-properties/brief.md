@@ -29,7 +29,6 @@ depends_on:
     why: both properties fail on the base until the two write bugs are fixed
 ---
 
-
 # Compiler properties: no-crash and run-the-output oracle
 
 ## Goal

@@ -29,8 +29,13 @@ export interface StraightLineProgram {
   id: 'gen.js';
 }
 
-export function programArb(options?: { maxStatements?: number; jsx?: boolean }): fc.Arbitrary<GeneratedProgram>;
-export function straightLineArb(options?: { maxStatements?: number }): fc.Arbitrary<StraightLineProgram>;
+export function programArb(options?: {
+  maxStatements?: number;
+  jsx?: boolean;
+}): fc.Arbitrary<GeneratedProgram>;
+export function straightLineArb(options?: {
+  maxStatements?: number;
+}): fc.Arbitrary<StraightLineProgram>;
 export const COMPILE_ERROR_BOUND: number; // 0.3
 ```
 

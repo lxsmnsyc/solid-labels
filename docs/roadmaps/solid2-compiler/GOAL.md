@@ -5,7 +5,7 @@ review: auto
 merge:
   mode: maintainer
 branches:
-  default: "1.0"
+  default: '1.0'
 budget:
 release:
   publish:

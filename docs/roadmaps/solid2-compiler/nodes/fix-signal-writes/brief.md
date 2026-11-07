@@ -40,7 +40,11 @@ Two bugs in `rewriteWrite` (`packages/core/compiler/reactive.ts`) make signal wr
 This is not a regression. The 0.x Babel plugin (`main`, `packages/core/babel/core/deref-signal.ts`, `transformUpdateExpression`) has both forms swapped: its `prefix` branch returns the old value through a `tmp` capture, and the postfix branch returns the setter result. The fix for 1.0 is to use that `tmp` capture shape for **postfix**:
 
 ```js
-(() => { let tmp_1; setcount_1(current_1 => (tmp_1 = current_1) + 1); return tmp_1; })()
+(() => {
+  let tmp_1;
+  setcount_1((current_1) => (tmp_1 = current_1) + 1);
+  return tmp_1;
+})();
 ```
 
 - Source: analysis session 2026-11-07, confirmed by running the compiled output on solid-js 2.0.0-rc.1 and the 0.x plugin on solid-js 1.9.
