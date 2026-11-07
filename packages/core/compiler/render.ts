@@ -14,14 +14,10 @@ export default function renderSlice(ctx: Ctx, start: number, end: number): strin
   for (const edit of takeJSXNameEdits(ctx, start, end)) {
     s.overwrite(edit.node.start, edit.node.end, edit.text);
   }
-  for (const [binding, info] of ctx.reactive) {
-    if (info.kind === 'raw') {
-      continue;
-    }
-    for (const ref of binding.refs) {
-      if (ref.node.start < start || ref.node.end > end) {
-        continue;
-      }
+  for (const ref of ctx.refsIn(start, end)) {
+    const binding = ref.binding!;
+    const info = ctx.reactive.get(binding);
+    if (info && info.kind !== 'raw') {
       if (ctx.consumed.has(ref.node)) {
         continue;
       }
