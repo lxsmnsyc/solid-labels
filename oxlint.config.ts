@@ -3,7 +3,8 @@ import { defineConfig } from 'oxlint';
 
 export default defineConfig({
   extends: [selfConfig],
-  ignorePatterns: ['**/dist/**', '**/node_modules/**'],
+  // Roadmaps and their prototype scripts are not build inputs.
+  ignorePatterns: ['**/dist/**', '**/node_modules/**', 'docs/**'],
   overrides: [
     {
       // The compiler works on a structural AST type; property access is
