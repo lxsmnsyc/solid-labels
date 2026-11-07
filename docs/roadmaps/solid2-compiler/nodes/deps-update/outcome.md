@@ -26,7 +26,7 @@ Version changes that matter:
 
 ## Gotchas
 
-- New lint errors for `check-green`: `no-deprecated` on `createTrackedEffect` (`packages/core/src/index.ts:102`) and `Dynamic` (`:142`), from solid-js rc.21. They are re-exports, so a lint ignore is likely the fix.
+- Deprecations from solid-js rc.21 (follow-up node candidate): `createTrackedEffect` (`$trackedEffect`, index.ts:102) is deprecated in favor of `createEffect(compute, effect)` or `onSettled`; `Dynamic` (index.ts:143) is deprecated in favor of `dynamic()`. Both are silenced with a targeted `oxlint-disable-next-line typescript/no-deprecated`. The compile-time mapping was not changed.
 - Typecheck still has only the old `compiler/effect.ts:102` error.
 - The `examples/ctf/vite.config.js` lint error and the unplugin `no-unsafe-*` errors no longer show (the unplugin ones need packages built first).
 - pnpm prints "Agent skills awaiting approval" for tsdown, solid-js and @solidjs/web. The build is not affected.
@@ -40,7 +40,7 @@ Version changes that matter:
 - `pnpm install --frozen-lockfile && pnpm -r --filter "./packages/*" build`: pass
 - `pnpm -C packages/core test`: pass (73 tests)
 - `pnpm format:check`: pass
-- `pnpm lint`: fail (2 new deprecation errors, see Gotchas)
+- `pnpm lint`: pass (built tree)
 - `pnpm -C packages/core exec tsc --noEmit -p .`: fail (unchanged effect.ts:102)
 
 ## Size
