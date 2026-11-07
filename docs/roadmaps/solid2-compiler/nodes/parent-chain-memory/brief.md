@@ -28,6 +28,9 @@ shared: []
 reserves: []
 provides: []
 depends_on:
+  - on: fix-scope-edges
+    kind: hard
+    why: both edit compiler/scope.ts
   - on: fuzz-generator
     kind: contract
     via: program-arbitrary
@@ -48,6 +51,9 @@ depends_on:
 ## Context
 
 - Readers: `findDeclarator`, `isCallee` (variables.ts), `isStatementCall` (transform.ts), `detectRefCtf`, `rewriteWrite` (reactive.ts), `hoistBaseName` (effect.ts). They read the last few parents, except `hoistBaseName` and the arrow search in `rewriteWrite`, which walk up.
+
+- Model to follow: solid-optimizer (`/Users/alexis/Documents/GitHub/solid-optimizer/packages/solid-optimizer/src/ast.ts`, `Parents` and `forEachChild` ~38-53) keeps a node-to-parent `Map` and iterates children with oxc's `visitorKeys` instead of `Object.keys`. Consider both: `eachChild` in `compiler/ast.ts` uses `Object.keys` on every node.
+- Same copy elsewhere: solid-sfc's `labels/scope.ts` is a copy of this file; a later port there is out of scope here.
 
 ## Acceptance
 

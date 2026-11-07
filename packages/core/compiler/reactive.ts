@@ -92,21 +92,23 @@ function rewriteRefCtf(ctx: Ctx, info: ReactiveInfo, ref: Ref, use: RefCtfUse): 
   };
   switch (use.name) {
     case '$get': {
-      s.overwrite(use.call.start, use.call.end, info.get);
+      s.overwrite(use.call.start, use.call.end, info.get, { contentOnly: true });
       break;
     }
     case '$set': {
       signalOnly();
-      s.overwrite(use.call.start, use.call.end, info.set!);
+      s.overwrite(use.call.start, use.call.end, info.set!, { contentOnly: true });
       break;
     }
     case '$refSignal': {
       signalOnly();
-      s.overwrite(use.call.start, use.call.end, `[${info.get}, ${info.set}]`);
+      s.overwrite(use.call.start, use.call.end, `[${info.get}, ${info.set}]`, {
+        contentOnly: true,
+      });
       break;
     }
     case '$refMemo': {
-      s.overwrite(use.call.start, use.call.end, info.get);
+      s.overwrite(use.call.start, use.call.end, info.get, { contentOnly: true });
       break;
     }
     case '$getter': {
@@ -114,7 +116,9 @@ function rewriteRefCtf(ctx: Ctx, info: ReactiveInfo, ref: Ref, use: RefCtfUse): 
         ctx.error(use.callee, '$getter must be used as an object property value');
       }
       const prop = use.property;
-      s.overwrite(prop.start, prop.end, `get ${keyText(ctx, prop)}() { return ${info.get}(); }`);
+      s.overwrite(prop.start, prop.end, `get ${keyText(ctx, prop)}() { return ${info.get}(); }`, {
+        contentOnly: true,
+      });
       break;
     }
     case '$setter': {
@@ -128,6 +132,7 @@ function rewriteRefCtf(ctx: Ctx, info: ReactiveInfo, ref: Ref, use: RefCtfUse): 
         prop.start,
         prop.end,
         `set ${keyText(ctx, prop)}(${param}) { ${info.set}(() => ${param}); }`,
+        { contentOnly: true },
       );
       break;
     }
@@ -142,12 +147,25 @@ function rewriteRefCtf(ctx: Ctx, info: ReactiveInfo, ref: Ref, use: RefCtfUse): 
         const param = ctx.unique('param');
         text += `, set ${key}(${param}) { ${info.set}(() => ${param}); }`;
       }
-      s.overwrite(prop.start, prop.end, text);
+      s.overwrite(prop.start, prop.end, text, { contentOnly: true });
       break;
     }
     default:
       break;
   }
+}
+
+/**
+ * Text that closes a rewritten write after its right side. It is inserted
+ * after every other edit, so reads and nested rewrites inside the right side
+ * (which overwrite spans and add `()` at the same offset) cannot drop it or
+ * land after it.
+ */
+interface Closer {
+  /** Start of the assignment; inner writes close before outer ones. */
+  order: number;
+  at: number;
+  text: string;
 }
 
 /**
@@ -159,7 +177,13 @@ function rewriteRefCtf(ctx: Ctx, info: ReactiveInfo, ref: Ref, use: RefCtfUse): 
  * split into a temporary first (statement or concise arrow body only) so the
  * setter never receives a promise.
  */
-function rewriteWrite(ctx: Ctx, binding: Binding, info: ReactiveInfo, ref: Ref): void {
+function rewriteWrite(
+  ctx: Ctx,
+  binding: Binding,
+  info: ReactiveInfo,
+  ref: Ref,
+  closers: Closer[],
+): void {
   if (info.kind !== 'signal' || !info.set) {
     ctx.error(ref.node, `Cannot assign to derived variable "${binding.name}"`);
   }
@@ -174,7 +198,7 @@ function rewriteWrite(ctx: Ctx, binding: Binding, info: ReactiveInfo, ref: Ref):
       (grand?.type === 'ForStatement' && grand.update === parent);
     if (parent.prefix || unused) {
       const op = parent.operator === '++' ? `++${current}` : `--${current}`;
-      s.overwrite(parent.start, parent.end, `${set}(${current} => ${op})`);
+      s.overwrite(parent.start, parent.end, `${set}(${current} => ${op})`, { contentOnly: true });
       return;
     }
     // Postfix with a used value evaluates to the old value.
@@ -184,6 +208,7 @@ function rewriteWrite(ctx: Ctx, binding: Binding, info: ReactiveInfo, ref: Ref):
       parent.start,
       parent.end,
       `(() => { let ${tmp}; ${set}(${current} => (${tmp} = ${current}) ${sign} 1); return ${tmp}; })()`,
+      { contentOnly: true },
     );
     return;
   }
@@ -196,7 +221,7 @@ function rewriteWrite(ctx: Ctx, binding: Binding, info: ReactiveInfo, ref: Ref):
     // Compound assignment: functional update over the previous value.
     const current = ctx.unique('current');
     s.overwrite(ref.node.start, ref.node.end, `${set}(${current} => ${current}`);
-    s.appendLeft(right.end, ')');
+    closers.push({ order: assign.start, at: right.end, text: ')' });
     return;
   }
   // oxc drops parentheses, so find the real span of the right-hand side.
@@ -212,7 +237,7 @@ function rewriteWrite(ctx: Ctx, binding: Binding, info: ReactiveInfo, ref: Ref):
     const grand = ref.parents[ref.parents.length - 2];
     if (grand?.type === 'ExpressionStatement') {
       s.overwrite(ref.node.start, rightStart, `const ${tmp} = `);
-      s.appendLeft(rightEnd, `;\n${set}(() => ${tmp})`);
+      closers.push({ order: assign.start, at: rightEnd, text: `;\n${set}(() => ${tmp})` });
       return;
     }
     // Concise arrow body: `async () => (count = await value())`
@@ -233,7 +258,7 @@ function rewriteWrite(ctx: Ctx, binding: Binding, info: ReactiveInfo, ref: Ref):
   }
   const object = code[rightStart] === '{';
   s.overwrite(ref.node.start, rightStart, `${set}(() => ${object ? '(' : ''}`);
-  s.appendLeft(rightEnd, object ? '))' : ')');
+  closers.push({ order: assign.start, at: rightEnd, text: object ? '))' : ')' });
 }
 
 /**
@@ -245,6 +270,7 @@ function rewriteWrite(ctx: Ctx, binding: Binding, info: ReactiveInfo, ref: Ref):
  */
 export function rewriteReferences(ctx: Ctx): void {
   const { s } = ctx;
+  const closers: Closer[] = [];
   for (const [binding, info] of ctx.reactive) {
     if (info.kind === 'raw') {
       continue;
@@ -287,7 +313,12 @@ export function rewriteReferences(ctx: Ctx): void {
       }
       // write / readwrite
       ctx.consumed.add(ref.node);
-      rewriteWrite(ctx, binding, info, ref);
+      rewriteWrite(ctx, binding, info, ref, closers);
     }
+  }
+  // Inner writes first, so they close before the writes that contain them.
+  closers.sort((a, b) => b.order - a.order);
+  for (const closer of closers) {
+    s.appendLeft(closer.at, closer.text);
   }
 }

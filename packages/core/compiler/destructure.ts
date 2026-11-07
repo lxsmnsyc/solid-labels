@@ -97,7 +97,9 @@ function destructureValue(ctx: Ctx, value: Node, access: string, decls: string[]
         defRead = def;
       } else {
         const memo = ctx.importIdent('createMemo', 'solid-js');
-        decls.push(`${def} = ${memo}(() => ${defaultExpr})`);
+        // An object literal body needs parentheses, or it parses as a block.
+        const body = defaultExpr.startsWith('{') ? `(${defaultExpr})` : defaultExpr;
+        decls.push(`${def} = ${memo}(() => ${body})`);
         defRead = `${def}()`;
       }
       const valueName = ctx.unique('value');

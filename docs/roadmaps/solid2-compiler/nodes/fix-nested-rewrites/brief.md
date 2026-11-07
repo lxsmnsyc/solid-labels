@@ -49,6 +49,8 @@ Confirmed on `1.0` at f1768b8 by the orchestrator:
 3. **Object literals in `$memo`.** The generator reports `createMemo(() => { g0: g0(), k: 1 })` (block body instead of an object) and an unbalanced paren when an object literal is an operand. Simple cases such as `$memo({ g0, k: 1 })` compile correctly, so take the failing programs from the generator (run `programArb` with the property below) and shrink them first.
 4. Any other class the property finds. Record each in the outcome with a minimal example.
 
+- PR: #44. Classes 0-7 fixed, none excluded; property passes at FC_RUNS=10000. Fresh review: clean on magic-string 1.2.2 and 1.4.5; nits fixed.
+
 ## Acceptance
 
 - [ ] `test/nested-rewrites.test.ts`: one example test per class above (class 0 runs `a = b`, `a = m`, `a += b`, `a -= m` on solid-js and checks values), each checking the output parses (and, for writes, runs on solid-js with the right values).

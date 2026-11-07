@@ -291,7 +291,8 @@ function buildExpr(scope: Scope, depth: number): fc.Arbitrary<string> {
   if (scope.ts) {
     options.push(
       sub.map((e) => `(${e} as number)`),
-      sub.map((e) => `(${e}) as any`),
+      // Parenthesized: `x as any ? --y : 0` is a TypeScript syntax error.
+      sub.map((e) => `((${e}) as any)`),
       sub.map((e) => `(${e})!`),
       sub.map((e) => `(${e} satisfies unknown)`),
     );
@@ -418,10 +419,8 @@ function buildStmt(scope: Scope, depth: number): fc.Arbitrary<Stmt> {
   const eShallow = exprArb(scope, 1);
   const pureScope: Scope = { ...scope, write: false };
   const pure = exprArb(pureScope, 2);
-  // KNOWN-CRASH: MagicStringError, fixed and removed by node fix-nested-rewrites
-  // A JSX default in a destructure crashes the compiler (see outcome.md), and ref functions
-  // there are CompileErrors, so defaults avoid both.
-  const dflt = exprArb({ ...pureScope, jsx: false, inEffect: true }, 1);
+  // Ref functions in a destructure default are CompileErrors, so defaults avoid them.
+  const dflt = exprArb({ ...pureScope, inEffect: true }, 1);
   const n = fresh(scope, '');
   const inner = bump(scope);
   const options: fc.Arbitrary<Stmt>[] = [];
@@ -730,8 +729,7 @@ function functionBodyArb(
   }
   if (shape.destructure && param === 'props') {
     declArbs.push(
-      // KNOWN-CRASH: MagicStringError, fixed and removed by node fix-nested-rewrites
-      exprArb({ ...valueScope(), jsx: false, inEffect: true }, 1).map(
+      exprArb({ ...valueScope(), inEffect: true }, 1).map(
         (x) => `const { a0, b0 = ${x}, ...rest0 } = $destructure(props);`,
       ),
     );
@@ -765,9 +763,7 @@ function componentArb(outer: Scope): fc.Arbitrary<string> {
   const withSignal = extend(base, [{ kind: 'signal', name: 'cs' }]);
   const body = statementsArb(withSignal, 2, 1);
   const ret = returnArb(withSignal);
-  // KNOWN-CRASH: MagicStringError, fixed and removed by node fix-nested-rewrites
-  // A JSX default in a $component parameter crashes the compiler (see outcome.md), so keep it plain.
-  const dflt = intLit;
+  const dflt = exprArb({ ...outer, props: false, write: false, inEffect: true }, 1);
   return fc
     .tuple(dflt, body, ret)
     .map(
