@@ -38,6 +38,8 @@ depends_on:
 
 ## Context
 
+- Likely cause found on 2026-11-07: CI on #43 failed with a fast-check counterexample, not a timeout. The generator emitted `(0) as any ? --cs : 0`, which TypeScript rejects; fixed in #45. Random seeds make such bugs show only sometimes. This node now confirms no other failure remains under load, and decides how CI handles random seeds (for example keep random seeds but make the failure message carry the seed, which fast-check already prints).
+
 - Suspects (not confirmed): the long timeouts in `test/arbitraries.test.ts` (60 s on the CompileError share test, 30 s on the two coverage tests), the 120 s oracle property in `test/scope-oracle.test.ts`, and the `FC_RUNS` properties in `test/nested-rewrites.test.ts`.
 - A fast-check counterexample prints a seed and "Counterexample"; a timeout prints "Test timed out". Tell them apart before fixing.
 
