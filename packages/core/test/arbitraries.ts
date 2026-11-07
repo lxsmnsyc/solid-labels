@@ -291,7 +291,8 @@ function buildExpr(scope: Scope, depth: number): fc.Arbitrary<string> {
   if (scope.ts) {
     options.push(
       sub.map((e) => `(${e} as number)`),
-      sub.map((e) => `(${e}) as any`),
+      // Parenthesized: `x as any ? --y : 0` is a TypeScript syntax error.
+      sub.map((e) => `((${e}) as any)`),
       sub.map((e) => `(${e})!`),
       sub.map((e) => `(${e} satisfies unknown)`),
     );
