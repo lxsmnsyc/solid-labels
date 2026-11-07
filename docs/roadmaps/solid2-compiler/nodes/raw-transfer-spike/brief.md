@@ -52,3 +52,5 @@ Decide whether `parseSync(..., { experimentalRawTransfer: rawTransferSupported()
 S: measure and report.
 
 - PR: #55 (report only). Raw transfer: ctf 800 192 -> 151 ms (-21%, beyond noise after 20 pairs), plain-show -44 to -52%, peak RSS unchanged, +4.5 ms on first compile, tests and snapshots unchanged. oxc-parser 0.157 does not type the option. Recommendation: ship without a user option. Gate: waiting for the maintainer.
+
+- Gate passed 2026-11-08: the maintainer approved shipping with no user option and no pin. Follow-up node: `raw-transfer-ship`.
