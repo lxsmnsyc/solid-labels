@@ -1,7 +1,7 @@
 ---
 name: program-arbitrary
-status: draft
-version: 0
+status: frozen
+version: 1
 defined_by: fuzz-generator
 ---
 

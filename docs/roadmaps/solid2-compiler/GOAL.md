@@ -52,7 +52,7 @@ The `1.0` branch (solid-js 2.0.0-rc.1) compiles every valid input to code that p
 
 - Fast check (safe in parallel worktrees): `pnpm -C packages/core test && pnpm -C packages/core exec tsc --noEmit -p .`
 - Full check (after merging): `pnpm install --frozen-lockfile && pnpm -r --filter "./packages/*" build && pnpm lint && pnpm format:check && pnpm -C packages/core test` (under 1 minute, no shared resources)
-- Benchmarks (`benchmarks/compile/`) need a quiet machine: one node at a time (`exclusive: [bench]`).
+- Benchmarks (`benchmarks/compile/`) need a quiet machine. A node that times runs alone: the orchestrator starts no other worker while it measures (`exclusive: [bench]` only stops other benchmark nodes; test runs in other worktrees also skew timings, seen in `plugin-fast-path`).
 
 ## Numbered resources
 

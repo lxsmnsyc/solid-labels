@@ -1,7 +1,7 @@
 ---
 id: fuzz-generator
 title: Add fast-check and the program generator
-status: active
+status: done
 priority: must
 type: contract
 story:

@@ -1,7 +1,7 @@
 ---
 id: plugin-fast-path
 title: Skip work for files with nothing to compile
-status: active
+status: done
 priority: should
 type: feature
 story:
@@ -44,6 +44,8 @@ A file with no compile-time functions still costs 5 to 10 times its parse time (
 - After the transform, if `!s.hasChanged()`, skip `generateMap`.
 - The unplugin should return `null` from `transform` when nothing changed, so Vite keeps the original code and map.
 - Decided (GOAL.md): `compile()` returns `CompileOutput | null`; `null` means nothing to compile or no edits. The unplugin returns `null` from `transform` in that case. `solid-labels/compiler` is new in the pending major, so update the text of `.changeset/oxc-compiler-rewrite.md` (it says the interface is unchanged) instead of adding a major changeset.
+
+- PR: #41. Prefilter `\$(?!\{)|solid:|\b(?:<components>)\b`; `plain n=800` 54.5 ms to 0.04 ms.
 
 ## Acceptance
 
