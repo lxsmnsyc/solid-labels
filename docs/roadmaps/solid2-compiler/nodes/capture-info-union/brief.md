@@ -54,3 +54,5 @@ Replace two implicit state shapes with types where each case carries only its va
 ## Sizing
 
 M: several files, mechanical, oracle-checked.
+
+- PR: #53. Output identical (oracle and snapshots untouched). Fresh review: clean, 3 nits left as is (redundant guard at effect.ts:115, `AccessorInfo.kind` covers accessor and raw, reference copy keeps the old shape).
