@@ -1,7 +1,7 @@
 ---
 id: parent-chain-memory
 title: Stop copying the parent chain for every identifier
-status: todo
+status: active
 priority: could
 type: refactor
 story:

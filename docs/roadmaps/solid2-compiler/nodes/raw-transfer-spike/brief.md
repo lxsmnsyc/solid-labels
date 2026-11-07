@@ -1,7 +1,7 @@
 ---
 id: raw-transfer-spike
 title: Spike: oxc experimentalRawTransfer for parsing
-status: active
+status: done
 priority: could
 type: spike
 story:
