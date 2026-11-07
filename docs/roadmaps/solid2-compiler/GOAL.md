@@ -80,6 +80,7 @@ The `1.0` branch (solid-js 2.0.0-rc.1) compiles every valid input to code that p
 - speed: `insideUntrack` linear scan -> perf-compiler-indexes
 - state: `CaptureInfo` and `ReactiveInfo` -> capture-info-union
 - state: compile phases mutate `Ctx` -> phase-outputs
+- generator findings (nested writes, JSX in destructure defaults, `$memo` objects) -> fix-nested-rewrites
 - Rust branch as an oracle -> dropped: branch parked, non-goal
 
 ## Decisions

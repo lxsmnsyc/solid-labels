@@ -2,7 +2,7 @@
 id: fuzz-generator
 title: Add fast-check and the program generator
 status: active
-priority: should
+priority: must
 type: contract
 story:
 early: false

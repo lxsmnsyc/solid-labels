@@ -21,6 +21,9 @@ shared: []
 reserves: []
 provides: []
 depends_on:
+  - on: fix-nested-rewrites
+    kind: hard
+    why: the no-crash property fails on the base until the nested rewrite bugs are fixed
   - on: fuzz-generator
     kind: contract
     via: program-arbitrary

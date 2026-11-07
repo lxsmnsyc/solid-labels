@@ -29,6 +29,9 @@ shared:
 reserves: []
 provides: []
 depends_on:
+  - on: fix-nested-rewrites
+    kind: hard
+    why: both edit renderSlice in render.ts, and the old vs new oracle needs a compiler whose output parses
   - on: fuzz-generator
     kind: contract
     via: program-arbitrary
