@@ -6,7 +6,7 @@ import {
   isWrapper,
   unwrap,
 } from './ast';
-import type { CaptureInfo, Ctx } from './context';
+import type { CaptureInfo, Ctx, ReactiveCapture } from './context';
 import type { Binding, Ref } from './scope';
 import { callArgs } from './variables';
 
@@ -66,26 +66,27 @@ function analyzeCaptures(ctx: Ctx, call: Node, target: Node, body: Node): Captur
   for (const [binding, { tracked, untracked, writes, firstRef }] of ordered) {
     const reactive = ctx.reactive.get(binding);
     if (reactive && reactive.kind !== 'raw') {
-      if (writes && !reactive.set) {
+      if (writes && reactive.kind !== 'signal') {
         ctx.error(binding.node, `Cannot assign to derived variable "${binding.name}"`);
       }
       // A read outside $untrack tracks the source; untracked-only reads pass
       // the accessor through instead so the source list omits the signal.
-      let get: CaptureInfo['get'] = false;
+      let read: ReactiveCapture['read'] = 'none';
       if (tracked) {
-        get = 'value';
+        read = 'value';
       } else if (untracked) {
-        get = 'accessor';
+        read = 'accessor';
       }
-      if (get === 'accessor') {
+      if (read === 'accessor') {
         // Inside an enclosing effect region that captured the raw value the
         // accessor no longer exists; the value is already untracked there.
         const outer = ctx.regionFor(binding, call.start);
-        if (outer?.captured.get(binding)?.get === 'value') {
-          get = 'value';
+        const outerInfo = outer?.captured.get(binding);
+        if (outerInfo?.kind === 'reactive' && outerInfo.read === 'value') {
+          read = 'value';
         }
       }
-      const info: CaptureInfo = { get, set: writes };
+      const info: CaptureInfo = { kind: 'reactive', read, write: writes };
       captured.set(binding, info);
       captures.push({ binding, info, firstRef });
       continue;
@@ -98,7 +99,7 @@ function analyzeCaptures(ctx: Ctx, call: Node, target: Node, body: Node): Captur
       continue;
     }
     if (binding.scope !== ctx.analysis.module || reactive) {
-      const info: CaptureInfo = { get: 'plain', set: false };
+      const info: CaptureInfo = { kind: 'plain' };
       captured.set(binding, info);
       captures.push({ binding, info, firstRef });
     }
@@ -111,20 +112,21 @@ function analyzeCaptures(ctx: Ctx, call: Node, target: Node, body: Node): Captur
   for (const capture of captures) {
     const { binding, info } = capture;
     const reactive = ctx.reactive.get(binding);
-    if (reactive && reactive.kind !== 'raw') {
-      if (info.get === 'value') {
+    if (reactive && reactive.kind !== 'raw' && info.kind === 'reactive') {
+      if (info.read === 'value') {
         // Inside an enclosing effect region the identifier is already a raw
         // captured value; read it plainly there.
         const outer = ctx.regionFor(binding, call.start);
-        const outerRaw = outer?.captured.get(binding)?.get === 'value';
+        const outerInfo = outer?.captured.get(binding);
+        const outerRaw = outerInfo?.kind === 'reactive' && outerInfo.read === 'value';
         entries.push(outerRaw ? binding.name : `${reactive.get}()`);
         params.push(binding.name);
-      } else if (info.get === 'accessor') {
+      } else if (info.read === 'accessor') {
         // The accessor itself rides along — stable identity, never triggers.
         entries.push(binding.name);
         params.push(binding.name);
       }
-      if (info.set && reactive.set) {
+      if (info.write && reactive.kind === 'signal') {
         entries.push(reactive.set);
         params.push(reactive.set);
       }
