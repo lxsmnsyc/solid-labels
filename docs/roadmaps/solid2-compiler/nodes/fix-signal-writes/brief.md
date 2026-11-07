@@ -49,6 +49,8 @@ This is not a regression. The 0.x Babel plugin (`main`, `packages/core/babel/cor
 
 - Source: analysis session 2026-11-07, confirmed by running the compiled output on solid-js 2.0.0-rc.1 and the 0.x plugin on solid-js 1.9.
 
+- PR: #37.
+
 ## Acceptance
 
 - [ ] `a = (1 + 2);`, `a = (f());`, `a = (b = 1);` and `a = (c ? 1 : 2);` compile to code that parses, in statement and expression position.

@@ -42,6 +42,8 @@ Update every dependency in the workspace to its latest version before the rest o
 - Solid 2.0 is a release candidate on the `next` tag: pin `solid-js` and `@solidjs/web` to the newest exact RC version, not a range, and not `latest` (which is 1.x).
 - magic-string: the compiler supports 1.2 and 1.4; keep the range starting at a version the snapshots pass on.
 
+- PR: #36.
+
 ## Acceptance
 
 - [ ] `pnpm outdated -r` lists nothing except packages kept back on purpose, each with a reason in the PR.
