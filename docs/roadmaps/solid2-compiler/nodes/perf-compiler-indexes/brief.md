@@ -80,3 +80,5 @@ M: the code exists and passed the tests; the work is porting, the oracle and mea
 - `addRegion` assumes regions arrive in source order (effects are processed sorted by start). Assert it in dev or keep the order explicit.
 - `PendingHoist.text` is unused after the change; remove it.
 - `parent-chain-memory` removes the reference copy later. Leave it in place.
+
+- PR: #52. About 4x faster (ctf n=800: 725 ms to 186 ms in the least disturbed pair; machine was loaded, quiet re-run needed for the 250 ms criterion). Fresh review: error-order regression in `analyzeCaptures` and two nits, fixed in 7a3b2d4. Source maps for hoisted callbacks now keep original mappings.
