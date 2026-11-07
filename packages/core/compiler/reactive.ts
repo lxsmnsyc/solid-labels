@@ -152,7 +152,8 @@ function rewriteRefCtf(ctx: Ctx, info: ReactiveInfo, ref: Ref, use: RefCtfUse): 
 
 /**
  * Rewrites a write to a signal binding into a setter call:
- * `count++` compiles to `setcount_1(current_1 => ++current_1)`, compound
+ * `++count` compiles to `setcount_1(current_1 => ++current_1)`, a postfix
+ * update whose value is used keeps the old value through a temporary, compound
  * assignment to the functional-update form, and plain `=` to
  * `setcount_1(() => value)`. Right-hand sides containing await/yield are
  * split into a temporary first (statement or concise arrow body only) so the
@@ -167,8 +168,23 @@ function rewriteWrite(ctx: Ctx, binding: Binding, info: ReactiveInfo, ref: Ref):
   const parent = ref.parents[ref.parents.length - 1];
   if (parent?.type === 'UpdateExpression') {
     const current = ctx.unique('current');
-    const op = parent.operator === '++' ? `++${current}` : `--${current}`;
-    s.overwrite(parent.start, parent.end, `${set}(${current} => ${op})`);
+    const grand = ref.parents[ref.parents.length - 2];
+    const unused =
+      grand?.type === 'ExpressionStatement' ||
+      (grand?.type === 'ForStatement' && grand.update === parent);
+    if (parent.prefix || unused) {
+      const op = parent.operator === '++' ? `++${current}` : `--${current}`;
+      s.overwrite(parent.start, parent.end, `${set}(${current} => ${op})`);
+      return;
+    }
+    // Postfix with a used value evaluates to the old value.
+    const tmp = ctx.unique('tmp');
+    const sign = parent.operator === '++' ? '+' : '-';
+    s.overwrite(
+      parent.start,
+      parent.end,
+      `(() => { let ${tmp}; ${set}(${current} => (${tmp} = ${current}) ${sign} 1); return ${tmp}; })()`,
+    );
     return;
   }
   if (parent?.type !== 'AssignmentExpression' || parent.left !== ref.node) {
@@ -183,12 +199,20 @@ function rewriteWrite(ctx: Ctx, binding: Binding, info: ReactiveInfo, ref: Ref):
     s.appendLeft(right.end, ')');
     return;
   }
+  // oxc drops parentheses, so find the real span of the right-hand side.
+  const [rightStart, rightEnd] = expandParens(
+    code,
+    right.start,
+    right.end,
+    ref.node.end,
+    assign.end,
+  );
   if (containsAwaitOrYield(right)) {
     const tmp = ctx.unique('tmp');
     const grand = ref.parents[ref.parents.length - 2];
     if (grand?.type === 'ExpressionStatement') {
-      s.overwrite(ref.node.start, right.start, `const ${tmp} = `);
-      s.appendLeft(right.end, `;\n${set}(() => ${tmp})`);
+      s.overwrite(ref.node.start, rightStart, `const ${tmp} = `);
+      s.appendLeft(rightEnd, `;\n${set}(() => ${tmp})`);
       return;
     }
     // Concise arrow body: `async () => (count = await value())`
@@ -198,8 +222,8 @@ function rewriteWrite(ctx: Ctx, binding: Binding, info: ReactiveInfo, ref: Ref):
     if (arrowIndex !== -1) {
       const arrow = ref.parents[arrowIndex];
       const [bodyStart, bodyEnd] = expandParens(code, assign.start, assign.end, arrow.start);
-      s.overwrite(bodyStart, right.start, `{ const ${tmp} = `);
-      s.overwrite(right.end, bodyEnd, `; return ${set}(() => ${tmp}); }`);
+      s.overwrite(bodyStart, rightStart, `{ const ${tmp} = `);
+      s.overwrite(rightEnd, bodyEnd, `; return ${set}(() => ${tmp}); }`);
       return;
     }
     ctx.error(
@@ -207,9 +231,9 @@ function rewriteWrite(ctx: Ctx, binding: Binding, info: ReactiveInfo, ref: Ref):
       `Assignments with await/yield to "${binding.name}" are only supported as statements or arrow bodies`,
     );
   }
-  const object = code[right.start] === '{';
-  s.overwrite(ref.node.start, right.start, `${set}(() => ${object ? '(' : ''}`);
-  s.appendLeft(right.end, object ? '))' : ')');
+  const object = code[rightStart] === '{';
+  s.overwrite(ref.node.start, rightStart, `${set}(() => ${object ? '(' : ''}`);
+  s.appendLeft(rightEnd, object ? '))' : ')');
 }
 
 /**
