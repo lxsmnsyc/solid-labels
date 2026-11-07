@@ -28,6 +28,9 @@ shared: []
 reserves: []
 provides: []
 depends_on:
+  - on: fix-scope-edges
+    kind: hard
+    why: both edit compiler/scope.ts
   - on: fuzz-generator
     kind: contract
     via: program-arbitrary

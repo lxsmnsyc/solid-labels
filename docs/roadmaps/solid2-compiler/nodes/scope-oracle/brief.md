@@ -40,6 +40,8 @@ Every transform depends on `analyze` (`compiler/scope.ts`) telling local binding
 - Compare: the set of unresolved identifier nodes (`analysis.unresolved` vs the global scope's `through`), and for each resolved reference, the declaring identifier.
 - Known differences to handle or exclude: JSX element names (`analysis.jsxNames`), TS type-space names, class scopes. List every exclusion in the test with the reason.
 
+- PR: #43. Fresh review: clean. 5 of 5 full suite runs passed (the worker's single failure was not reproduced). Two disagreements, both change output: follow-up `fix-scope-edges`.
+
 ## Acceptance
 
 - [ ] Oracle passes for `programArb()` with 100 runs.
