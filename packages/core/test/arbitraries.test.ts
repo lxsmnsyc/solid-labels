@@ -3,6 +3,7 @@ import { parseSync } from 'oxc-parser';
 import { describe, expect, it } from 'vitest';
 import { CompileError, compile } from '../compiler';
 import { COMPILE_ERROR_BOUND, programArb, straightLineArb } from './arbitraries';
+import type { GeneratedProgram } from './arbitraries';
 
 const RUNS = Number(process.env.FC_RUNS ?? 100);
 const SAMPLES = 1000;
@@ -37,6 +38,94 @@ function compileErrorShare(programs: { id: string; source: string }[]): number {
     }
   }
   return rejected / programs.length;
+}
+
+type Form = [name: string, matches: RegExp | ((source: string) => boolean)];
+
+/** True when an `$effect(` or `$renderEffect(` call contains another effect call. */
+function hasNestedEffect(source: string): boolean {
+  const starts = /\$(?:effect|renderEffect)\(/g;
+  for (let match = starts.exec(source); match; match = starts.exec(source)) {
+    // Find the end of this call by matching parentheses.
+    let depth = 0;
+    let end = match.index + match[0].length - 1;
+    for (; end < source.length; end++) {
+      if (source[end] === '(') {
+        depth++;
+      } else if (source[end] === ')') {
+        depth--;
+        if (depth === 0) {
+          break;
+        }
+      }
+    }
+    if (/\$(?:effect|renderEffect)\(/.test(source.slice(match.index + match[0].length, end))) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// Names: signals are sN, gN or cs; memos are mN; derived variables are dN.
+const BASE_FORMS: Form[] = [
+  ['signal', /\$signal\(/],
+  ['memo', /\$memo\(/],
+  ['derived declaration', /^const d\w+ = \$\(/m],
+  ['derived statement', /^\$\(/m],
+  ['destructure', /\$destructure\(/],
+  ['destructure default and rest', /\{ \w+, \w+ = [^}]*\.\.\.\w+ \} = \$destructure/],
+  ['component', /\$component\(/],
+  ['plain write', /^(?:[sg]\d+|cs) = [^=(]/m],
+  ['parenthesized write', /^(?:[sg]\d+|cs) = \(/m],
+  ['compound write', /^(?:[sg]\d+|cs) [-+*]= /m],
+  ['prefix update', /(?:\+\+|--)(?:[sg]\d+|cs)\b/],
+  ['postfix update', /\b(?:[sg]\d+|cs)(?:\+\+|--)/],
+  ['update in expression', /\(\+\+(?:[sg]\d+|cs)\)|log\((?:[sg]\d+|cs)\+\+/],
+  ['effect', /\$effect\(/],
+  ['renderEffect', /\$renderEffect\(/],
+  ['nested effect', hasNestedEffect],
+  ['effect capturing a plain local', /let loc(\d+) = [^\n]*\$effect\(\(\) => \{ log\(loc\1\b/],
+  ['effect writing a plain outer variable', /\$effect\(\(\) => \{ out\d+ = /],
+  ['effect using arguments', /log\(arguments/],
+  ['effect using this', /\$effect\(function \(\) \{ log\(this/],
+  ['untrack', /\$untrack\(/],
+  ['$get', /\$get\((?:[smgd]\d+|cs)\)/],
+  ['$set', /\$set\((?:[sg]\d+|cs)\)\(/],
+  ['$refSignal', /\$refSignal\((?:[sg]\d+|cs)\)/],
+  ['$refMemo', /\$refMemo\(m\d+\)/],
+  ['$getter', /: \$getter\((?:[smgd]\d+|cs)\)/],
+  ['$setter', /: \$setter\((?:[sg]\d+|cs)\)/],
+  ['$property', /: \$property\((?:[smgd]\d+|cs)\)/],
+  ['shadowed reactive name', /\{ let (?:s|m|d|g)\d+ = 1;|function fh\d+\((?:s|m|d)\d+\)/],
+  ['shadowed compile-time function', /const \$(?:untrack|get|effect|memo) = \(x\) => x;/],
+];
+
+const JSX_FORMS: Form[] = [
+  ['auto-imported component', /<Show /],
+  ['namespaced component', /<solid:(?:show|for|switch)/],
+  ['For component', /<For /],
+];
+
+/** Names of the forms that no sample contains. Each found sample must also parse. */
+function findMissingForms(programs: GeneratedProgram[], forms: Form[]): string[] {
+  const missing: string[] = [];
+  for (const [name, matches] of forms) {
+    let found: GeneratedProgram | undefined;
+    for (const program of programs) {
+      const hit =
+        typeof matches === 'function' ? matches(program.source) : matches.test(program.source);
+      if (hit) {
+        found = program;
+        break;
+      }
+    }
+    if (found) {
+      expect(parses(found.id, found.source), name).toBeUndefined();
+    } else {
+      missing.push(name);
+    }
+  }
+  return missing;
 }
 
 describe('programArb', () => {
@@ -80,61 +169,20 @@ describe('programArb', () => {
 
   it('is rejected by compile() with CompileError at most COMPILE_ERROR_BOUND of the time', () => {
     for (const jsx of [true, false]) {
-      const share = compileErrorShare(sample(programArb({ jsx }), 42));
-      expect(share).toBeLessThan(COMPILE_ERROR_BOUND);
+      for (const seed of [42, 7]) {
+        const share = compileErrorShare(sample(programArb({ jsx }), seed));
+        expect(share).toBeLessThan(COMPILE_ERROR_BOUND);
+      }
     }
   }, 60_000);
 
   it('covers every syntax form in the contract', () => {
-    const programs = sample(programArb(), 2024);
-    const forms: Record<string, RegExp> = {
-      signal: /\$signal\(/,
-      memo: /\$memo\(/,
-      'derived declaration': /const d\w+ = \$\(/,
-      'derived statement': /^\$\(/m,
-      destructure: /\$destructure\(/,
-      'destructure default and rest': /\{ \w+, \w+ = [^}]*\.\.\.\w+ \} = \$destructure/,
-      component: /\$component\(/,
-      'plain write': /(?:s|g)\d+ = [^=(]/,
-      'parenthesized write': /(?:s|g)\d+ = \(/,
-      'compound write': /(?:s|g)\d+ [-+*]= /,
-      'prefix update': /(?:\+\+|--)(?:s|g)\d+/,
-      'postfix update': /(?:s|g)\d+(?:\+\+|--)/,
-      'update in expression': /\(\+\+(?:s|g)\d+\)|log\((?:s|g)\d+\+\+/,
-      effect: /\$effect\(/,
-      renderEffect: /\$renderEffect\(/,
-      'nested effect': /\$(?:effect|renderEffect)\(\(\) => \{\n[^}]*\$effect\(/,
-      'effect capturing a plain local': /let loc\d+ = /,
-      'effect writing a plain outer variable': /\$effect\(\(\) => \{ out\d+ = /,
-      'effect using arguments': /log\(arguments/,
-      'effect using this': /\$effect\(function \(\) \{ log\(this/,
-      untrack: /\$untrack\(/,
-      $get: /\$get\(/,
-      $set: /\$set\(/,
-      $refSignal: /\$refSignal\(/,
-      $refMemo: /\$refMemo\(/,
-      $getter: /\$getter\(/,
-      $setter: /\$setter\(/,
-      $property: /\$property\(/,
-      'shadowed reactive name': /\{ let (?:s|m|d|g)\d+ = 1;|function fh\d+\((?:s|m|d)\d+\)/,
-      'shadowed compile-time function': /const \$(?:untrack|get|effect|memo) = \(x\) => x;/,
-      'auto-imported component': /<Show /,
-      'namespaced component': /<solid:(?:show|for|switch)/,
-      'For component': /<For /,
-    };
-    const missing: string[] = [];
-    for (const [name, pattern] of Object.entries(forms)) {
-      let found = false;
-      for (const program of programs) {
-        if (pattern.test(program.source)) {
-          found = true;
-          break;
-        }
-      }
-      if (!found) {
-        missing.push(name);
-      }
-    }
+    const missing = findMissingForms(sample(programArb(), 2024), [...BASE_FORMS, ...JSX_FORMS]);
+    expect(missing).toEqual([]);
+  }, 30_000);
+
+  it('covers the forms that need no JSX when jsx is false', () => {
+    const missing = findMissingForms(sample(programArb({ jsx: false }), 2025), BASE_FORMS);
     expect(missing).toEqual([]);
   }, 30_000);
 });

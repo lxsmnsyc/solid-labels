@@ -153,6 +153,16 @@ const binaryOp = fc.constantFrom('+', '-', '*', '&&', '||', '??', '===', '<');
 const compoundOp = fc.constantFrom('+=', '-=', '*=');
 const keyName = fc.constantFrom('k', 'v', 'key', 'value');
 
+const CACHE_LIMIT = 3000;
+
+/** Stores a built arbitrary; a full cache is dropped so memory stays bounded across test files. */
+function remember<T>(cache: Map<string, T>, key: string, value: T): void {
+  if (cache.size >= CACHE_LIMIT) {
+    cache.clear();
+  }
+  cache.set(key, value);
+}
+
 const exprCache = new Map<string, fc.Arbitrary<string>>();
 
 function exprArb(scope: Scope, depth: number): fc.Arbitrary<string> {
@@ -160,7 +170,7 @@ function exprArb(scope: Scope, depth: number): fc.Arbitrary<string> {
   let found = exprCache.get(key);
   if (!found) {
     found = buildExpr(scope, depth);
-    exprCache.set(key, found);
+    remember(exprCache, key, found);
   }
   return found;
 }
@@ -309,7 +319,7 @@ function jsxArb(scope: Scope, depth: number): fc.Arbitrary<string> {
   let found = jsxCache.get(key);
   if (!found) {
     found = buildJsx(scope, depth);
-    jsxCache.set(key, found);
+    remember(jsxCache, key, found);
   }
   return found;
 }
@@ -330,7 +340,8 @@ function buildJsx(scope: Scope, depth: number): fc.Arbitrary<string> {
   const item = `it${depth}`;
   const itemScope = withPlain(scope, item);
   const itemChild = exprArb(itemScope, Math.max(0, depth - 1));
-  const handler = blockArb(bump(scope), 1, 0);
+  // Fixed counter: this arbitrary is cached without the counter, so its output must not depend on it.
+  const handler = blockArb({ ...scope, next: 5000 + depth }, 1, 0);
 
   const options: fc.Arbitrary<string>[] = [
     fc.tuple(value, child).map(([e, c]) => `<div title={${e}}>${c}</div>`),
@@ -374,7 +385,7 @@ function stmtArb(scope: Scope, depth: number): fc.Arbitrary<Stmt> {
   let found = stmtCache.get(key);
   if (!found) {
     found = buildStmt(scope, depth);
-    stmtCache.set(key, found);
+    remember(stmtCache, key, found);
   }
   return found;
 }
@@ -387,7 +398,7 @@ function blockArb(scope: Scope, count: number, depth: number): fc.Arbitrary<stri
     found = fc
       .integer({ min: 1, max: count })
       .chain((n) => statementsArb(scope, n, depth).map((body) => `{\n${body}}`));
-    blockCache.set(key, found);
+    remember(blockCache, key, found);
   }
   return found;
 }
@@ -407,6 +418,7 @@ function buildStmt(scope: Scope, depth: number): fc.Arbitrary<Stmt> {
   const eShallow = exprArb(scope, 1);
   const pureScope: Scope = { ...scope, write: false };
   const pure = exprArb(pureScope, 2);
+  // KNOWN-CRASH: MagicStringError, fixed and removed by node fix-nested-rewrites
   // A JSX default in a destructure crashes the compiler (see outcome.md), and ref functions
   // there are CompileErrors, so defaults avoid both.
   const dflt = exprArb({ ...pureScope, jsx: false, inEffect: true }, 1);
@@ -718,6 +730,7 @@ function functionBodyArb(
   }
   if (shape.destructure && param === 'props') {
     declArbs.push(
+      // KNOWN-CRASH: MagicStringError, fixed and removed by node fix-nested-rewrites
       exprArb({ ...valueScope(), jsx: false, inEffect: true }, 1).map(
         (x) => `const { a0, b0 = ${x}, ...rest0 } = $destructure(props);`,
       ),
@@ -752,6 +765,7 @@ function componentArb(outer: Scope): fc.Arbitrary<string> {
   const withSignal = extend(base, [{ kind: 'signal', name: 'cs' }]);
   const body = statementsArb(withSignal, 2, 1);
   const ret = returnArb(withSignal);
+  // KNOWN-CRASH: MagicStringError, fixed and removed by node fix-nested-rewrites
   // A JSX default in a $component parameter crashes the compiler (see outcome.md), so keep it plain.
   const dflt = intLit;
   return fc

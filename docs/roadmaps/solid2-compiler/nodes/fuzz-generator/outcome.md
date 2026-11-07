@@ -21,7 +21,7 @@
 ## Deviations
 
 - Dependencies use caret ranges (`^4.10.2`, `^0.5.0`) like the rest of the file, set to the latest versions read from npm.
-- `@fast-check/vitest` is installed as asked but nothing imports it.
+- `@fast-check/vitest` is installed as asked but nothing imports it yet.
 - Shrinking is partial: expressions shrink to literals, but statement lists shrink by count, not by deleting single statements. One probe shrank a failing program to about 20 lines.
 - `pnpm lint` fails on the base branch in `docs/roadmaps/solid2-compiler/nodes/*/prototype-*.mjs` (type-aware rules on `.mjs` prototypes). Those files are not owned by this node and are untouched. The new files lint clean.
 
@@ -34,6 +34,10 @@
 - Do not put the name counter in an expression's cache key; the cache then grows without bound.
 - Ref functions in effect callbacks and in destructure defaults are CompileErrors; keep them out of generated code there.
 - Do not compare 1000 programs with `toEqual`; a failed diff exhausts memory. Compare the `source` strings.
+- Bare-read writes: `a = b` compiles to `seta_1(() => b)()` and `a += b` to `seta_1(current_1 => current_1 += b)()` when `b` is a signal or memo. An oracle on `straightLineArb` fails until `fix-nested-rewrites` lands.
+- The three JSX-in-default spots are marked `KNOWN-CRASH: MagicStringError, fixed and removed by node fix-nested-rewrites`; that node removes the avoidance.
+- `@fast-check/vitest` is kept for `fuzz-properties` (`test.prop`).
+- Cached arbitraries are cleared at 3000 entries per cache, and expression arbitraries must not depend on the name counter, or output depends on cache history.
 - A property test over the generated programs fails right away on the existing compiler bugs above, so `fuzz-properties` needs the `fix-signal-writes` fixes first or must skip known classes.
 
 ## Proposed learnings
