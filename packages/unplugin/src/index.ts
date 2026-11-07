@@ -55,11 +55,16 @@ const solidLabelsPlugin = createUnplugin((rawOptions?: SolidLabelsPluginOptions)
     transformInclude(id): boolean {
       return filter(id);
     },
-    transform(code, id): TransformResult {
+    transform(code, id): TransformResult | null {
       const result = compile(id, code, {
         disabled: options.disabled,
         dev: env === 'development' || options.dev,
       });
+
+      // Nothing to compile: keep the original code and map.
+      if (result === null) {
+        return null;
+      }
 
       return {
         code: result.code,

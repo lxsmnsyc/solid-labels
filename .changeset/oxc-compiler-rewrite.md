@@ -9,7 +9,8 @@ The Babel-based compiler is replaced with `oxc-parser` (native parsing) and
 `magic-string` (span-based output): untouched code keeps its formatting and
 source maps are high-resolution. The `solid-labels/babel` entry is gone;
 plugins consume `solid-labels/compiler`, whose `compile(id, code, options)`
-interface is unchanged.
+takes the same arguments as before. It returns `null` when the file has
+nothing to compile, and the plugin then keeps the original code and map.
 
 Breaking changes:
 

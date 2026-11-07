@@ -3,6 +3,7 @@ import { parseSync } from 'oxc-parser';
 import { Ctx } from './context';
 import { CompileError } from './errors';
 import { analyze } from './scope';
+import { COMPONENTS } from './registry';
 import transformProgram from './transform';
 import type { CompileOutput, Options } from './types';
 
@@ -25,11 +26,27 @@ function languageOf(filename: string): 'js' | 'jsx' | 'ts' | 'tsx' {
 }
 
 /**
+ * Cheap check run before parsing. A module needs compiling only if it holds
+ * `$` not followed by `{` (compile-time functions; `${` is a template
+ * interpolation), `solid:` (namespace components) or the name
+ * of an auto-imported component. Built from the registry so it cannot drift.
+ * A false positive only costs the normal path.
+ */
+const NEEDS_COMPILE = new RegExp(
+  `\\$(?!\\{)|solid:|\\b(?:${Object.keys(COMPONENTS).join('|')})\\b`,
+);
+
+/**
  * Compiles a module: parse with oxc, analyze scopes (`analyze`), apply all
  * transforms (`transformProgram`) as span edits over a MagicString, and
- * return the code plus a hires source map.
+ * return the code plus a hires source map. Returns `null` when the module has
+ * nothing to compile or the transforms made no edits.
  */
-export function compile(id: string, code: string, options: Options = {}): CompileOutput {
+export function compile(id: string, code: string, options: Options = {}): CompileOutput | null {
+  // Skip parsing for modules without any marker.
+  if (!NEEDS_COMPILE.test(code)) {
+    return null;
+  }
   const result = parseSync(id.split('?')[0], code, {
     lang: languageOf(id),
     sourceType: 'module',
@@ -44,6 +61,10 @@ export function compile(id: string, code: string, options: Options = {}): Compil
   const analysis = analyze(result.program);
   const ctx = new Ctx(s, code, analysis, options.dev === true, options.disabled?.ctf ?? {});
   transformProgram(ctx);
+  // Skip the source map when nothing changed.
+  if (!s.hasChanged()) {
+    return null;
+  }
   return {
     code: s.toString(),
     map: s.generateMap({ source: id, hires: true }),
