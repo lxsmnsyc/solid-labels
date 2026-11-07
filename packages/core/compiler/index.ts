@@ -1,11 +1,22 @@
 import MagicString from 'magic-string';
-import { parseSync } from 'oxc-parser';
+import { parseSync, rawTransferSupported } from 'oxc-parser';
+import type { ParserOptions } from 'oxc-parser';
 import { Ctx } from './context';
 import { CompileError } from './errors';
 import { analyze } from './scope';
 import { COMPONENTS } from './registry';
 import transformProgram from './transform';
 import type { CompileOutput, Options } from './types';
+
+// oxc-parser 0.157 does not type this option. Raw transfer is oxc's faster
+// parse path (https://github.com/oxc-project/oxc/issues/28275). After an oxc
+// minor bump, re-run `benchmarks/compile` and check the oxc changelog for raw
+// transfer: a rename makes parsing fall back to the slow path without an error.
+// The value must be `rawTransferSupported()`: `true` throws on platforms
+// without support.
+const PARSE_OPTIONS: ParserOptions & { experimentalRawTransfer?: boolean } = {
+  experimentalRawTransfer: rawTransferSupported(),
+};
 
 export type { CompileOutput, Options };
 export { CompileError };
@@ -51,6 +62,7 @@ export function compile(id: string, code: string, options: Options = {}): Compil
     lang: languageOf(id),
     sourceType: 'module',
     preserveParens: false,
+    ...PARSE_OPTIONS,
   });
   if (result.errors.length > 0) {
     const first = result.errors[0];
