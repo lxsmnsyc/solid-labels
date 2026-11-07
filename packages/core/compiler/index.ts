@@ -27,11 +27,14 @@ function languageOf(filename: string): 'js' | 'jsx' | 'ts' | 'tsx' {
 
 /**
  * Cheap check run before parsing. A module needs compiling only if it holds
- * `$` (compile-time functions), `solid:` (namespace components) or the name
+ * `$` not followed by `{` (compile-time functions; `${` is a template
+ * interpolation), `solid:` (namespace components) or the name
  * of an auto-imported component. Built from the registry so it cannot drift.
  * A false positive only costs the normal path.
  */
-const NEEDS_COMPILE = new RegExp(`\\$|solid:|${Object.keys(COMPONENTS).join('|')}`);
+const NEEDS_COMPILE = new RegExp(
+  `\\$(?!\\{)|solid:|\\b(?:${Object.keys(COMPONENTS).join('|')})\\b`,
+);
 
 /**
  * Compiles a module: parse with oxc, analyze scopes (`analyze`), apply all

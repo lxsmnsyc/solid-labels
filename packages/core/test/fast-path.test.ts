@@ -23,6 +23,21 @@ describe('fast path', () => {
     expect(result?.code).toContain('createSignal');
   });
 
+  it('does not parse template interpolations or longer component-like names', () => {
+    const spy = vi.mocked(oxc.parseSync);
+    spy.mockClear();
+    const code = `const a = \`\${x}\`;\nexport const b = <Form>{\`\${a}\`}</Form>;\n`;
+    expect(compile('a.tsx', code)).toBeNull();
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it('compiles the $(x); statement', () => {
+    const spy = vi.mocked(oxc.parseSync);
+    spy.mockClear();
+    compile('a.tsx', 'const x = 1;\n$(x);\n');
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+
   it('still imports Show for a file that only uses <Show>', () => {
     const result = compile('a.tsx', 'export const a = <Show when={x}>y</Show>;\n');
     expect(result?.code).toContain('Show');
