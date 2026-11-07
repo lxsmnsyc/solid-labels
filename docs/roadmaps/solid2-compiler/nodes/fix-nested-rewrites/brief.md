@@ -1,7 +1,7 @@
 ---
 id: fix-nested-rewrites
 title: Fix nested rewrites that drop parens or crash
-status: active
+status: done
 priority: must
 type: fix
 story:

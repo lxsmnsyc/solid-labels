@@ -15,3 +15,7 @@ Next, once #43 and #44 merge (no worker is running now):
 - `fix-scope-edges` (after #43), `fuzz-properties` and `perf-compiler-indexes` (after #44), `test-flake` (after #44).
 - `perf-compiler-indexes` times benchmarks: start it alone, after the others finish, or give the others no overlap with its timed runs.
 - `raw-transfer-spike` runs alone after `perf-compiler-indexes`.
+
+## Update
+
+- #44 merged (`fix-nested-rewrites` done). #45 merged: the generator emitted `(x) as any ? --y : 0`, invalid TypeScript, which failed CI on #43 with seed 1499399367 and is the likely cause of the earlier unexplained failures. #43 CI passes after updating its branch.
