@@ -64,3 +64,5 @@ S: two contained changes in one file, verified by an existing oracle.
 ## Notes for the worker
 
 - `parent-chain-memory` rewrites `reference()` in the same file later; keep this change to scope creation and declaration.
+
+- PR: #54. No snapshot changes; oracle unchanged. Behavior change: `function f(x=$signal(1)){var $signal=1}` now throws "$signal must initialize a variable declaration" instead of leaving `$signal` uncompiled. scope-oracle property: 0.55 s and 1.2 s under load (limit 120 s).
