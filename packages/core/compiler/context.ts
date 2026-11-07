@@ -5,25 +5,42 @@ import type { Analysis, Binding, Ref } from './scope';
 
 export type ReactiveKind = 'signal' | 'accessor' | 'raw';
 
-export interface ReactiveInfo {
-  kind: ReactiveKind;
+export interface SignalInfo {
+  kind: 'signal';
   /** Accessor identifier (the binding keeps its original name). */
   get: string;
-  /** Setter identifier; signals only. */
-  set?: string;
+  /** Setter identifier. */
+  set: string;
 }
 
-export interface CaptureInfo {
+export interface AccessorInfo {
+  kind: 'accessor' | 'raw';
+  /** Accessor identifier (the binding keeps its original name). */
+  get: string;
+}
+
+export type ReactiveInfo = SignalInfo | AccessorInfo;
+
+export interface PlainCapture {
+  /** A non-reactive outer value passed through the capture array. */
+  kind: 'plain';
+}
+
+export interface ReactiveCapture {
+  kind: 'reactive';
   /**
    * How reads are captured: `'value'` — read in the compute phase (tracked),
    * the parameter is the raw value; `'accessor'` — every read sits inside
    * `$untrack(...)`, the accessor itself is passed through the capture array
    * (stable identity, never triggers) and body reads stay `name()` calls;
-   * `'plain'` — a non-reactive outer value passed through the capture array.
+   * `'none'` — no reads.
    */
-  get: false | 'value' | 'accessor' | 'plain';
-  set: boolean;
+  read: 'value' | 'accessor' | 'none';
+  /** The setter is passed through the capture array. */
+  write: boolean;
 }
+
+export type CaptureInfo = PlainCapture | ReactiveCapture;
 
 export interface EffectRegion {
   /** Span of the callback function (body included). */

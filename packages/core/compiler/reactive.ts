@@ -1,5 +1,5 @@
 import { type Node, containsAwaitOrYield, expandParens, isWrapper, unwrap } from './ast';
-import type { Ctx, ReactiveInfo } from './context';
+import type { Ctx, ReactiveInfo, SignalInfo } from './context';
 import type { Binding, Ref } from './scope';
 
 /** CTFs applied to a reference of an existing reactive variable. */
@@ -85,10 +85,11 @@ function rewriteRefCtf(ctx: Ctx, info: ReactiveInfo, ref: Ref, use: RefCtfUse): 
   ctx.consumed.add(ref.node);
   ctx.consumed.add(use.callee);
   const { s } = ctx;
-  const signalOnly = (): void => {
-    if (info.kind !== 'signal' || !info.set) {
+  const signalOnly = (): SignalInfo => {
+    if (info.kind !== 'signal') {
       ctx.error(use.callee, `${use.name} must be used on a signal variable`);
     }
+    return info;
   };
   switch (use.name) {
     case '$get': {
@@ -96,13 +97,13 @@ function rewriteRefCtf(ctx: Ctx, info: ReactiveInfo, ref: Ref, use: RefCtfUse): 
       break;
     }
     case '$set': {
-      signalOnly();
-      s.overwrite(use.call.start, use.call.end, info.set!, { contentOnly: true });
+      const signal = signalOnly();
+      s.overwrite(use.call.start, use.call.end, signal.set, { contentOnly: true });
       break;
     }
     case '$refSignal': {
-      signalOnly();
-      s.overwrite(use.call.start, use.call.end, `[${info.get}, ${info.set}]`, {
+      const signal = signalOnly();
+      s.overwrite(use.call.start, use.call.end, `[${signal.get}, ${signal.set}]`, {
         contentOnly: true,
       });
       break;
@@ -122,7 +123,7 @@ function rewriteRefCtf(ctx: Ctx, info: ReactiveInfo, ref: Ref, use: RefCtfUse): 
       break;
     }
     case '$setter': {
-      signalOnly();
+      const signal = signalOnly();
       if (!use.property) {
         ctx.error(use.callee, '$setter must be used as an object property value');
       }
@@ -131,7 +132,7 @@ function rewriteRefCtf(ctx: Ctx, info: ReactiveInfo, ref: Ref, use: RefCtfUse): 
       s.overwrite(
         prop.start,
         prop.end,
-        `set ${keyText(ctx, prop)}(${param}) { ${info.set}(() => ${param}); }`,
+        `set ${keyText(ctx, prop)}(${param}) { ${signal.set}(() => ${param}); }`,
         { contentOnly: true },
       );
       break;
@@ -143,7 +144,7 @@ function rewriteRefCtf(ctx: Ctx, info: ReactiveInfo, ref: Ref, use: RefCtfUse): 
       const prop = use.property;
       const key = keyText(ctx, prop);
       let text = `get ${key}() { return ${info.get}(); }`;
-      if (info.kind === 'signal' && info.set) {
+      if (info.kind === 'signal') {
         const param = ctx.unique('param');
         text += `, set ${key}(${param}) { ${info.set}(() => ${param}); }`;
       }
@@ -184,7 +185,7 @@ function rewriteWrite(
   ref: Ref,
   closers: Closer[],
 ): void {
-  if (info.kind !== 'signal' || !info.set) {
+  if (info.kind !== 'signal') {
     ctx.error(ref.node, `Cannot assign to derived variable "${binding.name}"`);
   }
   const set = info.set;
@@ -296,7 +297,8 @@ export function rewriteReferences(ctx: Ctx): void {
       }
       if (ref.mode === 'read') {
         const region = ctx.regionFor(binding, ref.node.start);
-        if (region?.captured.get(binding)?.get === 'value') {
+        const regionInfo = region?.captured.get(binding);
+        if (regionInfo?.kind === 'reactive' && regionInfo.read === 'value') {
           // Captured by an effect callback: the identifier resolves to the
           // destructured raw value parameter — leave it untouched. (An
           // 'accessor' capture keeps the normal `name()` rewrite below.)
