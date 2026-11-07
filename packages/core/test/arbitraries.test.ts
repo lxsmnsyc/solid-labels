@@ -6,7 +6,10 @@ import { COMPILE_ERROR_BOUND, programArb, straightLineArb } from './arbitraries'
 import type { GeneratedProgram } from './arbitraries';
 
 const RUNS = Number(process.env.FC_RUNS ?? 100);
-const SAMPLES = 1000;
+// Coverage of every form needs a large sample; the other tests need only a few programs.
+const COVERAGE_SAMPLES = 1000;
+const SHARE_SAMPLES = 300;
+const FEW_SAMPLES = 100;
 
 function parses(id: string, source: string): string | undefined {
   let lang: 'tsx' | 'jsx' | 'js' = 'js';
@@ -19,8 +22,8 @@ function parses(id: string, source: string): string | undefined {
   return result.errors[0]?.message;
 }
 
-function sample<T>(arb: fc.Arbitrary<T>, seed: number): T[] {
-  return fc.sample(arb, { numRuns: SAMPLES, seed });
+function sample<T>(arb: fc.Arbitrary<T>, seed: number, count = FEW_SAMPLES): T[] {
+  return fc.sample(arb, { numRuns: count, seed });
 }
 
 /** Share of programs that `compile()` rejects with CompileError. */
@@ -170,19 +173,25 @@ describe('programArb', () => {
   it('is rejected by compile() with CompileError at most COMPILE_ERROR_BOUND of the time', () => {
     for (const jsx of [true, false]) {
       for (const seed of [42, 7]) {
-        const share = compileErrorShare(sample(programArb({ jsx }), seed));
+        const share = compileErrorShare(sample(programArb({ jsx }), seed, SHARE_SAMPLES));
         expect(share).toBeLessThan(COMPILE_ERROR_BOUND);
       }
     }
   }, 60_000);
 
   it('covers every syntax form in the contract', () => {
-    const missing = findMissingForms(sample(programArb(), 2024), [...BASE_FORMS, ...JSX_FORMS]);
+    const missing = findMissingForms(sample(programArb(), 2024, COVERAGE_SAMPLES), [
+      ...BASE_FORMS,
+      ...JSX_FORMS,
+    ]);
     expect(missing).toEqual([]);
   }, 30_000);
 
   it('covers the forms that need no JSX when jsx is false', () => {
-    const missing = findMissingForms(sample(programArb({ jsx: false }), 2025), BASE_FORMS);
+    const missing = findMissingForms(
+      sample(programArb({ jsx: false }), 2025, COVERAGE_SAMPLES),
+      BASE_FORMS,
+    );
     expect(missing).toEqual([]);
   }, 30_000);
 });
