@@ -1,7 +1,7 @@
 ---
 id: perf-bench
 title: Add the compile benchmark and record the baseline
-status: active
+status: done
 priority: should
 type: chore
 story:
@@ -37,6 +37,8 @@ Add `benchmarks/compile/` with a script that times `compile()` on generated file
 - Baseline from the analysis session (one machine): `ctf n=800` (440 KB) 857 ms, `ctf n=200` 81 ms, `plain n=800` 24.6 ms.
 - Cases: `ctf` (labels), `plain` (no labels, no component names: measures the fast path once `plugin-fast-path` lands) and `plain-show` (no labels, one `<Show>` per component: always takes the full path, so later nodes can measure scope and parse costs on it).
 - Use perf-pass's `bench.py` style: several runs, report median and spread, so later nodes can tell a gain from noise.
+
+- PR: #39. Baseline at n=800 (Apple M2, node 26.12.1): ctf 640.6 ms, plain 21.3 ms, plain-show 27.4 ms. Judge at n=200 and n=800; smaller sizes are noisy.
 
 ## Acceptance
 

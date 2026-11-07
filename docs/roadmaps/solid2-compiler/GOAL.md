@@ -17,7 +17,7 @@ release:
 
 ## Outcome
 
-The `1.0` branch (solid-js 2.0.0-rc.1) compiles every valid input to code that parses and behaves like the source program, its lint and typecheck pass, and compiling a 440 KB file with labels takes under 150 ms (857 ms at the start). Generated tests guard the compiler against regressions.
+The `1.0` branch (solid-js 2.0.0-rc.1) compiles every valid input to code that parses and behaves like the source program, its lint and typecheck pass, and compiling a 440 KB file with labels takes under 150 ms (640 ms baseline on `1.0` after `deps-update`, `ctf n=800` in `benchmarks/compile`). Generated tests guard the compiler against regressions.
 
 ## Acceptance
 

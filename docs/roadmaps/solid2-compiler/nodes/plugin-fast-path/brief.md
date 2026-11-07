@@ -1,7 +1,7 @@
 ---
 id: plugin-fast-path
 title: Skip work for files with nothing to compile
-status: todo
+status: active
 priority: should
 type: feature
 story:
