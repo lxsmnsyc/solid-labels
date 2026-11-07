@@ -39,6 +39,8 @@ Install fast-check in `packages/core` and build the arbitraries described in `co
 - `references/testing.md` in the repo-setup skill: 100 runs by default, `FC_RUNS` for longer runs.
 - Install `fast-check` and `@fast-check/vitest` (latest) in `packages/core` only. Merge before `scope-oracle`, which also edits the lockfile.
 
+- PR: #42. Fresh review: two rounds, clean. CompileError share 6.6-8.4%. Gate: the maintainer reviews the generator before dependents start.
+
 ## Acceptance
 
 - [ ] `test/arbitraries.ts` exports everything the contract lists, with the stated types.
