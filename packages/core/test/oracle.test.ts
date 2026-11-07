@@ -8,7 +8,7 @@ import type { Analysis } from '../compiler/scope';
 import { compile as compileReference } from './reference-compiler';
 import { programArb } from './arbitraries';
 
-const RUNS = Number(process.env.FC_RUNS ?? 100);
+const RUNS = Number(process.env.FC_RUNS ?? 300);
 // Long runs (FC_RUNS) need more than the default 5 seconds.
 const TIMEOUT = Math.max(5000, RUNS * 20);
 
@@ -52,6 +52,37 @@ describe('old vs new compiler', () => {
       TIMEOUT,
     );
   }
+});
+
+// Fixed cases for orderings and bounds the generator rarely hits.
+const FIXED: string[] = [
+  // Two derived writes: the error names the first declared variable.
+  'let c = $signal(0); const m1 = $memo(c); const m2 = $memo(c + 1);\n$effect(() => { m2 = 1; m1 = 2; });',
+  // A read right after an effect body, and after a nested one.
+  'let s = $signal(0); let t = $signal(1);\n$effect(() => { log(s); }); log(s);\n$effect(() => { $effect(() => { log(t); }); log(s); }); log(t);',
+  'let s = $signal(0);\nfunction f() { $effect(() => log(s)); return s; }\nconst g = () => { $(log(s)); };\nlog(s);',
+  // $untrack: reads next to, inside and after the call span.
+  'let s = $signal(0); let t = $signal(1);\n$effect(() => { log($untrack(s), t); log(s); });\n$effect(() => { log(s, $untrack(t)); });\n$effect(() => { log($untrack(s)); log($untrack(t)); log(s); });',
+  'let s = $signal(0);\n$effect(() => { log($untrack(() => $untrack(s))); }); $effect(() => s + $untrack(s));',
+];
+
+describe('fixed cases', () => {
+  for (const source of FIXED) {
+    for (const options of [{}, { dev: true }] as Options[]) {
+      it(`matches the reference compiler: ${source.slice(0, 40)}`, () => {
+        for (const id of ['fixed.tsx', 'fixed.jsx']) {
+          expect(run(compile, id, source, options)).toEqual(
+            run(compileReference, id, source, options),
+          );
+        }
+      });
+    }
+  }
+
+  it('reports the first declared derived variable', () => {
+    const outcome = run(compile, 'fixed.tsx', FIXED[0], {});
+    expect(outcome).toEqual({ error: expect.stringContaining('"m1"') });
+  });
 });
 
 function makeCtx(taken: string[]): Ctx {

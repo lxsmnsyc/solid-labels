@@ -32,6 +32,12 @@ Not an experiment node. Benchmark (`benchmarks/compile/bench.mjs`, `ctf n=800`, 
 - Criterion "`ctf n=800` median under 250 ms": met in the undisturbed rows (186, 232, 232, 238 ms) and missed in the loaded ones. The orchestrator should re-run `node benchmarks/compile/bench.mjs` on a quiet machine to confirm; the goal's 150 ms target is not reached by this node alone (raw transfer and the other perf nodes remain).
 - Reproduce: build `packages/core` at this commit, then `node benchmarks/compile/bench.mjs --sizes 800`. The reference build was `test/reference-compiler/index.ts` bundled with tsdown into a temporary directory and benchmarked with a copy of `bench.mjs` pointing at it; both were deleted.
 
+## Review fixes
+
+- `analyzeCaptures` visits bindings in declaration order again (`Ctx.bindingOrder`), so an effect that writes two derived variables reports the same one as the reference compiler. Regression case in `oracle.test.ts` (fails if the sort is removed).
+- The oracle default is 300 runs per option set, plus fixed cases (derived-write order, reads right after effect bodies, `$untrack` neighbours).
+- The `<` bound in `enclosingRegion` and the `<=` bound in `insideUntrack` are equivalent to their opposites, so no test can pin them. Both compare the start of a resolved identifier reference: no reference starts at an effect body's end (a token or `)`/`;` always follows), and none ends at the end of a `$untrack(...)` call (the call ends with `)`, and the `$untrack` identifier is unresolved, so it is not in `sortedRefs`). Flipping either bound leaves every test passing.
+
 ## Deviations
 
 - Source maps are not compared by the oracle and are not byte-identical to the old ones: moved bodies keep their original mappings, the old path wrote them as plain text. Code output is identical (all snapshots pass). The changeset says so.

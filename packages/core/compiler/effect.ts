@@ -59,7 +59,11 @@ function analyzeCaptures(ctx: Ctx, call: Node, target: Node, body: Node): Captur
       entry.writes = true;
     }
   }
-  for (const [binding, { tracked, untracked, writes, firstRef }] of byBinding) {
+  // Declaration order, as when every binding was scanned.
+  const ordered = [...byBinding].sort(
+    (a, b) => ctx.bindingOrder.get(a[0])! - ctx.bindingOrder.get(b[0])!,
+  );
+  for (const [binding, { tracked, untracked, writes, firstRef }] of ordered) {
     const reactive = ctx.reactive.get(binding);
     if (reactive && reactive.kind !== 'raw') {
       if (writes && !reactive.set) {

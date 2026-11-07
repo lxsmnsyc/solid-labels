@@ -72,6 +72,8 @@ export class Ctx {
   /** Runs the structural rewrite of every CTF reference inside a span. Set by `transformProgram`. */
   processWithin: (start: number, end: number) => void = ignoreSpan;
   unresolvedByNode = new Map<Node, Ref>();
+  /** Declaration order of every binding. */
+  bindingOrder = new Map<Binding, number>();
   /** Every resolved reference, sorted by start offset. */
   sortedRefs: Ref[] = [];
   /** Unresolved `arguments` references (block effect hoisting). */
@@ -99,6 +101,7 @@ export class Ctx {
       }
     }
     for (const binding of analysis.bindings) {
+      this.bindingOrder.set(binding, this.bindingOrder.size);
       for (const ref of binding.refs) {
         this.sortedRefs.push(ref);
       }
