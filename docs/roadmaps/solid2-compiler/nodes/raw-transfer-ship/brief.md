@@ -1,7 +1,7 @@
 ---
 id: raw-transfer-ship
 title: Parse with oxc raw transfer
-status: active
+status: done
 priority: should
 type: feature
 story:

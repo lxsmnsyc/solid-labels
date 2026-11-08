@@ -20,10 +20,7 @@ owns:
 shared: []
 reserves: []
 provides: []
-depends_on:
-  - on: parent-chain-memory
-    kind: hard
-    why: touches every compiler file
+depends_on: []
 ---
 
 # Pass compile phase outputs explicitly instead of mutating Ctx

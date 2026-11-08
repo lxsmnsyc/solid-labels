@@ -1,7 +1,7 @@
 ---
 id: parent-chain-memory
 title: Stop copying the parent chain for every identifier
-status: active
+status: dropped
 priority: could
 type: refactor
 story:
@@ -66,3 +66,5 @@ depends_on:
 M: one data structure, six readers.
 
 - PR: #56 (draft). Output identical; oracle passed at FC_RUNS=1000 on magic-string 1.2.2 and 1.4.5 before `test/reference-compiler/` was removed. Benchmark gain missed: ctf 800 183 -> 186 ms, plain-show 800 29.5 -> 28.9 ms, GC about 8-9% before and after. Maintainer decides keep or close.
+
+- Dropped 2026-11-08: #56 closed, no measurable gain; the copy was not the GC source. Reference-compiler removal moved to #58.
