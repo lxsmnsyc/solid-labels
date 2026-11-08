@@ -1,6 +1,7 @@
 packages:
   - 'packages/**/*'
   - 'examples/**/*'
+  - 'website'
 
 strictPeerDependencies: false
 preferWorkspacePackages: true

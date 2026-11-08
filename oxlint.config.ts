@@ -29,6 +29,35 @@ export default defineConfig({
       },
     },
     {
+      // Small modules and components export one name on purpose.
+      files: ['website/**'],
+      rules: {
+        'import/prefer-default-export': 'off',
+      },
+    },
+    {
+      // `export *` from packages that oxlint cannot read the exports of.
+      files: ['website/plugins/runtime-entry.js'],
+      rules: {
+        'import/export': 'off',
+      },
+    },
+    {
+      // Node scripts that run after the build. They log, and their imports are
+      // untyped plain .mjs modules.
+      files: ['website/scripts/**'],
+      rules: {
+        'no-console': 'off',
+        'typescript/no-unsafe-argument': 'off',
+        'typescript/no-unsafe-assignment': 'off',
+        'typescript/no-unsafe-call': 'off',
+        'typescript/no-unsafe-member-access': 'off',
+        'typescript/no-unsafe-return': 'off',
+        'typescript/no-misused-promises': 'off',
+        'typescript/strict-void-return': 'off',
+      },
+    },
+    {
       // Global CTF declarations mirror Solid's own type shapes.
       files: ['packages/core/src/index.ts'],
       rules: {
