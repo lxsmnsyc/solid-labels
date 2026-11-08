@@ -1,5 +1,6 @@
 import {
   type Node,
+  expandParens,
   isFunctionNode,
   isStaticExpression,
   isWrapper,
@@ -67,8 +68,13 @@ function removeTypeAnnotation(ctx: Ctx, id: Node): void {
 
 /**
  * Dev mode only: injects `{ name: "x" }` into the options argument at
- * `optionsIndex` — merged via `Object.assign` when options exist, appended
+ * `optionsIndex`, merged via `Object.assign` when options exist, appended
  * otherwise, with `void 0` fillers for skipped positional arguments.
+ *
+ * Every insertion is a `prependRight` at an offset just past an argument and
+ * its wrapping parentheses. It then comes after any `appendLeft` text that a
+ * rewrite of that argument adds at the same offset (a `()` read or the `)`
+ * that closes a setter call), and no overwrite of the argument can drop it.
  */
 function devNameOptions(
   ctx: Ctx,
@@ -76,17 +82,29 @@ function devNameOptions(
   args: Node[],
   optionsIndex: number,
   name: string,
+  calleeEnd: number,
 ): void {
   if (!ctx.dev) {
     return;
   }
   const label = JSON.stringify(name);
   if (args.length > optionsIndex) {
+    // Wrap the options argument together with its parentheses.
     const options = args[optionsIndex];
-    ctx.s.prependRight(options.start, `Object.assign({ name: ${label} }, `);
-    ctx.s.appendLeft(options.end, ')');
+    const [start, end] = expandParens(
+      ctx.code,
+      options.start,
+      options.end,
+      calleeEnd,
+      call.end - 1,
+    );
+    ctx.s.prependRight(start, `Object.assign({ name: ${label} }, `);
+    ctx.s.prependRight(end, ')');
   } else if (args.length === optionsIndex) {
-    ctx.s.appendLeft(args[optionsIndex - 1].end, `, { name: ${label} }`);
+    // Append after the last argument and its parentheses, before any trailing comma.
+    const last = args[optionsIndex - 1];
+    const [, end] = expandParens(ctx.code, last.start, last.end, calleeEnd, call.end - 1);
+    ctx.s.prependRight(end, `, { name: ${label} }`);
   } else {
     // No arguments at all; fill the gaps.
     const filler = [];
@@ -94,7 +112,7 @@ function devNameOptions(
       filler.push('void 0');
     }
     filler.push(`{ name: ${label} }`);
-    ctx.s.appendLeft(call.end - 1, filler.join(', '));
+    ctx.s.prependRight(call.end - 1, filler.join(', '));
   }
 }
 
@@ -142,7 +160,7 @@ export function transformSignal(ctx: Ctx, ref: Ref, site: DeclSite): void {
     }
   }
   ctx.s.overwrite(ref.node.start, ref.node.end, ctx.importIdent('createSignal', 'solid-js'));
-  devNameOptions(ctx, call, args, 1, name);
+  devNameOptions(ctx, call, args, 1, name, ref.node.end);
   ctx.consumed.add(ref.node);
   ctx.register(binding, { kind: 'signal', get: name, set });
 }
@@ -172,7 +190,7 @@ export function transformMemo(ctx: Ctx, ref: Ref, site: DeclSite): void {
   if (!isFunctionNode(unwrap(args[0]))) {
     prependArrow(ctx.s, ctx.code, args[0]);
   }
-  devNameOptions(ctx, call, args, 1, name);
+  devNameOptions(ctx, call, args, 1, name, ref.node.end);
   ctx.consumed.add(ref.node);
   ctx.register(binding, { kind: 'accessor', get: name });
 }
@@ -265,6 +283,10 @@ export function transformAccessorCtf(
   });
   if (!isFunctionNode(unwrap(args[0]))) {
     prependArrow(ctx.s, ctx.code, args[0]);
+  }
+  // createDeferred takes memo options, which include a dev name.
+  if (importName === 'createDeferred') {
+    devNameOptions(ctx, call, args, 1, id.name as string, ref.node.end);
   }
   ctx.consumed.add(ref.node);
   ctx.register(binding, { kind: 'accessor', get: id.name as string });

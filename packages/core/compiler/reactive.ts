@@ -176,6 +176,15 @@ const TS_WRAPPERS = new Set([
   'TSTypeAssertion',
 ]);
 
+/** Parents that hold a list of statements, where several statements can replace one. */
+const STATEMENT_LISTS = new Set([
+  'BlockStatement',
+  'Program',
+  'StaticBlock',
+  'SwitchCase',
+  'TSModuleBlock',
+]);
+
 /**
  * Offset of the operator that follows an assignment target, skipping
  * whitespace, closing parentheses and comments (which may contain the
@@ -256,16 +265,7 @@ function rewriteWrite(
   const assign = parent;
   const target = assign.left;
   const right = assign.right;
-  if (assign.operator !== '=') {
-    // Compound assignment: functional update over the previous value.
-    const current = ctx.unique('current');
-    const operator = skipToOperator(code, target.end);
-    s.overwrite(assign.start, operator, `${set}(${current} => ${current} `, {
-      contentOnly: true,
-    });
-    closers.push({ order: assign.start, at: right.end, text: ')' });
-    return;
-  }
+  const compound = assign.operator !== '=';
   // oxc drops parentheses, so find the real span of the right-hand side.
   const [rightStart, rightEnd] = expandParens(
     code,
@@ -275,28 +275,87 @@ function rewriteWrite(
     assign.end,
   );
   if (containsAwaitOrYield(right)) {
-    const tmp = ctx.unique('tmp');
+    // The setter callback is not async and cannot hold the `await` or `yield`,
+    // so the right side is evaluated into a temporary first. JS evaluates the
+    // left operand before the right side, so an arithmetic update reads the
+    // signal before it. A logical update runs the right side only when the
+    // signal does not decide the result.
     const grand = ref.parents[top - 1];
-    if (grand?.type === 'ExpressionStatement') {
-      s.overwrite(assign.start, rightStart, `const ${tmp} = `, { contentOnly: true });
-      closers.push({ order: assign.start, at: rightEnd, text: `;\n${set}(() => ${tmp})` });
-      return;
-    }
-    // Concise arrow body: `async () => (count = await value())`
     const arrowIndex = ref.parents.findIndex(
       (p) => p.type === 'ArrowFunctionExpression' && unwrap(p.body) === assign,
     );
-    if (arrowIndex !== -1) {
-      const arrow = ref.parents[arrowIndex];
-      const [bodyStart, bodyEnd] = expandParens(code, assign.start, assign.end, arrow.start);
-      s.overwrite(bodyStart, rightStart, `{ const ${tmp} = `);
-      s.overwrite(rightEnd, bodyEnd, `; return ${set}(() => ${tmp}); }`);
+    const inStatement = grand?.type === 'ExpressionStatement';
+    if (!inStatement && arrowIndex === -1) {
+      ctx.error(
+        ref.node,
+        `Assignments with await/yield to "${binding.name}" are only supported as statements or arrow bodies`,
+      );
+    }
+    const read = `${info.get}()`;
+    const operator = assign.operator;
+    // A statement ends with the write. A concise arrow body becomes a block
+    // that returns the value the expression had.
+    let head: string;
+    let tail: string;
+    if (operator === '||=' || operator === '&&=' || operator === '??=') {
+      const old = ctx.unique('tmp');
+      const tmp = ctx.unique('tmp');
+      let test = `!${old}`;
+      if (operator === '&&=') {
+        test = old;
+      } else if (operator === '??=') {
+        test = `${old} == null`;
+      }
+      head = `const ${old} = ${read}; if (${test}) { const ${tmp} = `;
+      tail = inStatement
+        ? `;\n${set}(() => ${tmp}); }`
+        : `; return ${set}(() => ${tmp}); } return ${old};`;
+    } else if (compound) {
+      const old = ctx.unique('tmp');
+      const tmp = ctx.unique('tmp');
+      head = `const ${old} = ${read}; const ${tmp} = `;
+      const write = `${set}(() => ${old} ${operator.slice(0, -1)} ${tmp})`;
+      tail = inStatement ? `;\n${write}` : `; return ${write};`;
+    } else {
+      const tmp = ctx.unique('tmp');
+      head = `const ${tmp} = `;
+      const write = `${set}(() => ${tmp})`;
+      tail = inStatement ? `;\n${write}` : `; return ${write};`;
+    }
+    if (inStatement) {
+      // The output is several statements, so a statement that is the body of an
+      // `if`, a loop or a label needs braces.
+      const owner = ref.parents[top - 2];
+      const braces = !STATEMENT_LISTS.has(owner?.type ?? '');
+      s.overwrite(assign.start, rightStart, braces ? `{ ${head}` : head, { contentOnly: true });
+      closers.push({ order: assign.start, at: rightEnd, text: tail });
+      if (braces) {
+        // The brace closes after the statement's own `;`, so `do ... while` still parses.
+        closers.push({ order: assign.start - 0.5, at: grand.end, text: ' }' });
+      }
       return;
     }
-    ctx.error(
-      ref.node,
-      `Assignments with await/yield to "${binding.name}" are only supported as statements or arrow bodies`,
-    );
+    // Concise arrow body: `async () => (count = await value())`
+    const arrow = ref.parents[arrowIndex];
+    const [bodyStart, bodyEnd] = expandParens(code, assign.start, assign.end, arrow.start);
+    s.overwrite(bodyStart, rightStart, `{ ${head}`);
+    if (rightEnd < bodyEnd) {
+      s.overwrite(rightEnd, bodyEnd, `${tail} }`);
+    } else {
+      // An unparenthesized body ends with the right side: nothing to overwrite.
+      closers.push({ order: assign.start, at: rightEnd, text: `${tail} }` });
+    }
+    return;
+  }
+  if (compound) {
+    // Compound assignment: functional update over the previous value.
+    const current = ctx.unique('current');
+    const operator = skipToOperator(code, target.end);
+    s.overwrite(assign.start, operator, `${set}(${current} => ${current} `, {
+      contentOnly: true,
+    });
+    closers.push({ order: assign.start, at: right.end, text: ')' });
+    return;
   }
   const object = code[rightStart] === '{';
   s.overwrite(assign.start, rightStart, `${set}(() => ${object ? '(' : ''}`, {
