@@ -76,6 +76,24 @@ const CASES: Case[] = [
     decl: ['d', 0],
   },
   {
+    name: 'decorator before a parameter of the same name',
+    code: 'const d = 1; class C { m(@d d) { d } }',
+    ref: ['d', 1],
+    decl: ['d', 0],
+  },
+  {
+    name: 'constructor decorator before a parameter property of the same name',
+    code: 'const s = 1; class C { constructor(@dec(s) private s) { s } }',
+    ref: ['s', 1],
+    decl: ['s', 0],
+  },
+  {
+    name: 'decorator of a class expression with the same name',
+    code: 'const d = 1; const X = @d class d {}',
+    ref: ['d', 1],
+    decl: ['d', 0],
+  },
+  {
     name: 'namespace body write',
     code: 'let a = 1; namespace N { a = 2 }',
     ref: ['a', 1],
@@ -173,6 +191,14 @@ describe('$signal in these positions compiles to a rewritten read or write', () 
     const out = transform(`${prefix} namespace N { a = 2; export const b = a; }`);
     expect(out).toContain('seta_1(() => 2)');
     expect(out).toContain('export const b = a()');
+  });
+  it('reads in a parameter decorator despite a parameter of the same name', () => {
+    const out = transform('let s = $signal(1); class C { constructor(@dec(s) s) { s } }');
+    expect(out).toContain('constructor(@dec(s()) s) { s }');
+  });
+  it('reads in a decorator of a class expression with the same name', () => {
+    const out = transform('let s = $signal(1); const X = @dec(s) class s { m() { return s; } };');
+    expect(out).toContain('@dec(s()) class s { m() { return s; } }');
   });
   it('reads in a nested namespace body', () => {
     expect(transform(`${prefix} namespace N.M { console.log(a); }`)).toContain('console.log(a())');

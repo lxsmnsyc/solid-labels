@@ -418,15 +418,37 @@ export function analyze(program: Node): Analysis {
   }
 
   /**
+   * Resolves decorators with the scopes above `depth` removed. A decorator is
+   * evaluated outside the function or class it is written on, so it cannot
+   * see that node's parameters or class name.
+   */
+  function resolveDecorators(decorators: Node[], depth: number): void {
+    const inner = scopeStack.splice(depth);
+    for (const decorator of decorators) {
+      resolve(decorator);
+    }
+    scopeStack.push(...inner);
+  }
+
+  /** Resolves the decorators written on a parameter pattern, outside the function scope. */
+  function resolveParameterDecorators(pattern: Node, depth: number): void {
+    if (pattern.decorators) {
+      resolveDecorators(pattern.decorators, depth);
+    }
+    if (pattern.type === 'TSParameterProperty') {
+      resolveParameterDecorators(pattern.parameter, depth);
+    } else if (pattern.type === 'AssignmentPattern') {
+      resolveParameterDecorators(pattern.left, depth);
+    } else if (pattern.type === 'RestElement') {
+      resolveParameterDecorators(pattern.argument, depth);
+    }
+  }
+
+  /**
    * Pass B over a declaration pattern: identifiers were declared in pass A,
    * so only computed keys and default expressions are resolved here.
    */
   function visitPatternDecl(pattern: Node): void {
-    if (pattern.decorators) {
-      for (const decorator of pattern.decorators) {
-        resolve(decorator);
-      }
-    }
     switch (pattern.type) {
       case 'Identifier':
         break;
@@ -566,6 +588,7 @@ export function analyze(program: Node): Analysis {
     if (SKIP_TS_STATEMENTS.has(node.type)) {
       return;
     }
+    const outerDepth = scopeStack.length;
     const named = nameScopeMap.get(node);
     if (named) {
       scopeStack.push(named);
@@ -608,6 +631,7 @@ export function analyze(program: Node): Analysis {
       case 'FunctionExpression':
       case 'ArrowFunctionExpression': {
         for (const param of node.params) {
+          resolveParameterDecorators(param, outerDepth);
           visitPatternDecl(param);
         }
         if (node.body) {
@@ -674,9 +698,7 @@ export function analyze(program: Node): Analysis {
       }
       case 'ClassDeclaration':
       case 'ClassExpression': {
-        for (const decorator of node.decorators) {
-          resolve(decorator);
-        }
+        resolveDecorators(node.decorators, outerDepth);
         if (node.superClass) {
           resolve(node.superClass);
         }
