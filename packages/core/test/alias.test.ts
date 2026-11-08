@@ -6,7 +6,6 @@ describe('auto-import aliases', () => {
     expect(
       transform(`
 const dispose = $root(() => setup());
-$trackedEffect(() => console.log('tracked'));
 const track = $reaction(() => console.log('reacted'));
 $flush();
 `),

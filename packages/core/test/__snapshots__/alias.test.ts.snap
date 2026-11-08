@@ -63,12 +63,10 @@ _onCleanup(() => dispose());
 
 exports[`auto-import aliases > compiles reactivity aliases 1`] = `
 "import { createRoot as _createRoot } from "solid-js";
-import { createTrackedEffect as _createTrackedEffect } from "solid-js";
 import { createReaction as _createReaction } from "solid-js";
 import { flush as _flush } from "solid-js";
 
 const dispose = _createRoot(() => setup());
-_createTrackedEffect(() => console.log('tracked'));
 const track = _createReaction(() => console.log('reacted'));
 _flush();
 "

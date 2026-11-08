@@ -3,7 +3,6 @@ export type ImportDef = [name: string, source: string];
 /** Bare identifier aliases: `$flush` compiles to an auto-imported `flush`. */
 export const AUTO_ALIAS: Record<string, ImportDef> = {
   // Reactivity
-  $trackedEffect: ['createTrackedEffect', 'solid-js'],
   $renderEffect: ['createRenderEffect', 'solid-js'],
   $reaction: ['createReaction', 'solid-js'],
   $root: ['createRoot', 'solid-js'],
@@ -66,7 +65,6 @@ export const COMPONENTS: Record<string, ImportDef> = {
   Errored: ['Errored', 'solid-js'],
   Loading: ['Loading', 'solid-js'],
   Reveal: ['Reveal', 'solid-js'],
-  Dynamic: ['Dynamic', '@solidjs/web'],
   Portal: ['Portal', '@solidjs/web'],
   HydrationScript: ['HydrationScript', '@solidjs/web'],
   Hydration: ['Hydration', '@solidjs/web'],
@@ -83,7 +81,6 @@ export const NAMESPACE_COMPONENTS: Record<string, ImportDef> = {
   errored: ['Errored', 'solid-js'],
   loading: ['Loading', 'solid-js'],
   reveal: ['Reveal', 'solid-js'],
-  dynamic: ['Dynamic', '@solidjs/web'],
   portal: ['Portal', '@solidjs/web'],
   'hydration-script': ['HydrationScript', '@solidjs/web'],
   hydration: ['Hydration', '@solidjs/web'],

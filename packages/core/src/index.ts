@@ -99,8 +99,6 @@ declare global {
 
   // Auto-import aliases
 
-  // oxlint-disable-next-line typescript/no-deprecated -- compile-time alias maps to createTrackedEffect; solid recommends createEffect(compute, effect) or onSettled
-  const $trackedEffect: typeof solid.createTrackedEffect;
   const $reaction: typeof solid.createReaction;
   const $root: typeof solid.createRoot;
   const $flush: typeof solid.flush;
@@ -140,8 +138,6 @@ declare global {
   const Errored: typeof solid.Errored;
   const Loading: typeof solid.Loading;
   const Reveal: typeof solid.Reveal;
-  // oxlint-disable-next-line typescript/no-deprecated -- compile-time alias maps to Dynamic; solid recommends dynamic()
-  const Dynamic: typeof solidWeb.Dynamic;
   const Portal: typeof solidWeb.Portal;
   const HydrationScript: typeof solidWeb.HydrationScript;
   const Hydration: typeof solidWeb.Hydration;
@@ -162,8 +158,6 @@ declare module '@solidjs/web' {
       'solid:errored': Props<typeof Errored>;
       'solid:loading': Props<typeof Loading>;
       'solid:reveal': Props<typeof Reveal>;
-      // `Props<typeof Dynamic>` would be circular through IntrinsicElements.
-      'solid:dynamic': Record<string, unknown>;
       'solid:portal': Props<typeof Portal>;
       'solid:hydration-script': Props<typeof solidWeb.HydrationScript>;
       'solid:hydration': Props<typeof solidWeb.Hydration>;
