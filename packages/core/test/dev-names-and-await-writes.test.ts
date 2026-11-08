@@ -120,31 +120,31 @@ const DEV_NAME_CASES: Case[] = [
   },
 ];
 
-// $deferred, $children, $mapArray and $repeat take no dev name today, so both modes match.
+// $deferred takes a dev name like $memo. $children, $mapArray and $repeat take none, so both modes match.
 const ACCESSOR_CASES: Case[] = [
   {
     title: '$deferred of a bare signal read',
     source: `${SIGNAL}const d = $deferred(c);`,
     output: `${SIGNAL_OUT}const d = _createDeferred(() => c());`,
-    devOutput: `${SIGNAL_DEV_OUT}const d = _createDeferred(() => c());`,
+    devOutput: `${SIGNAL_DEV_OUT}const d = _createDeferred(() => c(), { name: "d" });`,
   },
   {
     title: '$deferred of a parenthesized expression',
     source: `${SIGNAL}const d = $deferred((c + 1));`,
     output: `${SIGNAL_OUT}const d = _createDeferred((() => c() + 1));`,
-    devOutput: `${SIGNAL_DEV_OUT}const d = _createDeferred((() => c() + 1));`,
+    devOutput: `${SIGNAL_DEV_OUT}const d = _createDeferred((() => c() + 1), { name: "d" });`,
   },
   {
     title: '$deferred of a compound write',
     source: `${SIGNAL}const d = $deferred(c += 2);`,
     output: `${SIGNAL_OUT}const d = _createDeferred(() => setc_1(current_1 => current_1 += 2));`,
-    devOutput: `${SIGNAL_DEV_OUT}const d = _createDeferred(() => setc_1(current_1 => current_1 += 2));`,
+    devOutput: `${SIGNAL_DEV_OUT}const d = _createDeferred(() => setc_1(current_1 => current_1 += 2), { name: "d" });`,
   },
   {
     title: '$deferred with options',
     source: `${SIGNAL}const d = $deferred(c, { timeoutMs: 100 });`,
     output: `${SIGNAL_OUT}const d = _createDeferred(() => c(), { timeoutMs: 100 });`,
-    devOutput: `${SIGNAL_DEV_OUT}const d = _createDeferred(() => c(), { timeoutMs: 100 });`,
+    devOutput: `${SIGNAL_DEV_OUT}const d = _createDeferred(() => c(), Object.assign({ name: "d" }, { timeoutMs: 100 }));`,
   },
   {
     title: '$children of a bare signal read',

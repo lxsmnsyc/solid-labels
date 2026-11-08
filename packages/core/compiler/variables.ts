@@ -284,6 +284,10 @@ export function transformAccessorCtf(
   if (!isFunctionNode(unwrap(args[0]))) {
     prependArrow(ctx.s, ctx.code, args[0]);
   }
+  // createDeferred takes memo options, which include a dev name.
+  if (importName === 'createDeferred') {
+    devNameOptions(ctx, call, args, 1, id.name as string, ref.node.end);
+  }
   ctx.consumed.add(ref.node);
   ctx.register(binding, { kind: 'accessor', get: id.name as string });
 }

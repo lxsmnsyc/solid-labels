@@ -1,11 +1,16 @@
+import vm from 'node:vm';
+import { parseSync } from 'oxc-parser';
 import { describe, expect, it } from 'vitest';
 import { compile } from '../compiler';
 
-interface Harness {
+interface Exported {
   /** Runs the compiled `run` function. */
-  run: () => unknown;
+  run: (...args: unknown[]) => unknown;
   /** Reads the current value of the signal `x`. */
   read: () => unknown;
+}
+
+interface Harness extends Exported {
   /** Names of the calls the stub `g` received, in order. */
   calls: string[];
   /** Sets `x` from outside, as another writer would. */
@@ -52,10 +57,15 @@ function load(body: string, setup: Setup, dev: boolean): Harness {
     return setup.result;
   }
 
-  // The compiled code is the subject of the test, so it has to be evaluated.
-  // oxlint-disable-next-line no-new-func, no-implied-eval
-  const factory = new Function('_createSignal', 'g', `${code}\nreturn { run, read };`);
-  const exported = factory(createSignal, g) as { run: () => unknown; read: () => unknown };
+  // The output must parse before it runs.
+  const parsed = parseSync('test.js', code, { lang: 'js', sourceType: 'module' });
+  expect(parsed.errors).toEqual([]);
+
+  // Wrapped in a function so the stubs are its parameters.
+  const factory = vm.runInThisContext(
+    `(function (_createSignal, g) {\n${code}\nreturn { run, read };\n})`,
+  ) as (stub: typeof createSignal, record: typeof g) => Exported;
+  const exported = factory(createSignal, g);
   return {
     run: exported.run,
     read: exported.read,
@@ -201,6 +211,42 @@ describe('logical compound writes with await short-circuit', () => {
       iterator.next(7);
       expect(h.read()).toBe(7);
     });
+  }
+});
+
+describe('writes with await as the body of a statement', () => {
+  // Each statement is the whole body of its parent, so the output needs braces.
+  // The last one is a statement list and needs none.
+  const parents = [
+    { kind: 'if consequent', make: (w: string) => `if (true) ${w}` },
+    { kind: 'if alternate', make: (w: string) => `if (false) {} else ${w}` },
+    { kind: 'for', make: (w: string) => `for (let i = 0; i < 1; i++) ${w}` },
+    { kind: 'for-of', make: (w: string) => `for (const v of [1]) ${w}` },
+    { kind: 'for-in', make: (w: string) => `for (const k in { a: 1 }) ${w}` },
+    { kind: 'while', make: (w: string) => `let n = 1; while (n-- > 0) ${w}` },
+    { kind: 'do-while', make: (w: string) => `do ${w} while (false);` },
+    { kind: 'labeled', make: (w: string) => `label: ${w}` },
+    { kind: 'switch case', make: (w: string) => `switch (1) { case 1: ${w} }` },
+  ];
+  const operators = ['=', '+=', '||='];
+
+  for (const dev of MODES) {
+    for (const parent of parents) {
+      for (const op of operators) {
+        it(`${parent.kind} with ${op} (${dev ? 'dev' : 'default'})`, async () => {
+          const body = parent.make(`x ${op} await g();`);
+          const h = load(
+            `async function run() { ${body} }`,
+            { initial: '0', during: 10, result: 5 },
+            dev,
+          );
+          await h.run();
+          // The old value is 0, so `+=` gives 5 and a stale read would give 15.
+          expect(h.read()).toBe(5);
+          expect(h.calls).toEqual(['g']);
+        });
+      }
+    }
   }
 });
 

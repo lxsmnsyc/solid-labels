@@ -205,7 +205,7 @@ describe('$deferred', () => {
     expectCompiled(
       'const m = $deferred($latest(x));',
       'const m = _createDeferred(() => _latest(x));',
-      'const m = _createDeferred(() => _latest(x));',
+      'const m = _createDeferred(() => _latest(x), { name: "m" });',
     );
   });
 });

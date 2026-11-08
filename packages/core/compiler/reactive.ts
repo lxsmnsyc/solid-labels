@@ -176,6 +176,15 @@ const TS_WRAPPERS = new Set([
   'TSTypeAssertion',
 ]);
 
+/** Parents that hold a list of statements, where several statements can replace one. */
+const STATEMENT_LISTS = new Set([
+  'BlockStatement',
+  'Program',
+  'StaticBlock',
+  'SwitchCase',
+  'TSModuleBlock',
+]);
+
 /**
  * Offset of the operator that follows an assignment target, skipping
  * whitespace, closing parentheses and comments (which may contain the
@@ -314,8 +323,16 @@ function rewriteWrite(
       tail = inStatement ? `;\n${write}` : `; return ${write};`;
     }
     if (inStatement) {
-      s.overwrite(assign.start, rightStart, head, { contentOnly: true });
+      // The output is several statements, so a statement that is the body of an
+      // `if`, a loop or a label needs braces.
+      const owner = ref.parents[top - 2];
+      const braces = !STATEMENT_LISTS.has(owner?.type ?? '');
+      s.overwrite(assign.start, rightStart, braces ? `{ ${head}` : head, { contentOnly: true });
       closers.push({ order: assign.start, at: rightEnd, text: tail });
+      if (braces) {
+        // The brace closes after the statement's own `;`, so `do ... while` still parses.
+        closers.push({ order: assign.start - 0.5, at: grand.end, text: ' }' });
+      }
       return;
     }
     // Concise arrow body: `async () => (count = await value())`
