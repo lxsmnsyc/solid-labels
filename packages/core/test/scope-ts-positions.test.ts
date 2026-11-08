@@ -53,6 +53,10 @@ interface Case {
   ref: [string, number];
   /** Name and occurrence index of the declaration, or null when unresolved. */
   decl: [string, number] | null;
+  /** Set where `@typescript-eslint/scope-manager` does not model the case, with the reason. */
+  oracle?: string;
+  /** Shift from the matched word to the declaring node, e.g. -1 for the opening quote of a string. */
+  declShift?: number;
 }
 
 const CASES: Case[] = [
@@ -156,23 +160,123 @@ const CASES: Case[] = [
     decl: ['A', 0],
   },
   { name: 'import equals of unknown name', code: 'import x = A.B;', ref: ['A', 0], decl: null },
+  {
+    name: 'string-literal enum member name',
+    code: 'enum E { "a" = 1, B = a }',
+    ref: ['a', 1],
+    decl: ['a', 0],
+    oracle: 'the scope manager does not bind string-literal member names',
+    declShift: -1,
+  },
+  {
+    name: 'string-literal enum member name that is not an identifier',
+    code: 'const a_b = 1; enum E { "a-b" = 1, B = a_b }',
+    ref: ['a_b', 1],
+    decl: ['a_b', 0],
+  },
+  {
+    name: 'string-literal enum member name with a space',
+    code: 'const a = 1; enum E { "a b" = 1, B = a }',
+    ref: ['a', 2],
+    decl: ['a', 0],
+  },
+  {
+    name: 'earlier member of a merged enum',
+    code: 'enum E { A = 1 } enum E { B = A }',
+    ref: ['A', 1],
+    decl: ['A', 0],
+    oracle: 'the scope manager gives each enum block its own scope',
+  },
+  {
+    name: 'merged enum member shadows an outer binding',
+    code: 'const A = 1; enum E { A = 2 } enum E { B = A }',
+    ref: ['A', 2],
+    decl: ['A', 1],
+    oracle: 'the scope manager gives each enum block its own scope',
+  },
+  {
+    name: 'later member of a merged enum stays unresolved',
+    code: 'enum E { B = A } enum E { A = 1 }',
+    ref: ['A', 0],
+    decl: null,
+  },
+  {
+    name: 'exported member of a merged namespace',
+    code: 'namespace N { export const s = 1 } namespace N { s }',
+    ref: ['s', 1],
+    decl: ['s', 0],
+    oracle: 'the scope manager gives each namespace block its own scope',
+  },
+  {
+    name: 'exported member of a later namespace block',
+    code: 'namespace N { s } namespace N { export const s = 1 }',
+    ref: ['s', 0],
+    decl: ['s', 1],
+    oracle: 'the scope manager gives each namespace block its own scope',
+  },
+  {
+    name: 'exported function of a merged namespace',
+    code: 'namespace N { export function f() {} } namespace N { f() }',
+    ref: ['f', 1],
+    decl: ['f', 0],
+    oracle: 'the scope manager gives each namespace block its own scope',
+  },
+  {
+    name: 'non-exported member of a merged namespace',
+    code: 'namespace N { const s = 1 } namespace N { s }',
+    ref: ['s', 1],
+    decl: null,
+  },
+  {
+    name: 'exported member of a merged namespace shadows an outer binding',
+    code: 'let s = 0; namespace N { export const s = 1 } namespace N { s }',
+    ref: ['s', 2],
+    decl: ['s', 1],
+    oracle: 'the scope manager gives each namespace block its own scope',
+  },
+  {
+    name: 'exported member of a differently named namespace',
+    code: 'namespace N { export const s = 1 } namespace M { s }',
+    ref: ['s', 1],
+    decl: null,
+  },
+  {
+    name: 'exported member of a merged namespace.path',
+    code: 'namespace A.B { export const s = 1 } namespace A.B { s }',
+    ref: ['s', 1],
+    decl: ['s', 0],
+    oracle: 'the scope manager gives each namespace block its own scope',
+  },
+  {
+    name: 'exported member of a namespace in a different scope',
+    code: 'namespace N { export const s = 1 } function f() { namespace N { s } }',
+    ref: ['s', 1],
+    decl: null,
+  },
 ];
 
 describe('TypeScript and decorator positions in scope analysis', () => {
-  for (const { name, code, ref, decl } of CASES) {
+  for (const { name, code, ref, decl, declShift = 0 } of CASES) {
     it(`resolves ${name}`, () => {
       const pairs = ours(code);
-      const declAt = decl ? at(code, decl[0], decl[1]) : null;
+      const declAt = decl ? at(code, decl[0], decl[1]) + declShift : null;
       expect(pairs.get(at(code, ref[0], ref[1]))).toBe(declAt);
     });
   }
 });
 
 describe('oracle: @typescript-eslint/scope-manager', () => {
-  for (const { name, code } of CASES) {
-    it(`agrees on ${name}`, () => {
-      expect(ours(code)).toEqual(theirs(code));
-    });
+  for (const { name, code, oracle } of CASES) {
+    if (oracle) {
+      // Where the scope manager does not model the case, `analyze` follows the TypeScript spec.
+      it(`differs on ${name}: ${oracle}`, () => {
+        expect(ours(code)).not.toEqual(theirs(code));
+      });
+    } else {
+      it(`agrees on ${name}`, () => {
+        expect(ours(code)).toEqual(theirs(code));
+      });
+    }
   }
 });
 
@@ -224,5 +328,36 @@ describe('$signal in these positions compiles to a rewritten read or write', () 
   it('treats an import equals binding as local', () => {
     const code = 'import $signal = require("x"); $signal;';
     expect(transform(code)).toBe(code);
+  });
+  it('rewrites an exported $signal read from another block of the namespace', () => {
+    const out = transform(
+      'namespace N { export let s = $signal(1) } namespace N { console.log(s) }',
+    );
+    expect(out).toContain('export let [s, sets_1] = _createSignal(1)');
+    expect(out).toContain('console.log(s())');
+  });
+  it('rewrites a write to an exported $signal from another block of the namespace', () => {
+    const out = transform('namespace N { export let s = $signal(1) } namespace N { s = 2 }');
+    expect(out).toContain('sets_1(() => 2)');
+  });
+  it('keeps a non-exported $signal of another namespace block unresolved', () => {
+    const out = transform('namespace N { let s = $signal(1) } namespace N { console.log(s) }');
+    expect(out).toContain('console.log(s)');
+  });
+  it('keeps a reference to a namespace member from outside the namespace', () => {
+    const out = transform('namespace N { export let s = $signal(1) } console.log(N.s)');
+    expect(out).toContain('console.log(N.s)');
+  });
+  it('reads an earlier member of a merged enum without rewriting an outer signal', () => {
+    const out = transform(`${prefix} enum E { a = 1 } enum E { B = a }`);
+    expect(out).toContain('enum E { B = a }');
+  });
+  it('reads an outer signal from a string-literal enum member that does not match', () => {
+    const out = transform(`${prefix} enum E { "a-b" = 1, B = a }`);
+    expect(out).toContain('B = a()');
+  });
+  it('keeps a string-literal enum member that shadows the signal', () => {
+    const out = transform(`${prefix} enum E { "a" = 1, B = a }`);
+    expect(out).toContain('B = a }');
   });
 });
