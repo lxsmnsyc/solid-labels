@@ -169,6 +169,13 @@ interface Closer {
   text: string;
 }
 
+const TS_WRAPPERS = new Set([
+  'TSAsExpression',
+  'TSSatisfiesExpression',
+  'TSNonNullExpression',
+  'TSTypeAssertion',
+]);
+
 /**
  * Rewrites a write to a signal binding into a setter call:
  * `++count` compiles to `setcount_1(current_1 => ++current_1)`, a postfix
@@ -190,10 +197,15 @@ function rewriteWrite(
   }
   const set = info.set;
   const { s, code } = ctx;
-  const parent = ref.parents[ref.parents.length - 1];
+  // `x!++` and `(x as T)++` update the signal like `x++`: skip the TS wrappers.
+  let top = ref.parents.length - 1;
+  while (top >= 0 && TS_WRAPPERS.has(ref.parents[top]?.type ?? '')) {
+    top--;
+  }
+  const parent = ref.parents[top];
   if (parent?.type === 'UpdateExpression') {
     const current = ctx.unique('current');
-    const grand = ref.parents[ref.parents.length - 2];
+    const grand = ref.parents[top - 1];
     const unused =
       grand?.type === 'ExpressionStatement' ||
       (grand?.type === 'ForStatement' && grand.update === parent);
