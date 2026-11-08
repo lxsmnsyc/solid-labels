@@ -7,19 +7,19 @@ import { programArb } from './arbitraries';
 
 const RUNS = Number(process.env.FC_RUNS ?? 100);
 
-type Pairs = Map<number, number | null>;
+type Pairs = Map<number, string>;
 
-/** Reference identifier start -> declaring identifier start, or null when unresolved. */
+/** Reference identifier start -> declaring identifier start (or null when unresolved) and access mode. */
 function ours(program: any): Pairs {
   const result: Pairs = new Map();
   const analysis = analyze(program);
   for (const binding of analysis.bindings) {
     for (const ref of binding.refs) {
-      result.set(ref.node.start, binding.node.start);
+      result.set(ref.node.start, `${binding.node.start} ${ref.mode}`);
     }
   }
   for (const ref of analysis.unresolved) {
-    result.set(ref.node.start, null);
+    result.set(ref.node.start, `null ${ref.mode}`);
   }
   return result;
 }
@@ -36,7 +36,11 @@ function theirs(program: any): Pairs {
         continue;
       }
       const declared = ref.resolved ? ref.resolved.identifiers[0] : undefined;
-      result.set(ref.identifier.start, declared ? declared.start : null);
+      let mode = 'write';
+      if (ref.isRead()) {
+        mode = ref.isWrite() ? 'readwrite' : 'read';
+      }
+      result.set(ref.identifier.start, `${declared ? declared.start : null} ${mode}`);
     }
   }
   return result;
@@ -113,6 +117,9 @@ const AGREEING = [
   'export default function h(){}; export {h as z};',
   'const o = {a, b}; o.a;',
   'a = 1; a++; typeof a; delete a.b;',
+  // Write targets that are not assignments or declarations.
+  'let x; for (x of []) {} for (x in {}) {}',
+  'let x; for ([x] of []) {} for ({ x } of []) {}',
   'function f(a){ var a; { function a(){} } }',
   'x => { var x; }',
   'const t = a ? b : c; a?.b; a ??= 1;',
@@ -141,8 +148,8 @@ describe('scope oracle: hand-written programs', () => {
     const source = 'let a = 1;\nfunction f(b) { let a = 2; return a + b + g; }\nexport { a };\n';
     const parsed = parseSync('gen.jsx', source, { lang: 'jsx', sourceType: 'module', range: true });
     const values = [...theirs(parsed.program).values()];
-    expect(values).toContain(null);
-    expect(values.filter((v) => v !== null).length).toBeGreaterThan(2);
+    expect(values.some((v) => v.startsWith('null '))).toBe(true);
+    expect(values.filter((v) => !v.startsWith('null ')).length).toBeGreaterThan(2);
     expect(compare(source)).toEqual({ missing: [], extra: [], different: [] });
   });
 });

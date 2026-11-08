@@ -219,4 +219,19 @@ const result = [list, count];
     expect(code).not.toContain('tmp_');
     expect(code).toContain('setcount_1(current_1 => ++current_1)');
   });
+  it('reports for-of and for-in targets instead of emitting a read', () => {
+    expect(() => transform('let x = $signal(0);\nfor (x of [1, 2]) {}')).toThrow(
+      'Unsupported write to reactive variable "x"',
+    );
+    expect(() => transform('let x = $signal(0);\nfor (x in { a: 1 }) {}')).toThrow(
+      'Unsupported write to reactive variable "x"',
+    );
+  });
+  it('writes through wrapped update targets', () => {
+    for (const target of ['x!', '(x as any)', '(x satisfies number)']) {
+      const code = transform(`let x = $signal(0);\n${target}++;`);
+      expect(code).toContain('setx_1(current_1 => ++current_1)');
+      expect(code).not.toContain('x()');
+    }
+  });
 });

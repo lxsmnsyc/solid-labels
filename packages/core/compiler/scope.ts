@@ -572,11 +572,19 @@ export function analyze(program: Node): Analysis {
         break;
       }
       case 'UpdateExpression': {
-        if (node.argument.type === 'Identifier') {
-          reference(node.argument, 'readwrite');
+        visitAssignTarget(node.argument, 'readwrite');
+        break;
+      }
+      case 'ForInStatement':
+      case 'ForOfStatement': {
+        // A non-declaration target is an assignment, not a read.
+        if (node.left.type === 'VariableDeclaration') {
+          resolve(node.left);
         } else {
-          resolve(node.argument);
+          visitAssignTarget(node.left, 'write');
         }
+        resolve(node.right);
+        resolve(node.body);
         break;
       }
       case 'CatchClause': {
