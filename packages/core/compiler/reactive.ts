@@ -177,6 +177,30 @@ const TS_WRAPPERS = new Set([
 ]);
 
 /**
+ * Offset of the operator that follows an assignment target, skipping
+ * whitespace, closing parentheses and comments (which may contain the
+ * operator text).
+ */
+function skipToOperator(code: string, from: number): number {
+  let i = from;
+  while (i < code.length) {
+    const ch = code[i];
+    if (ch === ' ' || ch === '\t' || ch === '\n' || ch === '\r' || ch === ')') {
+      i++;
+    } else if (ch === '/' && code[i + 1] === '*') {
+      const close = code.indexOf('*/', i + 2);
+      i = close === -1 ? code.length : close + 2;
+    } else if (ch === '/' && code[i + 1] === '/') {
+      const newline = code.indexOf('\n', i);
+      i = newline === -1 ? code.length : newline + 1;
+    } else {
+      break;
+    }
+  }
+  return i;
+}
+
+/**
  * Rewrites a write to a signal binding into a setter call:
  * `++count` compiles to `setcount_1(current_1 => ++current_1)`, a postfix
  * update whose value is used keeps the old value through a temporary, compound
@@ -235,7 +259,7 @@ function rewriteWrite(
   if (assign.operator !== '=') {
     // Compound assignment: functional update over the previous value.
     const current = ctx.unique('current');
-    const operator = code.indexOf(assign.operator, target.end);
+    const operator = skipToOperator(code, target.end);
     s.overwrite(assign.start, operator, `${set}(${current} => ${current} `);
     closers.push({ order: assign.start, at: right.end, text: ')' });
     return;
