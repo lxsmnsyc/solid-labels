@@ -205,7 +205,11 @@ describe('hoisted $effect', () => {
 });
 
 describe('$deferred', () => {
-  it('is not a compile-time function, so its arguments stay untouched', () => {
-    expectCompiled('const m = $deferred($latest(x));', 'const m = $deferred(_latest(x));');
+  it('wraps an alias argument like $memo', () => {
+    expectCompiled(
+      'const m = $deferred($latest(x));',
+      'const m = _createDeferred(() => _latest(x));',
+      'const m = _createDeferred(() => _latest(x));',
+    );
   });
 });
