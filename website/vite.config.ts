@@ -4,6 +4,7 @@ import solid from '@solidjs/vite-plugin';
 import solidLabels from 'unplugin-solid-labels';
 import { defineConfig } from 'vite';
 import { replRuntime } from './plugins/repl-runtime.ts';
+import { searchIndex } from './plugins/search-index.ts';
 
 // The REPL needs a cross-origin isolated page: the Solid JSX compiler runs as
 // a wasm module on shared memory. Vercel sends the same headers for /repl.
@@ -43,6 +44,7 @@ export default defineConfig({
       },
     }),
     replRuntime(),
+    searchIndex(),
   ],
   build: {
     target: 'esnext',
@@ -54,6 +56,8 @@ export default defineConfig({
     // which pre-bundling would break.
     exclude: ['@oxc-parser/binding-wasm32-wasip1', '@solidjs/compiler-wasm32-wasi'],
   },
+  // The compile worker loads wasm with top-level await, which needs ES modules.
+  worker: { format: 'es' },
   server: { headers: isolation },
   preview: { headers: isolation },
 });

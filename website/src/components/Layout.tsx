@@ -1,5 +1,5 @@
 import type { JSX } from '@solidjs/web';
-import { REPO_URL, navRoutes } from '../site';
+import { DOCS_HOME, REPO_URL } from '../site';
 import type { Route } from '../site';
 
 function Mark(): JSX.Element {
@@ -42,17 +42,32 @@ export function Layout(props: { route: Route; children: JSX.Element }): JSX.Elem
           <span class="brand-name">solid-labels</span>
         </a>
         <nav class="site-nav" aria-label="Main">
-          <solid:for each={navRoutes}>
-            {(route: Route) => (
-              <a
-                href={route.path}
-                aria-current={route.path === props.route.path ? 'page' : undefined}
-              >
-                {route.nav}
-              </a>
-            )}
-          </solid:for>
+          <a
+            href={DOCS_HOME}
+            aria-current={props.route.path.startsWith('/docs/') ? 'page' : undefined}
+          >
+            Docs
+          </a>
         </nav>
+        <button
+          type="button"
+          class="search-trigger"
+          data-search
+          aria-label="Search the docs"
+          aria-keyshortcuts="Control+K Meta+K /"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="1.8" />
+            <path
+              d="m20 20-3.5-3.5"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            />
+          </svg>
+          <span class="search-label">Search</span>
+          <kbd data-search-key>Ctrl K</kbd>
+        </button>
         <div class="header-tools">
           <a class="icon-button" href={REPO_URL} aria-label="solid-labels on GitHub">
             <svg viewBox="0 0 24 24" aria-hidden="true">

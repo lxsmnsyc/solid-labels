@@ -43,6 +43,17 @@ export default defineConfig({
       },
     },
     {
+      // The Markdown lexer types its tokens loosely.
+      files: ['website/plugins/search-index.ts'],
+      rules: {
+        'typescript/no-unsafe-argument': 'off',
+        'typescript/no-unsafe-call': 'off',
+        'typescript/no-unsafe-member-access': 'off',
+        'typescript/no-unsafe-return': 'off',
+        'typescript/no-unsafe-type-assertion': 'off',
+      },
+    },
+    {
       // Node scripts that run after the build. They log, and their imports are
       // untyped plain .mjs modules.
       files: ['website/scripts/**'],

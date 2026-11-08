@@ -15,6 +15,7 @@ configureServerErrors({
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const clientDir = join(root, 'dist/client');
 const routes = JSON.parse(await readFile(join(root, 'src/routes.json'), 'utf8'));
+const redirects = JSON.parse(await readFile(join(root, 'src/redirects.json'), 'utf8'));
 const { handleRequest } = await import(pathToFileURL(join(root, 'dist/server/server.js')).href);
 
 async function render(path, file) {
@@ -34,3 +35,15 @@ for (const route of routes) {
   await render(route.path, route.path === '/' ? 'index.html' : `${route.path.slice(1)}/index.html`);
 }
 await render('/404', '404.html');
+
+// Old paths keep a small page that sends readers to the new one. Vercel also
+// answers them with a permanent redirect (see vercel.json).
+for (const [from, to] of Object.entries(redirects)) {
+  const target = join(clientDir, from.slice(1), 'index.html');
+  await mkdir(dirname(target), { recursive: true });
+  await writeFile(
+    target,
+    `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Moved</title><meta name="robots" content="noindex"><link rel="canonical" href="${to}"><meta http-equiv="refresh" content="0; url=${to}"></head><body><p>This page moved to <a href="${to}">${to}</a>.</p></body></html>`,
+  );
+  console.log(`redirect stub ${from} -> ${to}`);
+}

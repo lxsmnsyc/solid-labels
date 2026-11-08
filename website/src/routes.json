@@ -5,28 +5,28 @@
     "description": "Compile-time functions for Solid 2.0. Write $signal, $memo and $effect as plain code and get Solid output."
   },
   {
-    "path": "/getting-started",
+    "path": "/docs/getting-started",
     "nav": "Getting started",
     "title": "Getting started",
     "description": "Install solid-labels and set it up with Vite, Rollup or Bun.",
     "doc": "getting-started"
   },
   {
-    "path": "/ctf",
+    "path": "/docs/ctf",
     "nav": "Compile-time functions",
     "title": "Compile-time functions",
     "description": "Every solid-labels compile-time function with its input and the compiled output.",
     "doc": "ctf"
   },
   {
-    "path": "/namespace",
+    "path": "/docs/namespace",
     "nav": "solid: namespace",
     "title": "The solid: namespace",
     "description": "The solid: JSX elements and the Solid components they compile to.",
     "doc": "namespace"
   },
   {
-    "path": "/migration",
+    "path": "/docs/migration",
     "nav": "Migration",
     "title": "Migration from 0.x",
     "description": "What changed from solid-labels 0.x to 1.0, and what to use instead.",

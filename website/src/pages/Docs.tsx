@@ -1,29 +1,62 @@
 import type { JSX } from '@solidjs/web';
 import { renderDocument } from '../content/render';
-import type { Heading } from '../content/render';
-import { navRoutes } from '../site';
+import { docRoutes, navRoutes } from '../site';
 import type { Route } from '../site';
 
 function findNext(route: Route): Route | undefined {
-  for (let i = 0; i < navRoutes.length - 1; i++) {
-    if (navRoutes[i].path === route.path) {
-      return navRoutes[i + 1];
+  for (let i = 0; i < docRoutes.length - 1; i++) {
+    if (docRoutes[i].path === route.path) {
+      return docRoutes[i + 1];
     }
   }
   return undefined;
 }
 
-function Links(props: { headings: Heading[] }): JSX.Element {
+// Every docs page with its sections, and the REPL. The page being read is open
+// and also lists its sub-sections.
+function Sidebar(props: { current: Route }): JSX.Element {
   return (
-    <ul>
-      <solid:for each={props.headings}>
-        {(heading: Heading) => (
-          <li class={heading.depth === 3 ? 'sub' : undefined}>
-            <a href={`#${heading.id}`}>{heading.text}</a>
-          </li>
+    <>
+      <solid:for each={navRoutes}>
+        {(item: Route) => (
+          <solid:show
+            when={item.doc !== undefined}
+            fallback={
+              <a
+                class="side-link side-tool"
+                href={item.path}
+                aria-current={item.path === props.current.path ? 'page' : undefined}
+              >
+                {item.nav}
+              </a>
+            }
+          >
+            <details class="side-page" open={item.path === props.current.path}>
+              <summary>
+                <a
+                  class="side-link"
+                  href={item.path}
+                  aria-current={item.path === props.current.path ? 'page' : undefined}
+                >
+                  {item.nav}
+                </a>
+              </summary>
+              <ul>
+                <solid:for each={renderDocument(item.doc ?? '').headings}>
+                  {(heading: { depth: number; id: string; text: string }) => (
+                    <solid:show when={heading.depth === 2 || item.path === props.current.path}>
+                      <li class={heading.depth === 3 ? 'sub' : undefined}>
+                        <a href={`${item.path}#${heading.id}`}>{heading.text}</a>
+                      </li>
+                    </solid:show>
+                  )}
+                </solid:for>
+              </ul>
+            </details>
+          </solid:show>
         )}
       </solid:for>
-    </ul>
+    </>
   );
 }
 
@@ -33,14 +66,14 @@ export default function Docs(props: { route: Route }): JSX.Element {
 
   return (
     <div class="doc">
-      <nav class="toc" aria-label="On this page" data-toc>
-        <Links headings={doc.headings} />
+      <nav class="sidebar" aria-label="Docs" data-toc>
+        <Sidebar current={props.route} />
       </nav>
       <article class="prose">
-        <details class="toc-inline">
-          <summary>On this page</summary>
-          <nav aria-label="On this page">
-            <Links headings={doc.headings} />
+        <details class="sidebar-inline">
+          <summary>Docs menu</summary>
+          <nav aria-label="Docs">
+            <Sidebar current={props.route} />
           </nav>
         </details>
         <div innerHTML={doc.html} />

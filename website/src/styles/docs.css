@@ -1,13 +1,13 @@
 .doc {
   display: grid;
-  grid-template-columns: 15rem minmax(0, 1fr);
+  grid-template-columns: 16rem minmax(0, 1fr);
   gap: clamp(1.5rem, 4vw, 4rem);
   max-width: var(--page);
   margin: 0 auto;
   padding: 3rem var(--gutter) 0;
 }
 
-.toc {
+.sidebar {
   position: sticky;
   top: 5.5rem;
   align-self: start;
@@ -18,14 +18,14 @@
   scrollbar-width: thin;
 }
 
-.toc ul {
+.sidebar ul {
   margin: 0;
   padding: 0;
   list-style: none;
   border-left: 1px solid var(--rule);
 }
 
-.toc li a {
+.sidebar li a {
   display: block;
   padding: 0.22rem 0 0.22rem 0.9rem;
   margin-left: -1px;
@@ -34,22 +34,22 @@
   text-decoration: none;
 }
 
-.toc li.sub a {
+.sidebar li.sub a {
   padding-left: 1.8rem;
   font-size: 0.86rem;
 }
 
-.toc li a:hover {
+.sidebar li a:hover {
   color: var(--ink);
 }
 
-.toc li a[aria-current='true'] {
+.sidebar li a[aria-current='true'] {
   color: var(--ink);
   font-weight: 600;
   border-left-color: var(--ctf);
 }
 
-.toc-inline {
+.sidebar-inline {
   display: none;
   margin-bottom: 2rem;
   border: 1px solid var(--rule);
@@ -57,28 +57,28 @@
   background: var(--bg-raised);
 }
 
-.toc-inline summary {
+.sidebar-inline summary {
   padding: 0.7rem 1rem;
   cursor: pointer;
   font-weight: 600;
 }
 
-.toc-inline nav {
+.sidebar-inline nav {
   padding: 0 1rem 1rem;
   font-size: 0.92rem;
 }
 
-.toc-inline ul {
+.sidebar-inline ul {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.toc-inline li.sub {
+.sidebar-inline li.sub {
   padding-left: 1rem;
 }
 
-.toc-inline a {
+.sidebar-inline a {
   display: block;
   padding: 0.2rem 0;
 }
@@ -89,11 +89,11 @@
     padding-top: 2rem;
   }
 
-  .toc {
+  .sidebar {
     display: none;
   }
 
-  .toc-inline {
+  .sidebar-inline {
     display: block;
   }
 }
@@ -257,4 +257,69 @@ h3:hover .anchor,
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ctf);
+}
+
+/* The docs sidebar lists every page with its sections. */
+.side-page {
+  margin-bottom: 0.25rem;
+}
+
+.side-page > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  list-style: none;
+  cursor: pointer;
+}
+
+.side-page > summary::-webkit-details-marker {
+  display: none;
+}
+
+.side-page > summary::after {
+  content: '';
+  width: 0.45rem;
+  height: 0.45rem;
+  margin-right: 0.5rem;
+  border-right: 2px solid var(--ink-soft);
+  border-bottom: 2px solid var(--ink-soft);
+  rotate: -45deg;
+  transition: rotate 0.15s ease;
+}
+
+.side-page[open] > summary::after {
+  rotate: 45deg;
+}
+
+.sidebar .side-link,
+.sidebar-inline .side-link {
+  display: block;
+  flex: 1;
+  padding: 0.35rem 0.5rem;
+  border-left: 0;
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.side-link[aria-current='page'] {
+  color: var(--ctf);
+}
+
+.side-tool {
+  margin-top: 0.75rem;
+  border-top: 1px solid var(--rule);
+  padding-top: 0.75rem;
+}
+
+.sidebar ul {
+  margin-bottom: 0.5rem;
+}
+
+.sidebar-inline .side-page ul {
+  padding-left: 0.5rem;
+}
+
+.sidebar-inline .side-link {
+  padding: 0.5rem 0.25rem;
 }

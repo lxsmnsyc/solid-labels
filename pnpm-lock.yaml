@@ -323,9 +323,15 @@ importers:
       '@solidjs/web':
         specifier: 2.0.0-rc.21
         version: 2.0.0-rc.21(solid-js@2.0.0-rc.21)
+      minisearch:
+        specifier: ^7.2.0
+        version: 7.2.0
       solid-js:
         specifier: 2.0.0-rc.21
         version: 2.0.0-rc.21
+      terracotta:
+        specifier: 2.0.0-next.10
+        version: 2.0.0-next.10(@solidjs/web@2.0.0-rc.21(solid-js@2.0.0-rc.21))(solid-js@2.0.0-rc.21)
     devDependencies:
       '@fontsource-variable/fraunces':
         specifier: ^5.3.0
@@ -1978,6 +1984,9 @@ packages:
     resolution: {integrity: sha512-eRtbOb1N5iyH0tkQDAoQ4Ipsp/5qSR79Dzrz8hEPxRX10RWWR/iQXdoKmBSRCThY1Fh5EhISDtpSc93fpxUniQ==}
     engines: {node: '>=12.13'}
 
+  minisearch@7.2.0:
+    resolution: {integrity: sha512-dqT2XBYUOZOiC5t2HRnwADjhNS2cecp9u+TJRiJ1Qp/f5qjkeT5APcGPjHw+bz89Ms8Jp+cG4AlE+QZ/QnDglg==}
+
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
 
@@ -2135,6 +2144,12 @@ packages:
     resolution: {integrity: sha512-0Z8/qiJKnK6A2g8QspGthwxR0W8WauMOD2/LQtNmxBT8gpZkKaXmo/fdek/+cB+84w4HYejWJixSAn4fcAI0Uw==}
     engines: {node: '>=22.12.0'}
 
+  solid-use@1.0.0-next.3:
+    resolution: {integrity: sha512-bEUzCWEKEYIYr807QNUQfewX3MlaIYExZFKuM3S9kK3pc4tlnpc0YPKnpQp28Inmtd3DzLkmK9Zq1UC1xVM7Gw==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      solid-js: ^2.0.0-rc.5
+
   source-map-js@1.2.2:
     resolution: {integrity: sha512-KGj/8Y43x35aZVDtt+J4mK1hoLGHULMYfSkODJNQjNDC3oW1PqPoxMwo0pLUsWM/UEGzON/NxeHywEfNXNP3Vw==}
     engines: {node: '>=0.10.0'}
@@ -2146,6 +2161,13 @@ packages:
     resolution: {integrity: sha512-DhuTmvZWux4H1UOnWMB3sk0sbaCVOoQZjv8u1rDoTV0HTdGem9hkAZtl4JZy8P2z4Bg0nT+YMeOFyVr4zcG5Tw==}
     engines: {node: '>=16 || 14 >=14.17'}
     hasBin: true
+
+  terracotta@2.0.0-next.10:
+    resolution: {integrity: sha512-ZpBJyJAUx1Zu8H3v48d4u2pCXdinIg4gy9/PE3jNC2yjis2bvRe9V44privu/J0fbGtR4LzbxgDsI4M/aUEcRw==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      '@solidjs/web': ^2.0.0-rc.13
+      solid-js: ^2.0.0-rc.13
 
   thenify-all@1.6.0:
     resolution: {integrity: sha512-RNxQH/qI8/t3thXJDwcstUO4zeqo64+Uy/+sNVRBx4Xn2OX+OZ9oP+iJnNFqplFra2ZUVeKCSa2oVWi3T4uVmA==}
@@ -3577,6 +3599,8 @@ snapshots:
     dependencies:
       is-what: 4.1.16
 
+  minisearch@7.2.0: {}
+
   ms@2.1.3: {}
 
   mz@2.7.0:
@@ -3806,6 +3830,10 @@ snapshots:
       seroval: 1.7.0
       seroval-plugins: 1.7.0(seroval@1.7.0)
 
+  solid-use@1.0.0-next.3(solid-js@2.0.0-rc.21):
+    dependencies:
+      solid-js: 2.0.0-rc.21
+
   source-map-js@1.2.2: {}
 
   std-env@4.3.0: {}
@@ -3819,6 +3847,12 @@ snapshots:
       pirates: 4.0.7
       tinyglobby: 0.2.17
       ts-interface-checker: 0.1.13
+
+  terracotta@2.0.0-next.10(@solidjs/web@2.0.0-rc.21(solid-js@2.0.0-rc.21))(solid-js@2.0.0-rc.21):
+    dependencies:
+      '@solidjs/web': 2.0.0-rc.21(solid-js@2.0.0-rc.21)
+      solid-js: 2.0.0-rc.21
+      solid-use: 1.0.0-next.3(solid-js@2.0.0-rc.21)
 
   thenify-all@1.6.0:
     dependencies:

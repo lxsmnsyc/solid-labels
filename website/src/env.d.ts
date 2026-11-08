@@ -12,3 +12,15 @@ declare module '@solidjs/compiler-wasm32-wasi' {
   /** The wasm build of the Solid JSX compiler. Options match `@solidjs/compiler`. */
   export function transform(code: string, options?: Record<string, unknown>): SolidTransformResult;
 }
+
+declare module 'virtual:search-index' {
+  /** One entry per docs page and per `##` or `###` section. */
+  const entries: {
+    id: string;
+    href: string;
+    page: string;
+    heading: string;
+    text: string;
+  }[];
+  export default entries;
+}

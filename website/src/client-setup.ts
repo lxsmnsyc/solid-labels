@@ -47,12 +47,20 @@ function setupCopy(): void {
   });
 }
 
-// The hero beam: pointer drag or arrow keys move the line from top to bottom.
+// The hero beam. It sweeps on its own. A horizontal drag or the arrow keys take
+// over, and the button pauses it or starts it again (WCAG 2.2.2).
 function setupBeam(): void {
   const beam = document.querySelector<HTMLElement>('[data-beam]');
   const stage = beam?.querySelector<HTMLElement>('.beam-stage');
-  if (!beam || !stage) {
+  const toggle = beam?.querySelector<HTMLButtonElement>('[data-beam-toggle]');
+  if (!beam || !stage || !toggle) {
     return;
+  }
+
+  function describeToggle(): void {
+    const running = !beam?.hasAttribute('data-manual');
+    toggle?.setAttribute('aria-label', running ? 'Pause animation' : 'Play animation');
+    toggle?.toggleAttribute('data-paused', !running);
   }
 
   function setBeam(percent: number): void {
@@ -60,29 +68,50 @@ function setupBeam(): void {
     beam?.setAttribute('data-manual', '');
     stage?.style.setProperty('--beam', `${value}%`);
     stage?.setAttribute('aria-valuenow', String(Math.round(value)));
+    describeToggle();
   }
 
+  // The stage scrolls the page vertically, so only the horizontal position of
+  // the pointer moves the beam.
   function fromPointer(event: PointerEvent): void {
     const box = stage?.getBoundingClientRect();
     if (box !== undefined) {
-      setBeam(((event.clientY - box.top) / box.height) * 100);
+      setBeam(((event.clientX - box.left) / box.width) * 100);
     }
   }
 
+  // A mouse takes over at once. A touch only takes over on a horizontal move,
+  // so a vertical swipe on the stage still scrolls the page.
   let dragging = false;
+  let startX = 0;
+  let startY = 0;
   stage.addEventListener('pointerdown', (event) => {
-    dragging = true;
-    stage.setPointerCapture(event.pointerId);
-    fromPointer(event);
+    startX = event.clientX;
+    startY = event.clientY;
+    if (event.pointerType !== 'touch') {
+      dragging = true;
+      stage.setPointerCapture(event.pointerId);
+      fromPointer(event);
+    }
   });
   stage.addEventListener('pointermove', (event) => {
+    if (!dragging && event.pointerType === 'touch' && event.buttons === 1) {
+      const dx = Math.abs(event.clientX - startX);
+      const dy = Math.abs(event.clientY - startY);
+      if (dx > 8 && dx > dy) {
+        dragging = true;
+        stage.setPointerCapture(event.pointerId);
+      }
+    }
     if (dragging) {
       fromPointer(event);
     }
   });
-  stage.addEventListener('pointerup', () => {
+  function stopDrag(): void {
     dragging = false;
-  });
+  }
+  stage.addEventListener('pointerup', stopDrag);
+  stage.addEventListener('pointercancel', stopDrag);
   stage.addEventListener('keydown', (event) => {
     const now = Number(stage.getAttribute('aria-valuenow'));
     const steps: Record<string, number> = {
@@ -99,11 +128,30 @@ function setupBeam(): void {
       setBeam(event.key === 'Home' ? 0 : 100);
     }
   });
+
+  toggle.addEventListener('click', () => {
+    if (beam.hasAttribute('data-manual')) {
+      // Back to the sweep.
+      beam.removeAttribute('data-manual');
+      stage.style.removeProperty('--beam');
+    } else {
+      // Freeze where the line is now.
+      const current = Number.parseFloat(getComputedStyle(stage).getPropertyValue('--beam'));
+      setBeam(Number.isNaN(current) ? 50 : current);
+    }
+    describeToggle();
+  });
 }
 
-// Marks the table of contents entry of the section being read.
+// Marks the entry of the section being read in the docs sidebar. Only links to
+// this page count. The sidebar also lists the sections of the other pages.
 function setupContents(): void {
-  const links = document.querySelectorAll<HTMLAnchorElement>('[data-toc] a');
+  const links: HTMLAnchorElement[] = [];
+  for (const link of document.querySelectorAll<HTMLAnchorElement>('[data-toc] a')) {
+    if (link.hash !== '' && link.pathname === window.location.pathname) {
+      links.push(link);
+    }
+  }
   if (links.length === 0) {
     return;
   }
@@ -134,11 +182,50 @@ function setupContents(): void {
   }
 }
 
+// Search opens from the header button, Cmd or Ctrl and K, and the slash key.
+// The dialog, minisearch and the index load the first time it opens.
+function setupSearch(): void {
+  let loading: Promise<{ openSearch: () => void }> | undefined;
+
+  function open(): void {
+    loading ??= import('./islands/search');
+    loading.then((module) => {
+      module.openSearch();
+    }, reportError);
+  }
+
+  const mac = /Mac|iPhone|iPad/.test(navigator.platform);
+  for (const key of document.querySelectorAll('[data-search-key]')) {
+    key.textContent = mac ? '⌘K' : 'Ctrl K';
+  }
+  for (const trigger of document.querySelectorAll('[data-search]')) {
+    trigger.addEventListener('click', open);
+  }
+
+  document.addEventListener('keydown', (event) => {
+    if (event.defaultPrevented) {
+      return;
+    }
+    const target = event.target;
+    const typing =
+      target instanceof HTMLElement &&
+      (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName));
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+      event.preventDefault();
+      open();
+    } else if (event.key === '/' && !typing && !event.metaKey && !event.ctrlKey) {
+      event.preventDefault();
+      open();
+    }
+  });
+}
+
 function start(): void {
   setupTheme();
   setupCopy();
   setupBeam();
   setupContents();
+  setupSearch();
 
   // The REPL loads its compilers only on its own page.
   if (document.querySelector('[data-island="repl"]') !== null) {

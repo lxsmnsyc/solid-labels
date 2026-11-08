@@ -79,7 +79,7 @@ $effect(() => {
 The callback is hoisted to module level when possible (no `this`,
 `arguments`, `super`, and no writes to plain outer variables); otherwise it
 stays inline with a destructured parameter list. See
-the [`$effect` reference](/ctf#effect-and-rendereffect) for the full rules.
+the [`$effect` reference](/docs/ctf#effect-and-rendereffect) for the full rules.
 
 `$renderEffect` and the `$(expr);` statement compile through the same capture
 mechanism (`$` treats the expression as the callback body). There is no alias for

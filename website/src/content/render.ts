@@ -12,6 +12,7 @@ import {
   NAMESPACE_COMPONENTS,
 } from '../../../packages/core/compiler/registry';
 import { escapeHtml, highlight } from '../lib/highlight';
+import { createSlugger, plainHeading } from '../lib/slug';
 
 const sources: Record<string, string | undefined> = import.meta.glob<string>('../../content/*.md', {
   query: '?raw',
@@ -33,14 +34,6 @@ export interface Document {
 
 const COPY_ICON =
   '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 2.5h7v9h-7zM3.5 5v8.5h7" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>';
-
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .trim()
-    .replace(/\s+/g, '-');
-}
 
 function renderCode(code: string, extraClass = '', plain = false): string {
   const trimmed = code.replace(/\n$/, '');
@@ -78,13 +71,32 @@ const CORE_CTF = [
   '$set',
 ];
 
+const CTF_FENCE = /^```ctf [a-z]+\n([\s\S]*?)^```/gm;
+
+/** The source of every compiled example in a Markdown file. */
+function readExamples(markdown: string): string {
+  let examples = '';
+  for (const match of markdown.matchAll(CTF_FENCE)) {
+    examples += `${match[1]}\n`;
+  }
+  return examples;
+}
+
+let coverageChecked = false;
+
 /**
  * Fails the build when the compiler knows a compile-time function, component
- * or `solid:` element that the reference pages never mention.
+ * or `solid:` element that has no compiled example. A mention in prose does
+ * not count, only a `ctf` fence does.
  */
 function assertCoverage(): void {
-  const reference = sources['../../content/ctf.md'] ?? '';
-  const namespace = sources['../../content/namespace.md'] ?? '';
+  if (coverageChecked) {
+    return;
+  }
+  coverageChecked = true;
+
+  const reference = readExamples(sources['../../content/ctf.md'] ?? '');
+  const namespace = readExamples(sources['../../content/namespace.md'] ?? '');
   const missing: string[] = [];
 
   const names = [
@@ -94,14 +106,15 @@ function assertCoverage(): void {
     ...Object.keys(ACCESSOR_CTF),
   ];
   for (const name of names) {
-    // A name counts when it appears as a whole word, so `$` does not match `$signal`.
+    // A name counts when it is a whole identifier, so `$` does not match `$signal`.
     const pattern = new RegExp(`(?<![\\w$])${name.replace(/\$/g, '\\$')}(?![\\w$])`);
     if (!pattern.test(reference)) {
       missing.push(name);
     }
   }
+  // A component counts as a JSX tag or as a call or reference in code.
   for (const name of Object.keys(COMPONENTS)) {
-    if (!new RegExp(`\\b${name}\\b`).test(reference)) {
+    if (!new RegExp(`<${name}[\\s/>]`).test(reference)) {
       missing.push(name);
     }
   }
@@ -112,7 +125,7 @@ function assertCoverage(): void {
   }
 
   if (missing.length > 0) {
-    throw new Error(`The docs do not cover: ${missing.join(', ')}`);
+    throw new Error(`The docs have no compiled example for: ${missing.join(', ')}`);
   }
 }
 
@@ -151,12 +164,13 @@ function renderPair(source: string, lang: string): string {
 }
 
 function createMarked(headings: Heading[]): Marked {
+  const slug = createSlugger();
   return new Marked({
     gfm: true,
     renderer: {
       heading(token: Tokens.Heading): string {
-        const text = token.text.replace(/[`*_]/g, '');
-        const id = slugify(text);
+        const text = plainHeading(token.text);
+        const id = slug(text);
         if (token.depth === 2 || token.depth === 3) {
           headings.push({ depth: token.depth, id, text });
         }
@@ -190,8 +204,15 @@ function createMarked(headings: Heading[]): Marked {
   });
 }
 
-/** Renders `website/content/<name>.md`. */
+const rendered = new Map<string, Document>();
+
+/** Renders `website/content/<name>.md`. The result is cached for the build. */
 export function renderDocument(name: string): Document {
+  const cached = rendered.get(name);
+  if (cached !== undefined) {
+    return cached;
+  }
+
   const source = sources[`../../content/${name}.md`];
   if (source === undefined) {
     throw new Error(`Missing content file: ${name}.md`);
@@ -205,5 +226,7 @@ export function renderDocument(name: string): Document {
 
   // The first `# Heading` is the page title and is not part of the table of contents.
   const titleMatch = /^#\s+(.+)$/m.exec(source);
-  return { title: titleMatch?.[1].replace(/`/g, '') ?? name, html, headings };
+  const document = { title: titleMatch?.[1].replace(/`/g, '') ?? name, html, headings };
+  rendered.set(name, document);
+  return document;
 }

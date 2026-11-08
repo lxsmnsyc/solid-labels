@@ -10,13 +10,23 @@ export interface Route {
 
 export const routeList: Route[] = routes;
 
-/** The routes that appear in the main navigation. */
+/** The routes that appear in the docs sidebar, in order. */
 export const navRoutes: Route[] = [];
 for (const route of routeList) {
   if (route.nav !== undefined) {
     navRoutes.push(route);
   }
 }
+
+/** The docs pages, which have a Markdown file. */
+export const docRoutes: Route[] = [];
+for (const route of routeList) {
+  if (route.doc !== undefined) {
+    docRoutes.push(route);
+  }
+}
+
+export const DOCS_HOME = '/docs/getting-started';
 
 export const REPO_URL = 'https://github.com/lxsmnsyc/solid-labels';
 
@@ -26,7 +36,10 @@ export function getOrigin(): string {
   const fromEnv =
     typeof process === 'undefined'
       ? undefined
-      : (process.env.SITE_URL ?? process.env.VERCEL_PROJECT_PRODUCTION_URL);
+      : (process.env.SITE_URL ??
+        process.env.VERCEL_PROJECT_PRODUCTION_URL ??
+        process.env.VERCEL_BRANCH_URL ??
+        process.env.VERCEL_URL);
   if (fromEnv === undefined || fromEnv === '') {
     return '';
   }
