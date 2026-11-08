@@ -23,7 +23,7 @@ export default function App(): JSX.Element {
         <p>Even</p>
       </Show>
       <ul>
-        <solid:for each={items}>{(item) => <li>{item()}</li>}</solid:for>
+        <solid:for each={items}>{(item: string) => <li>{item}</li>}</solid:for>
       </ul>
     </main>
   );
