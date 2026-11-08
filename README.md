@@ -68,26 +68,36 @@ const { code, map } = compile('App.tsx', source, { dev: true });
 
 ### Bun
 
-Bun runs one `onLoad` per file, so a separate Solid JSX plugin cannot read the solid-labels output.
-Compile the JSX in the `bun.transform` option of `solidLabels.bun()`:
+Bun uses the first `onLoad` that returns contents, so `solidLabels.bun()` and a separate Solid JSX
+plugin never chain, in either order. Put both in one unplugin factory, which runs them in order
+inside a single `onLoad` and combines their source maps:
 
 ```ts
 import { transformAsync } from '@solidjs/compiler';
+import { createUnplugin } from 'unplugin';
+import type { UnpluginOptions } from 'unplugin';
 import solidLabels from 'unplugin-solid-labels';
+
+const solidJsx: UnpluginOptions = {
+  name: 'solid-jsx',
+  transform: {
+    filter: { id: /\/src\/.*\.[jt]sx$/ },
+    async handler(code, id) {
+      const result = await transformAsync(code, { filename: id, generate: 'dom', sourceMap: true });
+      return { code: result.code, map: result.map };
+    },
+  },
+};
+
+const solidBun = createUnplugin((_options: undefined, meta) => [
+  solidLabels.raw({}, meta),
+  solidJsx,
+]).bun;
 
 await Bun.build({
   entrypoints: ['./src/main.tsx'],
   outdir: './dist',
-  plugins: [
-    solidLabels.bun({
-      bun: {
-        async transform(code, id) {
-          const result = await transformAsync(code, { filename: id, generate: 'dom' });
-          return { code: result.code, map: result.map };
-        },
-      },
-    }),
-  ],
+  plugins: [solidBun()],
 });
 ```
 

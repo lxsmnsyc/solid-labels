@@ -20,6 +20,7 @@
     "happy-dom": "^21.0.4",
     "solid-labels": "workspace:*",
     "typescript": "^7.0.2",
+    "unplugin": "^3.7.0",
     "unplugin-solid-labels": "workspace:*"
   }
 }
