@@ -90,6 +90,8 @@ The `1.0` branch (solid-js 2.0.0-rc.1) compiles every valid input to code that p
 - 2026-11-07: for a file with nothing to compile, `compile()` returns `null` and the unplugin returns `null` from `transform`, so bundlers keep the original code and map. `solid-labels/compiler` is new in the pending major (`.changeset/oxc-compiler-rewrite.md`), so this needs no extra major; `plugin-fast-path` updates that changeset's text.
 - 2026-11-07: dependencies are updated first (`deps-update`); `check-green` stacks on it because tool updates change lint and typecheck results.
 
+- 2026-11-08: roadmap closed. The outcome is met on `1.0` at `2e806b8`; see `reviews/close.md`. `phase-outputs` stays parked.
+
 ## Open questions
 
 - None.
