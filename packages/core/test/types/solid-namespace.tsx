@@ -8,7 +8,9 @@
 // `item` in `<solid:for>` is `any` where `<For>` infers the element type.
 
 import type { Accessor } from 'solid-js';
+import type { Hydration, HydrationScript, NoHydration } from '@solidjs/web';
 import { Portal } from '@solidjs/web';
+import type { Props } from '../../src/index';
 import { Errored, For, Loading, Match, Repeat, Reveal, Show, Switch } from 'solid-js';
 
 declare const list: number[];
@@ -16,8 +18,50 @@ declare const maybe: { name: string } | undefined;
 declare const mount: Element;
 declare const key: (item: number) => number;
 
+// Exact type equality. The `T` of the inner functions is what makes it exact.
+/* oxlint-disable typescript/no-unnecessary-type-parameters */
+type Equal<A, B> =
+  (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false;
+/* oxlint-enable typescript/no-unnecessary-type-parameters */
+type Assert<T extends true> = T;
+
+// Same as `Props` in src/index.ts, with a sixth overload. A component with six
+// overloads makes the two differ, so `Props` has to grow with it.
+type Props6<T> = T extends {
+  (props: infer A): any;
+  (props: infer B): any;
+  (props: infer C): any;
+  (props: infer D): any;
+  (props: infer E): any;
+  (props: infer F): any;
+}
+  ? A | B | C | D | E | F
+  : never;
+
+export type OverloadGuards = [
+  Assert<Equal<Props6<typeof For>, Props<typeof For>>>,
+  Assert<Equal<Props6<typeof Show>, Props<typeof Show>>>,
+  Assert<Equal<Props6<typeof Switch>, Props<typeof Switch>>>,
+  Assert<Equal<Props6<typeof Match>, Props<typeof Match>>>,
+  Assert<Equal<Props6<typeof Repeat>, Props<typeof Repeat>>>,
+  Assert<Equal<Props6<typeof Errored>, Props<typeof Errored>>>,
+  Assert<Equal<Props6<typeof Loading>, Props<typeof Loading>>>,
+  Assert<Equal<Props6<typeof Reveal>, Props<typeof Reveal>>>,
+  Assert<Equal<Props6<typeof Portal>, Props<typeof Portal>>>,
+  Assert<Equal<Props6<typeof HydrationScript>, Props<typeof HydrationScript>>>,
+  Assert<Equal<Props6<typeof Hydration>, Props<typeof Hydration>>>,
+  Assert<Equal<Props6<typeof NoHydration>, Props<typeof NoHydration>>>,
+];
+
+// Known limits: an intrinsic element cannot be generic. If a change makes
+// these types precise, update the assertions on purpose.
+export type KnownLimits = [
+  Assert<Equal<Parameters<Props<typeof For>['children']>[0], any>>,
+  Assert<Equal<Props<typeof Show>['when'], unknown>>,
+  Assert<Equal<Props<typeof Match>['when'], unknown>>,
+];
+
 // Fails to compile if the value is not assignable to `Expected`.
-// The type parameter is the whole point of the helper.
 // oxlint-disable-next-line typescript/no-unnecessary-type-parameters
 declare function expectType<Expected>(value: Expected): void;
 
@@ -174,12 +218,19 @@ export const showInvalid = (
       <span />
     </solid:show>
 
-    {/* @ts-expect-error keyed must be a boolean */}
-    <Show when={maybe} keyed="yes" children={<span />} />
-    {/* @ts-expect-error keyed must be a boolean */}
-    <solid:show when={maybe} keyed="yes">
-      <span />
-    </solid:show>
+    <Show
+      when={maybe}
+      // @ts-expect-error keyed must be a boolean
+      keyed="yes"
+      // @ts-expect-error children fail too, because no overload matches
+      children={<span />}
+    />
+    <solid:show
+      when={maybe}
+      // @ts-expect-error keyed must be a boolean
+      keyed="yes"
+      children={<span />}
+    />
 
     {/* @ts-expect-error unknown prop */}
     <Show when={maybe} nope children={<span />} />

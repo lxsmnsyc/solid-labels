@@ -182,7 +182,7 @@ declare global {
  * Generic parameters of an overload become their constraints, because an
  * intrinsic element cannot be generic.
  */
-type Props<T> = T extends {
+export type Props<T> = T extends {
   (props: infer A): any;
   (props: infer B): any;
   (props: infer C): any;
