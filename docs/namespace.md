@@ -244,3 +244,9 @@ import { NoHydration as _NoHydration } from '@solidjs/web';
   </Shell>
 </_NoHydration>;
 ```
+
+## Unknown names
+
+Any `solid:` element name that is not listed here throws a compile error that
+names the unknown element. `<solid:dynamic>` is one of them: use `dynamic()`
+from `@solidjs/web`.

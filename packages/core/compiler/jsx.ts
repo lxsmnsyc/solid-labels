@@ -3,6 +3,15 @@ import type { Ctx } from './context';
 import { COMPONENTS, NAMESPACE_COMPONENTS } from './registry';
 import type { JSXName } from './scope';
 
+/** The message for a `<solid:...>` element name that is not registered. */
+function unknownNamespaceMessage(name: string): string {
+  const known = Object.keys(NAMESPACE_COMPONENTS)
+    .map((key) => `solid:${key}`)
+    .join(', ');
+  const hint = name === 'dynamic' ? ' Use `dynamic()` from `@solidjs/web` instead.' : '';
+  return `Unknown namespace component <solid:${name}>.${hint} Known names: ${known}`;
+}
+
 /** The local name a JSX tag should be renamed to, or null to keep it. */
 function jsxLocalName(ctx: Ctx, entry: JSXName): string | null {
   const { opening, resolved } = entry;
@@ -10,8 +19,12 @@ function jsxLocalName(ctx: Ctx, entry: JSXName): string | null {
     if (opening.namespace.name !== 'solid') {
       return null;
     }
-    const def = NAMESPACE_COMPONENTS[opening.name.name];
-    return def ? ctx.importIdent(def[0], def[1]) : null;
+    const name = opening.name.name;
+    const def = Object.hasOwn(NAMESPACE_COMPONENTS, name) ? NAMESPACE_COMPONENTS[name] : undefined;
+    if (!def) {
+      return ctx.error(opening, unknownNamespaceMessage(name));
+    }
+    return ctx.importIdent(def[0], def[1]);
   }
   if (opening.type === 'JSXIdentifier' && !resolved) {
     const def = COMPONENTS[opening.name];

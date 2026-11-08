@@ -71,6 +71,48 @@ const settled = $resolve(user);
 `),
     ).toMatchSnapshot();
   });
+  it('compiles the remaining reactive aliases', () => {
+    expect(
+      transform(`
+$onFlush(() => close());
+const owner = $owner();
+const gone = $isDisposed(owner);
+const watching = $observer();
+const ticks = $from((next) => {
+  const id = setInterval(next, 1000);
+  return () => clearInterval(id);
+});
+const resolved = $flatten(props.children);
+const wrappable = $isWrappable(value);
+`),
+    ).toMatchSnapshot();
+  });
+  it('compiles $from inside a memo callback', () => {
+    expect(
+      transform(`
+const position = $memo(() => $from((next) => watch(next)));
+console.log(position);
+`),
+    ).toMatchSnapshot();
+  });
+  it('compiles web aliases', () => {
+    expect(
+      transform(`
+$useHead({ tag: 'title', props: { children: 'Home' } });
+`),
+    ).toMatchSnapshot();
+  });
+  it('compiles $until and $clientOnly', () => {
+    expect(
+      transform(`
+await $until(() => ready());
+await $until(done, { timeout: 500 });
+const routes = $lazyModule(import('./routes'));
+const Chart = $clientOnly(import('./Chart'));
+const Named = $clientOnly(import('./Chart'), { lazy: true, export: 'Chart' });
+`),
+    ).toMatchSnapshot();
+  });
   it('respects shadowing', () => {
     expect(
       transform(`

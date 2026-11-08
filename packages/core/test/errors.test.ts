@@ -22,4 +22,19 @@ describe('compile errors', () => {
       '$set must be used on a signal variable',
     );
   });
+  it('rejects unknown solid: element names', () => {
+    expect(() => transform('const view = <solid:unknown>x</solid:unknown>;')).toThrow(
+      'Unknown namespace component <solid:unknown>',
+    );
+    expect(() => transform('const view = <solid:unknown>x</solid:unknown>;')).toThrow('(1:15)');
+    expect(() => transform('const view = <solid:constructor />;')).toThrow(
+      'Unknown namespace component <solid:constructor>',
+    );
+  });
+  it('points <solid:dynamic> at dynamic()', () => {
+    expect(() => transform('const view = <solid:dynamic component={C} />;')).toThrow(
+      'Use `dynamic()` from `@solidjs/web`',
+    );
+    expect(() => transform('\n  const view = <solid:dynamic component={C} />;')).toThrow('(2:');
+  });
 });

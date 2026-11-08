@@ -34,4 +34,13 @@ console.log(rows);
 `),
     ).toMatchSnapshot();
   });
+  it('transforms $deferred', () => {
+    expect(
+      transform(`
+let period = $signal('week');
+const rows = $deferred(fetchRows(period), { name: 'rows' });
+console.log(rows);
+`),
+    ).toMatchSnapshot();
+  });
 });

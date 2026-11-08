@@ -21,11 +21,13 @@ Breaking changes:
   `$snapshot` (`snapshot`), `$merge`, `$omit`. The `$mount` and `$unwrap`
   aliases are removed.
 - CTFs whose underlying 1.x API no longer exists are removed: `$batch`,
-  `$computed`, `$resource`, `$selector`, `$on`, `$observable`, `$from`,
+  `$computed`, `$resource`, `$selector`, `$on`, `$observable`,
   `$error`, `$catchError`, `$startTransition`, `$useTransition`,
-  `$indexArray`, `$mutable`, `$produce`, `$deferred`.
+  `$indexArray`, `$mutable`, `$produce`.
 - The `Dynamic` auto-import and `<solid:dynamic>` are removed, because Solid
   2.0 deprecates `Dynamic`. Use `dynamic()` from `@solidjs/web`.
+- An unknown `solid:` element name is a compile error. It used to pass through
+  as an intrinsic element.
 - `$effect`, `$renderEffect`, and the `$(expr);` statement compile through a
   new capture mechanism: outer identifiers used by the callback are read in a
   generated tracked compute phase and passed to the untracked callback as a
@@ -39,7 +41,12 @@ Breaking changes:
 
 New CTFs for the Solid 2.0 surface: `$flush`, `$action`,
 `$isPending`, `$latest`, `$refresh`, `$affects`, `$resolve`, `$repeat`,
-`$projection`, `$optimistic`, `$optimisticStore`, `$snapshot`, `$deep`, plus
-the `Repeat`, `Errored`, `Loading`, `Reveal`, and `Hydration` components.
+`$projection`, `$optimistic`, `$optimisticStore`, `$snapshot`, `$deep`,
+`$until`, `$from`, `$deferred`, `$onFlush`, `$observer`, `$isDisposed`,
+`$isWrappable`, `$flatten`, `$useHead`, `$clientOnly`, `$lazyModule`, plus the
+`Repeat`, `Errored`, `Loading`, `Reveal`, and `Hydration` components.
+
+`$deferred` returns with a new meaning. In 1.x it lagged a sync signal and took
+`timeoutMs`. In 2.0 it wraps an async computation, and `timeoutMs` is removed.
 
 See `docs/migration.md` for the full migration guide.
