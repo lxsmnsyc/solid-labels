@@ -1,5 +1,16 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`auto-import aliases > compiles $until and $clientOnly 1`] = `
+"import { until as _until } from "solid-js";
+import { clientOnly as _clientOnly } from "@solidjs/web";
+
+await _until(() => ready());
+await _until(() => done, { timeout: 500 });
+const Chart = _clientOnly(() => import('./Chart'));
+const Named = _clientOnly(() => import('./Chart'), { lazy: true, export: 'Chart' });
+"
+`;
+
 exports[`auto-import aliases > compiles arrow CTFs 1`] = `
 "import { createSignal as _createSignal } from "solid-js";
 import { untrack as _untrack } from "solid-js";
@@ -88,6 +99,35 @@ const [todos, setTodos] = _createOptimisticStore(() => api.list(), []);
 setStore(s => { _reconcile(data, 'id')(s.list); });
 const plain = _snapshot(store);
 const tracked = _deep(store);
+"
+`;
+
+exports[`auto-import aliases > compiles the remaining reactive aliases 1`] = `
+"import { onFlush as _onFlush } from "solid-js";
+import { getOwner as _getOwner } from "solid-js";
+import { isDisposed as _isDisposed } from "solid-js";
+import { getObserver as _getObserver } from "solid-js";
+import { from as _from } from "solid-js";
+import { flatten as _flatten } from "solid-js";
+import { isWrappable as _isWrappable } from "solid-js";
+
+_onFlush(() => close());
+const owner = _getOwner();
+const gone = _isDisposed(owner);
+const watching = _getObserver();
+const ticks = _from((next) => {
+  const id = setInterval(next, 1000);
+  return () => clearInterval(id);
+});
+const resolved = _flatten(props.children);
+const wrappable = _isWrappable(value);
+"
+`;
+
+exports[`auto-import aliases > compiles web aliases 1`] = `
+"import { useHead as _useHead } from "@solidjs/web";
+
+_useHead({ tag: 'title', children: 'Home' });
 "
 `;
 

@@ -8,6 +8,16 @@ console.log(nodes());
 "
 `;
 
+exports[`accessor CTFs > transforms $deferred 1`] = `
+"import { createSignal as _createSignal } from "solid-js";
+import { createDeferred as _createDeferred } from "solid-js";
+
+let [period, setperiod_1] = _createSignal('week');
+const rows = _createDeferred(() => fetchRows(period()), { name: 'rows' });
+console.log(rows());
+"
+`;
+
 exports[`accessor CTFs > transforms $mapArray 1`] = `
 "import { createSignal as _createSignal } from "solid-js";
 import { mapArray as _mapArray } from "solid-js";

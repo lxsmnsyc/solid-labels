@@ -285,9 +285,25 @@ generated source list.
 > Solid 2.0 batches writes by default, so there is no `$batch`. Use `$flush`
 > to apply queued writes synchronously.
 
-### `$root`, `$reaction`, `$flush`
+### `$root`, `$reaction`, `$flush`, `$onFlush`
 
-Aliases for `createRoot`, `createReaction` and `flush`.
+Aliases for `createRoot`, `createReaction`, `flush` and `onFlush`.
+`$onFlush(callback)` runs the callback once after the pending flush.
+
+### `$owner`, `$observer`, `$isDisposed`
+
+Aliases for `getOwner`, `getObserver` and `isDisposed`. `$observer()` returns
+the current tracking scope, or `null` outside one.
+`$isDisposed(owner)` tells a late callback whether its owner is gone.
+
+```js
+const owner = $owner();
+queueMicrotask(() => {
+  if (!$isDisposed(owner)) {
+    $runWithOwner(owner, work);
+  }
+});
+```
 
 ## Lifecycles
 
@@ -315,6 +331,9 @@ Compile-time aliases for the Solid 2.0 async surface:
 - `$affects` → `affects`
 - `$flush` → `flush`
 - `$resolve` → `resolve` (the value is wrapped in an arrow function)
+- `$until` → `until` (the predicate is wrapped in an arrow function)
+- `$from` → `from` — turns a subscription, an Observable or an async
+  iterable into an async iterable for a computation
 
 ```js
 const save = $action(function* (todo) {
@@ -322,6 +341,26 @@ const save = $action(function* (todo) {
   $refresh(todos);
 });
 const settled = await $resolve(user);
+await $until(user, { timeout: 5000 });
+const position = $memo(
+  $from((next, error) => {
+    const id = navigator.geolocation.watchPosition(next, error);
+    return () => navigator.geolocation.clearWatch(id);
+  }),
+);
+```
+
+### `$deferred`
+
+Declaration CTF for `createDeferred`. The variable becomes an accessor under
+its original name, like `$memo`. After its first answer, a refetch keeps the
+previous value until the new one lands, and `$isPending` reports the refetch.
+The value is wrapped in an arrow function.
+
+```js
+let period = $signal('week');
+const rows = $deferred(fetchRows(period));
+const stale = $isPending(() => rows);
 ```
 
 ## Objects
@@ -614,8 +653,24 @@ Store APIs live in `solid-js` on Solid 2.0:
 - `$reconcile` → `reconcile`
 - `$snapshot` → `snapshot`
 - `$deep` → `deep`
+- `$isWrappable` → `isWrappable`
 
 `createMutable` and `produce` are gone; store setters are draft-first.
+
+## Children
+
+- `$flatten` → `flatten`
+
+## Web
+
+From `@solidjs/web`:
+
+- `$useHead` → `useHead`
+- `$clientOnly` → `clientOnly`. Like `$lazy`, the promise is wrapped in an
+  arrow function: `$clientOnly(import('./Chart'))`.
+
+`dynamic`, `render`, `hydrate`, `isServer` and `isDev` have no CTF. Import
+them from `@solidjs/web`.
 
 ## Components
 
@@ -626,7 +681,8 @@ positions: `For`, `Show`, `Switch`, `Match`, `Repeat`, `Errored`, `Loading`,
 Solid deprecates it. Use `dynamic()` from `@solidjs/web`.
 
 The `solid:` JSX namespace maps the same set — see
-[`docs/namespace.md`](./namespace.md).
+[`docs/namespace.md`](./namespace.md). Any other `solid:` element name is a
+compile error.
 
 ## Tooling
 
