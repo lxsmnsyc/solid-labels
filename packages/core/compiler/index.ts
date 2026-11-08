@@ -58,7 +58,10 @@ export function compile(id: string, code: string, options: Options = {}): Compil
   if (!NEEDS_COMPILE.test(code)) {
     return null;
   }
-  const result = parseSync(id.split('?')[0], code, {
+  // Bundlers can add a query to the id. The parser and the source map need
+  // the file path without it.
+  const filename = id.split('?')[0];
+  const result = parseSync(filename, code, {
     lang: languageOf(id),
     sourceType: 'module',
     preserveParens: false,
@@ -79,6 +82,8 @@ export function compile(id: string, code: string, options: Options = {}): Compil
   }
   return {
     code: s.toString(),
-    map: s.generateMap({ source: id, hires: true }),
+    // Include the source text: tools that read the map, such as browser
+    // devtools, then show the original code without fetching the file.
+    map: s.generateMap({ source: filename, includeContent: true, hires: true }),
   };
 }
