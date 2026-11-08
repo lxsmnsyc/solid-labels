@@ -62,6 +62,8 @@ const SCOPE_NODES = new Set([
   'ForOfStatement',
   'CatchClause',
   'SwitchStatement',
+  'TSModuleBlock',
+  'TSEnumDeclaration',
 ]);
 
 const FUNCTION_SCOPES = new Set([
@@ -69,14 +71,13 @@ const FUNCTION_SCOPES = new Set([
   'FunctionExpression',
   'ArrowFunctionExpression',
   'StaticBlock',
+  'TSModuleBlock',
 ]);
 
 const SKIP_TS_STATEMENTS = new Set([
   'TSInterfaceDeclaration',
   'TSTypeAliasDeclaration',
-  'TSModuleDeclaration',
   'TSDeclareFunction',
-  'TSImportEqualsDeclaration',
 ]);
 
 /**
@@ -131,6 +132,8 @@ export function analyze(program: Node): Analysis {
     switch (pattern.type) {
       case 'AssignmentPattern':
         return true;
+      case 'TSParameterProperty':
+        return hasParameterExpression(pattern.parameter);
       case 'RestElement':
         return hasParameterExpression(pattern.argument);
       case 'ArrayPattern':
@@ -200,6 +203,12 @@ export function analyze(program: Node): Analysis {
    * further declarations, e.g. function expressions).
    */
   function declarePattern(pattern: Node, kind: string, scope: Scope, walkScope: Scope): void {
+    // Decorators on a parameter hold expressions of their own.
+    if (pattern.decorators) {
+      for (const decorator of pattern.decorators) {
+        declareWalk(decorator, walkScope);
+      }
+    }
     switch (pattern.type) {
       case 'Identifier':
         declare(pattern, kind, scope);
@@ -230,6 +239,9 @@ export function analyze(program: Node): Analysis {
       }
       case 'RestElement':
         declarePattern(pattern.argument, kind, scope, walkScope);
+        break;
+      case 'TSParameterProperty':
+        declarePattern(pattern.parameter, kind, scope, walkScope);
         break;
       default:
         break;
@@ -314,9 +326,38 @@ export function analyze(program: Node): Analysis {
         break;
       }
       case 'TSEnumDeclaration': {
-        if (node.id) {
-          declare(node.id, 'enum', currentScope);
+        // The name lives in the outer scope; the members live in the enum's own scope.
+        declare(node.id, 'enum', scope);
+        for (const member of node.body.members) {
+          if (member.id.type === 'Identifier') {
+            declare(member.id, 'enum-member', currentScope);
+          } else if (member.computed) {
+            declareWalk(member.id, currentScope);
+          }
         }
+        for (const member of node.body.members) {
+          if (member.initializer) {
+            declareWalk(member.initializer, currentScope);
+          }
+        }
+        break;
+      }
+      case 'TSModuleDeclaration': {
+        // `namespace A.B {}` declares `A`. `declare module "x"` and `declare global` declare nothing.
+        let root = node.id;
+        while (root.type === 'TSQualifiedName') {
+          root = root.left;
+        }
+        if (root.type === 'Identifier' && node.kind !== 'global') {
+          declare(root, 'namespace', scope);
+        }
+        if (node.body) {
+          declareWalk(node.body, currentScope);
+        }
+        break;
+      }
+      case 'TSImportEqualsDeclaration': {
+        declare(node.id, 'import', currentScope);
         break;
       }
       default:
@@ -377,6 +418,33 @@ export function analyze(program: Node): Analysis {
   }
 
   /**
+   * Resolves decorators with the scopes above `depth` removed. A decorator is
+   * evaluated outside the function or class it is written on, so it cannot
+   * see that node's parameters or class name.
+   */
+  function resolveDecorators(decorators: Node[], depth: number): void {
+    const inner = scopeStack.splice(depth);
+    for (const decorator of decorators) {
+      resolve(decorator);
+    }
+    scopeStack.push(...inner);
+  }
+
+  /** Resolves the decorators written on a parameter pattern, outside the function scope. */
+  function resolveParameterDecorators(pattern: Node, depth: number): void {
+    if (pattern.decorators) {
+      resolveDecorators(pattern.decorators, depth);
+    }
+    if (pattern.type === 'TSParameterProperty') {
+      resolveParameterDecorators(pattern.parameter, depth);
+    } else if (pattern.type === 'AssignmentPattern') {
+      resolveParameterDecorators(pattern.left, depth);
+    } else if (pattern.type === 'RestElement') {
+      resolveParameterDecorators(pattern.argument, depth);
+    }
+  }
+
+  /**
    * Pass B over a declaration pattern: identifiers were declared in pass A,
    * so only computed keys and default expressions are resolved here.
    */
@@ -410,6 +478,9 @@ export function analyze(program: Node): Analysis {
       }
       case 'RestElement':
         visitPatternDecl(pattern.argument);
+        break;
+      case 'TSParameterProperty':
+        visitPatternDecl(pattern.parameter);
         break;
       default:
         break;
@@ -514,9 +585,10 @@ export function analyze(program: Node): Analysis {
 
   /** Pass B walker: resolves references, maintaining scope and ancestor stacks. */
   function resolve(node: Node): void {
-    if (SKIP_TS_STATEMENTS.has(node.type) || node.type === 'TSEnumDeclaration') {
+    if (SKIP_TS_STATEMENTS.has(node.type)) {
       return;
     }
+    const outerDepth = scopeStack.length;
     const named = nameScopeMap.get(node);
     if (named) {
       scopeStack.push(named);
@@ -559,6 +631,7 @@ export function analyze(program: Node): Analysis {
       case 'FunctionExpression':
       case 'ArrowFunctionExpression': {
         for (const param of node.params) {
+          resolveParameterDecorators(param, outerDepth);
           visitPatternDecl(param);
         }
         if (node.body) {
@@ -625,6 +698,7 @@ export function analyze(program: Node): Analysis {
       }
       case 'ClassDeclaration':
       case 'ClassExpression': {
+        resolveDecorators(node.decorators, outerDepth);
         if (node.superClass) {
           resolve(node.superClass);
         }
@@ -634,11 +708,42 @@ export function analyze(program: Node): Analysis {
       case 'PropertyDefinition':
       case 'MethodDefinition':
       case 'AccessorProperty': {
+        for (const decorator of node.decorators) {
+          resolve(decorator);
+        }
         if (node.computed) {
           resolve(node.key);
         }
         if (node.value) {
           resolve(node.value);
+        }
+        break;
+      }
+      case 'TSEnumDeclaration': {
+        for (const member of node.body.members) {
+          if (member.computed) {
+            resolve(member.id);
+          }
+          if (member.initializer) {
+            resolve(member.initializer);
+          }
+        }
+        break;
+      }
+      case 'TSModuleDeclaration': {
+        if (node.body) {
+          resolve(node.body);
+        }
+        break;
+      }
+      case 'TSImportEqualsDeclaration': {
+        // `import x = A.B` references `A`. `require("m")` references nothing.
+        let root = node.moduleReference;
+        while (root.type === 'TSQualifiedName') {
+          root = root.left;
+        }
+        if (root.type === 'Identifier') {
+          reference(root, 'read');
         }
         break;
       }

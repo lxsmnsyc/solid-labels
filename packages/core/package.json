@@ -49,6 +49,7 @@
     "@fast-check/vitest": "^0.5.0",
     "@solidjs/web": "2.0.0-rc.21",
     "@types/node": "^26.6.6",
+    "@typescript-eslint/scope-manager": "^8.72.1",
     "eslint-scope": "^9.1.2",
     "fast-check": "^4.10.2",
     "solid-js": "2.0.0-rc.21",
