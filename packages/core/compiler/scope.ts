@@ -462,10 +462,13 @@ export function analyze(program: Node): Analysis {
         return binding;
       }
       // Enum members and exported namespace members of merged declarations.
-      for (const other of scopeStack[i].merged ?? []) {
-        const shared = other.bindings.get(name);
-        if (shared && (shared.exported || shared.kind === 'enum-member')) {
-          return shared;
+      const merged = scopeStack[i].merged;
+      if (merged) {
+        for (const other of merged) {
+          const shared = other.bindings.get(name);
+          if (shared && (shared.exported || shared.kind === 'enum-member')) {
+            return shared;
+          }
         }
       }
     }
