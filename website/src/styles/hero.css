@@ -93,7 +93,48 @@
 }
 
 .beam {
+  position: relative;
   margin-top: clamp(2.5rem, 6vw, 4.5rem);
+}
+
+.beam-toggle {
+  position: absolute;
+  z-index: 2;
+  top: 0.55rem;
+  right: 0.55rem;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--rule);
+  border-radius: 50%;
+  background: var(--bg);
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.beam-toggle:hover {
+  color: var(--ctf);
+  border-color: var(--ctf);
+}
+
+.beam-toggle svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.beam-toggle .icon-play,
+.beam-toggle[data-paused] .icon-pause {
+  display: none;
+}
+
+.beam-toggle[data-paused] .icon-play {
+  display: block;
+}
+
+html:not(.js) .beam-toggle {
+  display: none;
 }
 
 .beam-code {
@@ -109,8 +150,9 @@
   border: 1.5px solid var(--ink);
   border-radius: 14px;
   box-shadow: 8px 8px 0 -1px var(--ctf);
-  cursor: ns-resize;
-  touch-action: none;
+  cursor: ew-resize;
+  /* Vertical drags scroll the page. Only horizontal drags move the line. */
+  touch-action: pan-y;
   animation: sweep 7s ease-in-out infinite alternate;
 }
 
@@ -208,6 +250,10 @@
 @media (prefers-reduced-motion: reduce) {
   .beam-stage {
     animation: none;
+  }
+
+  .beam-toggle {
+    display: none;
   }
 
   .hero > :not(.hero-glyph) {

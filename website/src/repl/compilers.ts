@@ -19,10 +19,28 @@ export interface Compiled {
   solid: string;
   /** The same output with TypeScript removed, ready to run. */
   runnable: string;
+  /** Calls of `$name` that solid-labels left in the output, so they are not compile-time functions. */
+  unknown: string[];
   ms: number;
 }
 
 export type Outcome = { ok: true; value: Compiled } | { ok: false; problem: Problem };
+
+const STRING_OR_COMMENT =
+  /\/\/[^\n]*|\/\*[\s\S]*?\*\/|`(?:\\[\s\S]|[^`\\])*`|'(?:\\.|[^'\\\n])*'|"(?:\\.|[^"\\\n])*"/g;
+const DOLLAR_CALL = /(?<![\w$.])(\$[\w$]*)\s*\(/g;
+
+/** Finds `$name(...)` calls in compiled output. A compile-time function never survives compiling. */
+function findUnknownCalls(output: string): string[] {
+  const code = output.replace(STRING_OR_COMMENT, ' ');
+  const names: string[] = [];
+  for (const match of code.matchAll(DOLLAR_CALL)) {
+    if (!names.includes(match[1])) {
+      names.push(match[1]);
+    }
+  }
+  return names;
+}
 
 function describe(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -58,7 +76,11 @@ export function run(source: string, dev: boolean): Outcome {
       transforms: ['typescript'],
       disableESTransforms: true,
     }).code;
-    return { ok: true, value: { labels, solid, runnable, ms: performance.now() - started } };
+    const unknown = findUnknownCalls(labels);
+    return {
+      ok: true,
+      value: { labels, solid, runnable, unknown, ms: performance.now() - started },
+    };
   } catch (error) {
     return { ok: false, problem: { stage: 'solid', message: describe(error) } };
   }

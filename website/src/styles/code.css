@@ -173,7 +173,7 @@
 }
 
 .builds label {
-  padding: 0.15rem 0.7rem;
+  padding: 0.3rem 0.8rem;
   border-radius: 999px;
   color: var(--ink-soft);
   cursor: pointer;
@@ -224,4 +224,22 @@
 /* Align both panels of a pair that has the build switch above the output. */
 .pair.has-builds .pair-src {
   padding-top: 2.1rem;
+}
+
+/* A shadow on the edge of a code block marks content that scrolls out of view. */
+.code pre,
+.panel pre {
+  background:
+    linear-gradient(to right, var(--bg-raised) 30%, transparent) left / 2rem 100% local no-repeat,
+    linear-gradient(to left, var(--bg-raised) 30%, transparent) right / 2rem 100% local no-repeat,
+    linear-gradient(var(--bg-raised) 30%, transparent) top / 100% 2rem local no-repeat,
+    linear-gradient(transparent, var(--bg-raised) 70%) bottom / 100% 2rem local no-repeat,
+    radial-gradient(farthest-side at 0 50%, var(--edge), transparent) left / 0.7rem 100% scroll
+      no-repeat,
+    radial-gradient(farthest-side at 100% 50%, var(--edge), transparent) right / 0.7rem 100% scroll
+      no-repeat,
+    radial-gradient(farthest-side at 50% 0, var(--edge), transparent) top / 100% 0.7rem scroll
+      no-repeat,
+    radial-gradient(farthest-side at 50% 100%, var(--edge), transparent) bottom / 100% 0.7rem scroll
+      no-repeat;
 }

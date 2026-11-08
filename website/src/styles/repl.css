@@ -1,7 +1,7 @@
 .repl-page {
   max-width: 1500px;
   margin: 0 auto;
-  padding: 1rem var(--gutter) 0;
+  padding: 1rem var(--gutter) 3rem;
 }
 
 #repl-root {
@@ -19,24 +19,45 @@
 }
 
 .repl-note {
-  color: var(--ink-soft);
+  margin: 0;
+  padding: 0.6rem 0.9rem;
+  border-left: 3px solid var(--number);
+  background: color-mix(in srgb, var(--number) 12%, transparent);
+  color: var(--ink);
+  font-size: 0.9rem;
 }
 
+/*
+ * Desktop: the editor stays in view on the left. The three results stack on the
+ * right, each tall enough to read and resizable with the corner handle.
+ */
 .repl {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas:
+    'bar bar'
+    'note note'
+    'tabs tabs'
+    'editor side';
+  align-items: start;
   gap: 0.75rem;
-  height: calc(100vh - 8.5rem);
-  min-height: 34rem;
 }
 
 .repl-bar {
-  grid-column: 1 / -1;
+  grid-area: bar;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 0.5rem 1rem;
+}
+
+.repl > .repl-note {
+  grid-area: note;
+}
+
+.repl-tabs {
+  grid-area: tabs;
+  display: none;
 }
 
 .repl-status {
@@ -49,10 +70,15 @@
   color: var(--ctf);
 }
 
+.repl-status[data-state='warning'] {
+  color: var(--number);
+}
+
 .switch {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  min-height: 1.5rem;
   font: 600 0.82rem var(--font-mono);
   cursor: pointer;
 }
@@ -60,8 +86,8 @@
 .switch input {
   appearance: none;
   position: relative;
-  width: 2.4rem;
-  height: 1.35rem;
+  width: 2.6rem;
+  height: 1.5rem;
   margin: 0;
   border-radius: 999px;
   background: var(--rule);
@@ -72,10 +98,10 @@
 .switch input::after {
   content: '';
   position: absolute;
-  top: 0.15rem;
-  left: 0.15rem;
-  width: 1.05rem;
-  height: 1.05rem;
+  top: 0.18rem;
+  left: 0.18rem;
+  width: 1.14rem;
+  height: 1.14rem;
   border-radius: 50%;
   background: var(--bg-raised);
   box-shadow: 0 0 0 1px var(--ink-soft);
@@ -87,7 +113,7 @@
 }
 
 .switch input:checked::after {
-  translate: 1.05rem 0;
+  translate: 1.1rem 0;
 }
 
 .switch input:focus-visible {
@@ -95,10 +121,18 @@
   outline-offset: 3px;
 }
 
+.repl-bar .button {
+  padding: 0.3rem 0.9rem;
+  font-size: 0.85rem;
+}
+
 .repl-editor {
-  position: relative;
+  grid-area: editor;
+  position: sticky;
+  top: 4.75rem;
   display: grid;
-  min-height: 0;
+  height: calc(100vh - 6.5rem);
+  min-height: 24rem;
   background: var(--bg-raised);
   border: 1.5px solid var(--ink);
   border-radius: var(--radius);
@@ -110,7 +144,8 @@
   grid-area: 1 / 1;
   margin: 0;
   padding: 1rem 1.15rem;
-  font: 0.88rem / 1.7 var(--font-mono);
+  font-size: 0.88rem;
+  line-height: 1.7;
   letter-spacing: 0;
   tab-size: 2;
   white-space: pre;
@@ -140,107 +175,6 @@
   color: transparent;
 }
 
-.repl-side {
-  display: grid;
-  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.1fr);
-  gap: 0.75rem;
-  min-height: 0;
-}
-
-.panel {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  background: var(--bg-raised);
-  border: 1px solid var(--rule);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-
-.panel-title {
-  flex: none;
-  display: flex;
-  gap: 0.6rem;
-  align-items: center;
-  padding: 0.35rem 0.9rem;
-  border-bottom: 1px solid var(--rule);
-  font: 600 0.72rem var(--font-mono);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-soft);
-}
-
-.panel-title::before {
-  content: '';
-  width: 0.55rem;
-  height: 0.55rem;
-  border-radius: 50%;
-  background: var(--ctf);
-}
-
-.panel[data-kind='solid'] .panel-title::before,
-.panel[data-kind='preview'] .panel-title::before {
-  background: var(--gen);
-}
-
-.panel pre {
-  flex: 1;
-  min-height: 0;
-  margin: 0;
-  padding: 0.8rem 1rem;
-  overflow: auto;
-  font-size: 0.82rem;
-  line-height: 1.65;
-}
-
-.panel iframe {
-  flex: 1;
-  min-height: 0;
-  width: 100%;
-  border: 0;
-  background: #fff;
-}
-
-.problem {
-  margin: 0;
-  padding: 0.8rem 1rem;
-  color: var(--ctf);
-  font: 500 0.84rem / 1.6 var(--font-mono);
-  white-space: pre-wrap;
-  overflow: auto;
-}
-
-.problem button {
-  padding: 0;
-  border: 0;
-  background: none;
-  color: inherit;
-  font: inherit;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-.problem-line {
-  background: var(--ctf-wash);
-}
-
-.panel[data-stale] pre {
-  opacity: 0.45;
-}
-
-@media (max-width: 960px) {
-  .repl {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto 22rem auto;
-    height: auto;
-  }
-
-  .repl-side {
-    grid-template-rows: 16rem 16rem 20rem;
-  }
-}
-
 /* A band behind the line of the compile error. */
 .err-bar {
   position: absolute;
@@ -259,7 +193,185 @@
   display: block;
 }
 
-.repl-bar .button {
+.repl-side {
+  grid-area: side;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 26rem;
+  min-height: 11rem;
+  background: var(--bg-raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  overflow: hidden;
+  resize: vertical;
+}
+
+.panel[data-panel='preview'] {
+  height: 24rem;
+}
+
+.panel-title {
+  flex: none;
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  margin: 0;
+  padding: 0.35rem 0.9rem;
+  border-bottom: 1px solid var(--rule);
+  font: 600 0.72rem var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.panel-title::before {
+  content: '';
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--ctf);
+}
+
+.panel[data-panel='solid'] .panel-title::before,
+.panel[data-panel='preview'] .panel-title::before {
+  background: var(--gen);
+}
+
+.panel pre {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 0.8rem 1rem;
+  overflow: auto;
+  font-size: 0.82rem;
+  line-height: 1.65;
+}
+
+.frame-slot {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+.frame-slot iframe {
+  flex: 1;
+  width: 100%;
+  border: 0;
+  background: #fbf8f0;
+}
+
+.frame-slot[data-dark] iframe {
+  background: #1b1814;
+}
+
+.problem {
+  margin: 0;
+  padding: 0.8rem 1rem;
+  color: var(--ctf);
+  font: 500 0.84rem / 1.6 var(--font-mono);
+  white-space: pre-wrap;
+  overflow: auto;
+}
+
+.preview-stopped {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  flex: 1;
+}
+
+.preview-stopped p {
+  margin: 0;
+}
+
+.preview-stopped .button {
   padding: 0.3rem 0.9rem;
   font-size: 0.85rem;
+}
+
+.panel[data-panel='preview']:has(.preview-stopped) .frame-slot {
+  display: none;
+}
+
+.panel pre[data-stale] {
+  opacity: 0.45;
+}
+
+/* On a phone the four panels are tabs, and one shows at a time. */
+@media (max-width: 960px) {
+  .repl {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'bar'
+      'note'
+      'tabs'
+      'editor'
+      'side';
+  }
+
+  .repl-tabs {
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.2rem;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    overflow-x: auto;
+  }
+
+  .repl-tabs button {
+    flex: 1;
+    min-height: 2rem;
+    padding: 0.2rem 0.6rem;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--ink-soft);
+    font: 600 0.8rem var(--font-mono);
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .repl-tabs button[aria-selected='true'] {
+    background: var(--ink);
+    color: var(--bg);
+  }
+
+  .repl-editor,
+  .panel {
+    display: none;
+  }
+
+  .repl[data-tab='source'] .repl-editor,
+  .repl[data-tab='labels'] .panel[data-panel='labels'],
+  .repl[data-tab='solid'] .panel[data-panel='solid'],
+  .repl[data-tab='preview'] .panel[data-panel='preview'] {
+    display: flex;
+  }
+
+  .repl[data-tab='source'] .repl-editor {
+    display: grid;
+  }
+
+  .repl-editor {
+    position: relative;
+    top: 0;
+    height: 65vh;
+    min-height: 20rem;
+  }
+
+  .panel {
+    height: 65vh;
+    min-height: 20rem;
+    resize: none;
+  }
 }

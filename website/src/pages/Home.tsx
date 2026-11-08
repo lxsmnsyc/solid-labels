@@ -67,7 +67,7 @@ export default function Home(): JSX.Element {
           replaces them with Solid primitives before your bundler runs.
         </p>
         <p class="actions">
-          <a class="button primary" href="/getting-started">
+          <a class="button primary" href="/docs/getting-started">
             Get started
           </a>
           <a class="button" href={replHref}>
@@ -81,6 +81,7 @@ export default function Home(): JSX.Element {
             role="slider"
             tabindex="0"
             aria-label="Compile progress"
+            aria-orientation="vertical"
             aria-valuemin="0"
             aria-valuemax="100"
             aria-valuenow="50"
@@ -96,6 +97,19 @@ export default function Home(): JSX.Element {
               <div class="beam-line" aria-hidden="true" />
             </div>
           </div>
+          <button type="button" class="beam-toggle" data-beam-toggle aria-label="Pause animation">
+            <svg viewBox="0 0 24 24" aria-hidden="true" class="icon-pause">
+              <path
+                d="M8 5v14M16 5v14"
+                stroke="currentColor"
+                stroke-width="2.4"
+                stroke-linecap="round"
+              />
+            </svg>
+            <svg viewBox="0 0 24 24" aria-hidden="true" class="icon-play">
+              <path d="M8 5v14l11-7z" fill="currentColor" />
+            </svg>
+          </button>
           <p class="sr-only">Compiled output: {hero.output}</p>
         </div>
       </section>
@@ -121,7 +135,7 @@ export default function Home(): JSX.Element {
           <a class="button primary" href={replHref}>
             Open the REPL
           </a>
-          <a class="button" href="/ctf">
+          <a class="button" href="/docs/ctf">
             Read the reference
           </a>
         </p>

@@ -6,19 +6,20 @@
 :root {
   color-scheme: light dark;
 
-  --bg: light-dark(#f4efe4, #0e0f13);
-  --bg-raised: light-dark(#fbf8f0, #151720);
-  --bg-sunk: light-dark(#ebe4d3, #0a0b0e);
-  --ink: light-dark(#1a1712, #ece8dd);
+  --bg: light-dark(#f4efe4, #13110e);
+  --bg-raised: light-dark(#fbf8f0, #1b1814);
+  --bg-sunk: light-dark(#ebe4d3, #0d0b09);
+  --ink: light-dark(#1a1712, #efe9dc);
   --ink-soft: light-dark(#5a5345, #a8a291);
-  --rule: light-dark(#d8cfba, #292c37);
+  --rule: light-dark(#d8cfba, #2f2a23);
   --ctf: light-dark(#bf2f0e, #ff7d57);
   --ctf-wash: light-dark(#bf2f0e14, #ff7d5718);
   --gen: light-dark(#2342c4, #8aaaff);
   --gen-wash: light-dark(#2342c412, #8aaaff16);
   --string: light-dark(#1d6b46, #92d3a9);
   --number: light-dark(#8a4a00, #f1b86e);
-  --comment: light-dark(#6f6859, #8d8879);
+  --comment: light-dark(#645d4f, #9a9585);
+  --edge: color-mix(in srgb, var(--ink) 28%, transparent);
   --on-accent: light-dark(#fff8f2, #1b0b04);
 
   --font-display: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
@@ -94,10 +95,15 @@ a:hover {
   color: var(--on-accent);
 }
 
+/* Code shows what was typed. Ligatures would turn => into a single arrow. */
 code,
-pre {
+pre,
+textarea {
   font-family: var(--font-mono);
-  font-feature-settings: 'calt' 1;
+  font-variant-ligatures: none;
+  font-feature-settings:
+    'liga' 0,
+    'calt' 0;
 }
 
 .sr-only {

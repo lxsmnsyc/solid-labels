@@ -178,6 +178,14 @@ Rules:
 `$renderEffect` compiles identically to `createRenderEffect`. Reach for it
 only when authoring renderer internals.
 
+```ctf tsx
+let width = $signal(0);
+
+$renderEffect(() => {
+  element.style.width = `${width}px`;
+});
+```
+
 ### `$untrack`
 
 ```ts
@@ -203,6 +211,20 @@ generated source list.
 Aliases for `createRoot`, `createReaction`, `flush` and `onFlush`.
 `$onFlush(callback)` runs the callback once after the pending flush.
 
+```ctf tsx
+let count = $signal(0);
+
+const dispose = $root((dispose) => {
+  $onFlush(() => console.log('flushed'));
+  return dispose;
+});
+
+const track = $reaction(() => console.log('changed'));
+
+count += 1;
+$flush();
+```
+
 ### `$owner`, `$observer`, `$isDisposed`
 
 Aliases for `getOwner`, `getObserver` and `isDisposed`. `$observer()` returns
@@ -211,6 +233,7 @@ the current tracking scope, or `null` outside one.
 
 ```ctf tsx
 const owner = $owner();
+const scope = $observer();
 queueMicrotask(() => {
   if (!$isDisposed(owner)) {
     $runWithOwner(owner, work);
@@ -231,6 +254,8 @@ $settled(() => {
   const id = setInterval(tick, 1000);
   return () => clearInterval(id);
 });
+
+$cleanup(() => console.log('the owner is disposed'));
 ```
 
 ## Async
@@ -255,6 +280,8 @@ const save = $action(function* (todo) {
 });
 const settled = await $resolve(user);
 await $until(user, { timeout: 5000 });
+const fresh = $latest(() => user);
+$affects(save);
 const position = $memo(() =>
   $from((next, error) => {
     const id = navigator.geolocation.watchPosition(next, error);
@@ -393,6 +420,10 @@ const rows = $repeat(total, (index) => index * 2);
 
 Alias for `createUniqueId`.
 
+```ctf tsx
+const id = $uid();
+```
+
 ### `$lazy`
 
 ```ts
@@ -462,6 +493,11 @@ const write = $set(count);
 
 let adopted = $derefSignal(useCounter());
 adopted += 1;
+
+const double = $memo(count * 2);
+const accessor = $refMemo(double);
+const external = $derefMemo(useDouble());
+console.log(external);
 ```
 
 ## Stores
@@ -477,11 +513,30 @@ Store APIs live in `solid-js` on Solid 2.0:
 - `$deep` → `deep`
 - `$isWrappable` → `isWrappable`
 
+```ctf tsx
+const [state, setState] = $store({ user: { name: 'Ada' }, items: [] });
+const [view] = $projection((draft) => {
+  draft.count = state.items.length;
+}, { count: 0 });
+const [likes, setLikes] = $optimistic(0);
+const [todos, setTodos] = $optimisticStore({ list: [] });
+
+setState((draft) => {
+  draft.user = $reconcile(next.user);
+});
+
+console.log($snapshot(state), $deep(state), $isWrappable(state));
+```
+
 `createMutable` and `produce` are gone. Store setters are draft-first.
 
 ## Children
 
 - `$flatten` → `flatten`
+
+```ctf tsx
+const flat = $flatten(props.children);
+```
 
 ## Web
 
@@ -490,6 +545,12 @@ From `@solidjs/web`:
 - `$useHead` → `useHead`
 - `$clientOnly` → `clientOnly`. Like `$lazy`, the promise is wrapped in an
   arrow function: `$clientOnly(import('./Chart'))`.
+
+```ctf tsx
+$useHead({ tag: 'title', props: { children: 'Docs' } });
+
+const Chart = $clientOnly(import('./Chart'));
+```
 
 `dynamic`, `render`, `hydrate`, `isServer`, `isDev`, `isHydrating`,
 `isHydratable` and `onHydrationEnd` have no CTF. Import
@@ -503,8 +564,46 @@ positions: `For`, `Show`, `Switch`, `Match`, `Repeat`, `Errored`, `Loading`,
 `NoHydration` from `@solidjs/web`. `Dynamic` is not auto-imported, because
 Solid deprecates it. Use `dynamic()` from `@solidjs/web`.
 
+```ctf jsx
+const view = (
+  <>
+    <For each={list}>{(item) => <li>{item}</li>}</For>
+    <Show when={user} fallback={<p>Signed out</p>}>
+      <p>Signed in</p>
+    </Show>
+    <Switch fallback={<p>Not found</p>}>
+      <Match when={route === 'home'}>
+        <p>Home</p>
+      </Match>
+    </Switch>
+    <Repeat count={3}>{(index) => <i>{index}</i>}</Repeat>
+    <Errored fallback={<p>Failed</p>}>
+      <Panel />
+    </Errored>
+    <Loading fallback={<p>Loading</p>}>
+      <Panel />
+    </Loading>
+    <Reveal collapsed>
+      <Loading>
+        <Panel />
+      </Loading>
+    </Reveal>
+    <Portal mount={document.body}>
+      <p>Moved</p>
+    </Portal>
+    <NoHydration>
+      <p>Static</p>
+      <Hydration>
+        <Panel />
+      </Hydration>
+    </NoHydration>
+    <HydrationScript />
+  </>
+);
+```
+
 The `solid:` JSX namespace maps the same set. See
-[`solid:` namespace](/namespace). Any other `solid:` element name is a
+[`solid:` namespace](/docs/namespace). Any other `solid:` element name is a
 compile error.
 
 ## Tooling
