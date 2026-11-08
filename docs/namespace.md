@@ -145,19 +145,6 @@ import { Reveal as _Reveal } from 'solid-js';
 </_Reveal>;
 ```
 
-## `<solid:dynamic>`
-
-Alias for [`<Dynamic>`](https://www.solidjs.com/docs/latest#%3Cdynamic%3E)
-
-```jsx
-<solid:dynamic component={state.component} someProp={state.something} />
-```
-
-```jsx
-import { Dynamic as _Dynamic } from '@solidjs/web';
-<_Dynamic component={state.component} someProp={state.something} />;
-```
-
 ## `<solid:portal>`
 
 Alias for [`<Portal>`](https://www.solidjs.com/docs/latest#%3Cportal%3E)

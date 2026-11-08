@@ -24,6 +24,8 @@ Breaking changes:
   `$computed`, `$resource`, `$selector`, `$on`, `$observable`, `$from`,
   `$error`, `$catchError`, `$startTransition`, `$useTransition`,
   `$indexArray`, `$mutable`, `$produce`, `$deferred`.
+- The `Dynamic` auto-import and `<solid:dynamic>` are removed, because Solid
+  2.0 deprecates `Dynamic`. Use `dynamic()` from `@solidjs/web`.
 - `$effect`, `$renderEffect`, and the `$(expr);` statement compile through a
   new capture mechanism: outer identifiers used by the callback are read in a
   generated tracked compute phase and passed to the untracked callback as a
@@ -35,7 +37,7 @@ Breaking changes:
   Rollup through `solidLabels.vite(options)` and `solidLabels.rollup(options)`
   with the same options.
 
-New CTFs for the Solid 2.0 surface: `$trackedEffect`, `$flush`, `$action`,
+New CTFs for the Solid 2.0 surface: `$flush`, `$action`,
 `$isPending`, `$latest`, `$refresh`, `$affects`, `$resolve`, `$repeat`,
 `$projection`, `$optimistic`, `$optimisticStore`, `$snapshot`, `$deep`, plus
 the `Repeat`, `Errored`, `Loading`, `Reveal`, and `Hydration` components.

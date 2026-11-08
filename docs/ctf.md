@@ -257,12 +257,6 @@ Rules:
 `$renderEffect` compiles identically to `createRenderEffect`. Reach for it
 only when authoring renderer plumbing.
 
-### `$trackedEffect`
-
-Alias for `createTrackedEffect` — the single-callback tracked form, where the
-callback itself is the tracking scope. Use it when value capture is not what
-you want (e.g. conditional reads).
-
 ### `$untrack`
 
 ```ts
@@ -627,8 +621,9 @@ Store APIs live in `solid-js` on Solid 2.0:
 
 Unshadowed component identifiers are auto-imported, in JSX and in expression
 positions: `For`, `Show`, `Switch`, `Match`, `Repeat`, `Errored`, `Loading`,
-`Reveal` from `solid-js`; `Dynamic`, `Portal`, `HydrationScript`, `Hydration`,
-`NoHydration` from `@solidjs/web`.
+`Reveal` from `solid-js`; `Portal`, `HydrationScript`, `Hydration`,
+`NoHydration` from `@solidjs/web`. `Dynamic` is not auto-imported, because
+Solid deprecates it. Use `dynamic()` from `@solidjs/web`.
 
 The `solid:` JSX namespace maps the same set — see
 [`docs/namespace.md`](./namespace.md).
