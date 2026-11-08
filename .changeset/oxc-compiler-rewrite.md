@@ -43,7 +43,10 @@ New CTFs for the Solid 2.0 surface: `$flush`, `$action`,
 `$isPending`, `$latest`, `$refresh`, `$affects`, `$resolve`, `$repeat`,
 `$projection`, `$optimistic`, `$optimisticStore`, `$snapshot`, `$deep`,
 `$until`, `$from`, `$deferred`, `$onFlush`, `$observer`, `$isDisposed`,
-`$isWrappable`, `$flatten`, `$useHead`, `$clientOnly`, plus the `Repeat`, `Errored`,
-`Loading`, `Reveal`, and `Hydration` components.
+`$isWrappable`, `$flatten`, `$useHead`, `$clientOnly`, `$lazyModule`, plus the
+`Repeat`, `Errored`, `Loading`, `Reveal`, and `Hydration` components.
+
+`$deferred` returns with a new meaning. In 1.x it lagged a sync signal and took
+`timeoutMs`. In 2.0 it wraps an async computation, and `timeoutMs` is removed.
 
 See `docs/migration.md` for the full migration guide.

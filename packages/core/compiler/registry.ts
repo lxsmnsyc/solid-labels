@@ -51,6 +51,7 @@ export const ARROW_CTF: Record<string, [name: string, source: string, args: numb
   $untrack: ['untrack', 'solid-js', 1],
   $resolve: ['resolve', 'solid-js', 1],
   $until: ['until', 'solid-js', 2],
+  $lazyModule: ['lazyModule', 'solid-js', 1],
   $clientOnly: ['clientOnly', '@solidjs/web', 2],
 };
 

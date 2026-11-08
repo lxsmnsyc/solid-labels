@@ -1,11 +1,22 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`auto-import aliases > compiles $from inside a memo callback 1`] = `
+"import { createMemo as _createMemo } from "solid-js";
+import { from as _from } from "solid-js";
+
+const position = _createMemo(() => _from((next) => watch(next)));
+console.log(position());
+"
+`;
+
 exports[`auto-import aliases > compiles $until and $clientOnly 1`] = `
 "import { until as _until } from "solid-js";
+import { lazyModule as _lazyModule } from "solid-js";
 import { clientOnly as _clientOnly } from "@solidjs/web";
 
 await _until(() => ready());
 await _until(() => done, { timeout: 500 });
+const routes = _lazyModule(() => import('./routes'));
 const Chart = _clientOnly(() => import('./Chart'));
 const Named = _clientOnly(() => import('./Chart'), { lazy: true, export: 'Chart' });
 "
@@ -127,7 +138,7 @@ const wrappable = _isWrappable(value);
 exports[`auto-import aliases > compiles web aliases 1`] = `
 "import { useHead as _useHead } from "@solidjs/web";
 
-_useHead({ tag: 'title', children: 'Home' });
+_useHead({ tag: 'title', props: { children: 'Home' } });
 "
 `;
 

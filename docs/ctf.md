@@ -342,7 +342,7 @@ const save = $action(function* (todo) {
 });
 const settled = await $resolve(user);
 await $until(user, { timeout: 5000 });
-const position = $memo(
+const position = $memo(() =>
   $from((next, error) => {
     const id = navigator.geolocation.watchPosition(next, error);
     return () => navigator.geolocation.clearWatch(id);
@@ -356,6 +356,9 @@ Declaration CTF for `createDeferred`. The variable becomes an accessor under
 its original name, like `$memo`. After its first answer, a refetch keeps the
 previous value until the new one lands, and `$isPending` reports the refetch.
 The value is wrapped in an arrow function.
+
+In 1.x, `$deferred` lagged a sync signal and took `timeoutMs`. In 2.0 it wraps
+an async computation, and `timeoutMs` is gone.
 
 ```js
 let period = $signal('week');
@@ -578,6 +581,22 @@ import { lazy as _lazy } from 'solid-js';
 const Page = _lazy(() => import('./Page'));
 ```
 
+### `$lazyModule`
+
+Wraps a dynamic import for a module that is not a component, like `$lazy`
+does for a component. The promise is wrapped in an arrow function. The result
+is callable and has `preload()` and `peek()`.
+
+```js
+const admin = $lazyModule(import('./admin/routes'));
+```
+
+```js
+import { lazyModule as _lazyModule } from 'solid-js';
+
+const admin = _lazyModule(() => import('./admin/routes'));
+```
+
 ### `$children`
 
 Resolves children into an accessor variable.
@@ -669,7 +688,8 @@ From `@solidjs/web`:
 - `$clientOnly` → `clientOnly`. Like `$lazy`, the promise is wrapped in an
   arrow function: `$clientOnly(import('./Chart'))`.
 
-`dynamic`, `render`, `hydrate`, `isServer` and `isDev` have no CTF. Import
+`dynamic`, `render`, `hydrate`, `isServer`, `isDev`, `isHydrating`,
+`isHydratable` and `onHydrationEnd` have no CTF. Import
 them from `@solidjs/web`.
 
 ## Components

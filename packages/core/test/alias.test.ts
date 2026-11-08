@@ -87,10 +87,18 @@ const wrappable = $isWrappable(value);
 `),
     ).toMatchSnapshot();
   });
+  it('compiles $from inside a memo callback', () => {
+    expect(
+      transform(`
+const position = $memo(() => $from((next) => watch(next)));
+console.log(position);
+`),
+    ).toMatchSnapshot();
+  });
   it('compiles web aliases', () => {
     expect(
       transform(`
-$useHead({ tag: 'title', children: 'Home' });
+$useHead({ tag: 'title', props: { children: 'Home' } });
 `),
     ).toMatchSnapshot();
   });
@@ -99,6 +107,7 @@ $useHead({ tag: 'title', children: 'Home' });
       transform(`
 await $until(() => ready());
 await $until(done, { timeout: 500 });
+const routes = $lazyModule(import('./routes'));
 const Chart = $clientOnly(import('./Chart'));
 const Named = $clientOnly(import('./Chart'), { lazy: true, export: 'Chart' });
 `),

@@ -23,12 +23,13 @@ declare global {
   function $memo<T>(
     value: T,
     options?: {
-      equals?: false | ((prev: T, next: T) => boolean);
+      equals?: false | ((prev: Awaited<T>, next: Awaited<T>) => boolean);
       name?: string;
       lazy?: boolean;
       unobserved?: () => void;
+      loadingValue?: Awaited<T>;
     },
-  ): T;
+  ): Awaited<T>;
 
   function $<T>(value: T): T;
 
@@ -64,6 +65,13 @@ declare global {
     preload: () => void;
   };
 
+  function $lazyModule<T extends Record<string, any>>(
+    fn: Promise<T>,
+  ): (() => Promise<T>) & {
+    preload: () => Promise<T>;
+    peek: () => T | undefined;
+  };
+
   function $clientOnly<T extends Component<any>>(
     fn: Promise<{ default: T }>,
     options?: { lazy?: boolean },
@@ -75,7 +83,10 @@ declare global {
 
   function $children(value: solid.Element): solid.Element;
 
-  function $deferred<T>(value: T, options?: solid.MemoOptions<T>): T;
+  function $deferred<T>(
+    value: T,
+    options?: solid.MemoOptions<Awaited<T>> & { loadingValue?: Awaited<T> },
+  ): Awaited<T>;
 
   function $mapArray<T, U>(
     arr: readonly T[] | undefined | null | false,
