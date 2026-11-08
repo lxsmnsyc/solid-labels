@@ -1,0 +1,265 @@
+.repl-page {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 1rem var(--gutter) 0;
+}
+
+#repl-root {
+  min-height: 70vh;
+}
+
+.repl-boot {
+  margin: 0;
+  padding: 1.25rem;
+  background: var(--bg-raised);
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  line-height: 1.7;
+  overflow: auto;
+}
+
+.repl-note {
+  color: var(--ink-soft);
+}
+
+.repl {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 0.75rem;
+  height: calc(100vh - 8.5rem);
+  min-height: 34rem;
+}
+
+.repl-bar {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+
+.repl-status {
+  margin-right: auto;
+  font: 500 0.8rem var(--font-mono);
+  color: var(--ink-soft);
+}
+
+.repl-status[data-state='error'] {
+  color: var(--ctf);
+}
+
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font: 600 0.82rem var(--font-mono);
+  cursor: pointer;
+}
+
+.switch input {
+  appearance: none;
+  position: relative;
+  width: 2.4rem;
+  height: 1.35rem;
+  margin: 0;
+  border-radius: 999px;
+  background: var(--rule);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.switch input::after {
+  content: '';
+  position: absolute;
+  top: 0.15rem;
+  left: 0.15rem;
+  width: 1.05rem;
+  height: 1.05rem;
+  border-radius: 50%;
+  background: var(--bg-raised);
+  box-shadow: 0 0 0 1px var(--ink-soft);
+  transition: translate 0.2s ease;
+}
+
+.switch input:checked {
+  background: var(--ctf);
+}
+
+.switch input:checked::after {
+  translate: 1.05rem 0;
+}
+
+.switch input:focus-visible {
+  outline: 2px solid var(--ctf);
+  outline-offset: 3px;
+}
+
+.repl-editor {
+  position: relative;
+  display: grid;
+  min-height: 0;
+  background: var(--bg-raised);
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.repl-editor pre,
+.repl-editor textarea {
+  grid-area: 1 / 1;
+  margin: 0;
+  padding: 1rem 1.15rem;
+  font: 0.88rem / 1.7 var(--font-mono);
+  letter-spacing: 0;
+  tab-size: 2;
+  white-space: pre;
+  overflow: auto;
+}
+
+.repl-editor pre {
+  pointer-events: none;
+  color: var(--ink);
+}
+
+.repl-editor textarea {
+  resize: none;
+  border: 0;
+  background: transparent;
+  color: transparent;
+  caret-color: var(--ctf);
+  outline: none;
+}
+
+.repl-editor:focus-within {
+  box-shadow: 0 0 0 2px var(--ctf);
+}
+
+.repl-editor textarea::selection {
+  background: var(--ctf-wash);
+  color: transparent;
+}
+
+.repl-side {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 0.75rem;
+  min-height: 0;
+}
+
+.panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg-raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.panel-title {
+  flex: none;
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  padding: 0.35rem 0.9rem;
+  border-bottom: 1px solid var(--rule);
+  font: 600 0.72rem var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.panel-title::before {
+  content: '';
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--ctf);
+}
+
+.panel[data-kind='solid'] .panel-title::before,
+.panel[data-kind='preview'] .panel-title::before {
+  background: var(--gen);
+}
+
+.panel pre {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 0.8rem 1rem;
+  overflow: auto;
+  font-size: 0.82rem;
+  line-height: 1.65;
+}
+
+.panel iframe {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  border: 0;
+  background: #fff;
+}
+
+.problem {
+  margin: 0;
+  padding: 0.8rem 1rem;
+  color: var(--ctf);
+  font: 500 0.84rem / 1.6 var(--font-mono);
+  white-space: pre-wrap;
+  overflow: auto;
+}
+
+.problem button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.problem-line {
+  background: var(--ctf-wash);
+}
+
+.panel[data-stale] pre {
+  opacity: 0.45;
+}
+
+@media (max-width: 960px) {
+  .repl {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 22rem auto;
+    height: auto;
+  }
+
+  .repl-side {
+    grid-template-rows: 16rem 16rem 20rem;
+  }
+}
+
+/* A band behind the line of the compile error. */
+.err-bar {
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  right: 0;
+  top: calc(1rem + (var(--err-line) - 1) * 0.88rem * 1.7);
+  height: calc(0.88rem * 1.7);
+  background: var(--ctf-wash);
+  border-left: 3px solid var(--ctf);
+  pointer-events: none;
+  display: none;
+}
+
+.err-bar[data-visible] {
+  display: block;
+}
+
+.repl-bar .button {
+  padding: 0.3rem 0.9rem;
+  font-size: 0.85rem;
+}
