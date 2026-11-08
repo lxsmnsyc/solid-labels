@@ -38,6 +38,40 @@ solidLabels.vite({
 });
 ```
 
+### Bun
+
+`solidLabels.bun(options)` needs Bun 1.2.22 or later.
+
+Bun uses the first `onLoad` that returns contents for a file. A second Bun plugin that compiles Solid JSX never receives the solid-labels output, in either plugin order. Compile the JSX in the `bun.transform` option instead. It runs on the solid-labels output inside the same load.
+
+```ts
+import { transformAsync } from '@solidjs/compiler';
+import solidLabels from 'unplugin-solid-labels';
+
+await Bun.build({
+  entrypoints: ['./src/main.tsx'],
+  outdir: './dist',
+  plugins: [
+    solidLabels.bun({
+      filter: { include: '**/src/**/*.{ts,tsx}' },
+      bun: {
+        async transform(code, id) {
+          const result = await transformAsync(code, { filename: id, generate: 'dom' });
+          return { code: result.code, map: result.map };
+        },
+      },
+    }),
+  ],
+});
+```
+
+- `bun.transform` receives the code and the file path, and returns a string, `{ code, map }`, or nothing to keep its input.
+- Solid 2.0 has no maintained Bun plugin. `@solidjs/compiler` is the compiler that `@solidjs/vite-plugin` uses.
+- Bun plugins such as `bun-plugin-solid` and `@angius/bun-plugin-solid` use `babel-preset-solid` 1.x, which emits Solid 1 output.
+- When both solid-labels and `bun.transform` change a file, the output has no source map.
+
+See [`examples/bun`](https://github.com/lxsmnsyc/solid-labels/tree/main/examples/bun) for a full build and a check that runs the bundle.
+
 ## Sponsors
 
 ![Sponsors](https://github.com/lxsmnsyc/sponsors/blob/main/sponsors.svg?raw=true)

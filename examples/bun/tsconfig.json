@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "lib": ["ESNext", "DOM"],
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "noEmit": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "jsx": "preserve",
+    "jsxImportSource": "@solidjs/web",
+    "types": ["bun", "solid-labels"]
+  },
+  "include": ["./src", "./build.ts", "./check.ts"]
+}
