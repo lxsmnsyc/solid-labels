@@ -35,8 +35,8 @@ function isStatementCall(ref: Ref, call: Node): boolean {
 function replaceAlias(ctx: Ctx, ref: Ref, name: string, source: string): void {
   const local = ctx.importIdent(name, source);
   ctx.consumed.add(ref.node);
-  // contentOnly keeps text already attached to the start edge, such as the
-  // `() => ` that an enclosing arrow CTF inserts before this identifier.
+  // contentOnly keeps text attached to either edge: the `() => ` that an
+  // enclosing arrow CTF inserts at the start, or a dev name option at the end.
   if (ref.shorthand) {
     ctx.s.overwrite(ref.node.start, ref.node.end, `${ref.node.name}: ${local}`, {
       contentOnly: true,

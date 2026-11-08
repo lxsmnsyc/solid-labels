@@ -258,7 +258,8 @@ export function transformAccessorCtf(
     ctx.error(call, `${ref.node.name} requires a value`);
   }
   removeTypeAnnotation(ctx, id);
-  // contentOnly keeps an arrow that an enclosing arrow CTF put on this start edge.
+  // contentOnly keeps text attached to either edge: an arrow that an enclosing
+  // arrow CTF put at the start, or a dev name option appended at the end.
   ctx.s.overwrite(ref.node.start, ref.node.end, ctx.importIdent(importName, source), {
     contentOnly: true,
   });
@@ -282,7 +283,8 @@ export function transformArrowCtf(
   if (args.length === 0) {
     ctx.error(call, `${ref.node.name} requires a value`);
   }
-  // contentOnly keeps an arrow that an enclosing arrow CTF put on this start edge.
+  // contentOnly keeps text attached to either edge: an arrow that an enclosing
+  // arrow CTF put at the start, or a dev name option appended at the end.
   ctx.s.overwrite(ref.node.start, ref.node.end, ctx.importIdent(importName, source), {
     contentOnly: true,
   });
