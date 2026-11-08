@@ -225,15 +225,18 @@ function rewriteWrite(
     );
     return;
   }
-  if (parent?.type !== 'AssignmentExpression' || parent.left !== ref.node) {
+  // `x! = 1` and `(x as T) = 1` assign through the wrapper: replace it too.
+  if (parent?.type !== 'AssignmentExpression' || unwrap(parent.left) !== ref.node) {
     ctx.error(ref.node, `Unsupported write to reactive variable "${binding.name}"`);
   }
   const assign = parent;
+  const target = assign.left;
   const right = assign.right;
   if (assign.operator !== '=') {
     // Compound assignment: functional update over the previous value.
     const current = ctx.unique('current');
-    s.overwrite(ref.node.start, ref.node.end, `${set}(${current} => ${current}`);
+    const operator = code.indexOf(assign.operator, target.end);
+    s.overwrite(assign.start, operator, `${set}(${current} => ${current} `);
     closers.push({ order: assign.start, at: right.end, text: ')' });
     return;
   }
@@ -247,9 +250,9 @@ function rewriteWrite(
   );
   if (containsAwaitOrYield(right)) {
     const tmp = ctx.unique('tmp');
-    const grand = ref.parents[ref.parents.length - 2];
+    const grand = ref.parents[top - 1];
     if (grand?.type === 'ExpressionStatement') {
-      s.overwrite(ref.node.start, rightStart, `const ${tmp} = `);
+      s.overwrite(assign.start, rightStart, `const ${tmp} = `);
       closers.push({ order: assign.start, at: rightEnd, text: `;\n${set}(() => ${tmp})` });
       return;
     }
@@ -270,7 +273,7 @@ function rewriteWrite(
     );
   }
   const object = code[rightStart] === '{';
-  s.overwrite(ref.node.start, rightStart, `${set}(() => ${object ? '(' : ''}`);
+  s.overwrite(assign.start, rightStart, `${set}(() => ${object ? '(' : ''}`);
   closers.push({ order: assign.start, at: rightEnd, text: object ? '))' : ')' });
 }
 

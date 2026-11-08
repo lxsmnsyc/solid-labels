@@ -234,4 +234,36 @@ const result = [list, count];
       expect(code).not.toContain('x()');
     }
   });
+  it('writes through wrapped assignment targets', () => {
+    const targets = ['x!', '(x as any)', '(x satisfies number)', '((x as any))', '(x!)'];
+    for (const target of targets) {
+      const plain = transform(`let x = $signal(0);\n${target} = 1;`);
+      expect(plain).toContain('setx_1(() => 1);');
+      expect(plain).not.toMatch(/as any|satisfies|!|<any>/);
+      const compound = transform(`let x = $signal(0);\n${target} += 1;`);
+      expect(compound).toContain('setx_1(current_1 => current_1 += 1);');
+      expect(compound).not.toMatch(/as any|satisfies|!|<any>/);
+    }
+  });
+  it('writes through type assertion targets in .ts files', () => {
+    const plain = transform('let x = $signal(0);\n(<any>x) = 1;', undefined, 'test.ts');
+    expect(plain).toContain('setx_1(() => 1);');
+    expect(plain).not.toContain('<any>');
+    const compound = transform('let x = $signal(0);\n(<any>x) += 1;', undefined, 'test.ts');
+    expect(compound).toContain('setx_1(current_1 => current_1 += 1);');
+  });
+  it('writes through wrapped targets with await and object values', () => {
+    expect(transform('let x = $signal(0);\n(x as any) = await f();')).toContain(
+      'const tmp_1 = await f();\nsetx_1(() => tmp_1)',
+    );
+    expect(transform('let x = $signal(0);\nx! = { a: 1 };')).toContain('setx_1(() => ({ a: 1 }))');
+    expect(transform('let x = $signal(0);\nconst y = (x as any) = 2;')).toContain(
+      'const y = setx_1(() => 2);',
+    );
+  });
+  it('still rejects wrapped destructuring targets', () => {
+    expect(() => transform('let x = $signal(0);\n[x as any] = [1];')).toThrow(
+      'Unsupported write to reactive variable "x"',
+    );
+  });
 });
