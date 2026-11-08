@@ -260,7 +260,9 @@ function rewriteWrite(
     // Compound assignment: functional update over the previous value.
     const current = ctx.unique('current');
     const operator = skipToOperator(code, target.end);
-    s.overwrite(assign.start, operator, `${set}(${current} => ${current} `);
+    s.overwrite(assign.start, operator, `${set}(${current} => ${current} `, {
+      contentOnly: true,
+    });
     closers.push({ order: assign.start, at: right.end, text: ')' });
     return;
   }
@@ -276,7 +278,7 @@ function rewriteWrite(
     const tmp = ctx.unique('tmp');
     const grand = ref.parents[top - 1];
     if (grand?.type === 'ExpressionStatement') {
-      s.overwrite(assign.start, rightStart, `const ${tmp} = `);
+      s.overwrite(assign.start, rightStart, `const ${tmp} = `, { contentOnly: true });
       closers.push({ order: assign.start, at: rightEnd, text: `;\n${set}(() => ${tmp})` });
       return;
     }
@@ -297,7 +299,9 @@ function rewriteWrite(
     );
   }
   const object = code[rightStart] === '{';
-  s.overwrite(assign.start, rightStart, `${set}(() => ${object ? '(' : ''}`);
+  s.overwrite(assign.start, rightStart, `${set}(() => ${object ? '(' : ''}`, {
+    contentOnly: true,
+  });
   closers.push({ order: assign.start, at: rightEnd, text: object ? '))' : ')' });
 }
 
