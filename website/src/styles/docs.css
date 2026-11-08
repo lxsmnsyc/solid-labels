@@ -1,0 +1,260 @@
+.doc {
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 1fr);
+  gap: clamp(1.5rem, 4vw, 4rem);
+  max-width: var(--page);
+  margin: 0 auto;
+  padding: 3rem var(--gutter) 0;
+}
+
+.toc {
+  position: sticky;
+  top: 5.5rem;
+  align-self: start;
+  max-height: calc(100vh - 7rem);
+  overflow-y: auto;
+  padding-right: 0.5rem;
+  font-size: 0.9rem;
+  scrollbar-width: thin;
+}
+
+.toc ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-left: 1px solid var(--rule);
+}
+
+.toc li a {
+  display: block;
+  padding: 0.22rem 0 0.22rem 0.9rem;
+  margin-left: -1px;
+  border-left: 2px solid transparent;
+  color: var(--ink-soft);
+  text-decoration: none;
+}
+
+.toc li.sub a {
+  padding-left: 1.8rem;
+  font-size: 0.86rem;
+}
+
+.toc li a:hover {
+  color: var(--ink);
+}
+
+.toc li a[aria-current='true'] {
+  color: var(--ink);
+  font-weight: 600;
+  border-left-color: var(--ctf);
+}
+
+.toc-inline {
+  display: none;
+  margin-bottom: 2rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--bg-raised);
+}
+
+.toc-inline summary {
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.toc-inline nav {
+  padding: 0 1rem 1rem;
+  font-size: 0.92rem;
+}
+
+.toc-inline ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.toc-inline li.sub {
+  padding-left: 1rem;
+}
+
+.toc-inline a {
+  display: block;
+  padding: 0.2rem 0;
+}
+
+@media (max-width: 960px) {
+  .doc {
+    grid-template-columns: minmax(0, 1fr);
+    padding-top: 2rem;
+  }
+
+  .toc {
+    display: none;
+  }
+
+  .toc-inline {
+    display: block;
+  }
+}
+
+.prose {
+  min-width: 0;
+}
+
+.prose > h1,
+.showcase h1 {
+  margin: 0 0 1.25rem;
+  font-size: clamp(2.4rem, 6vw, 4rem);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  animation: rise 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.prose h1 + p {
+  max-width: var(--measure);
+  font-size: 1.2rem;
+  color: var(--ink-soft);
+}
+
+.prose h2 {
+  margin: 4rem 0 1rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid var(--ink);
+  font-size: clamp(1.7rem, 3.5vw, 2.4rem);
+}
+
+.prose h3 {
+  margin: 2.75rem 0 0.75rem;
+  font-size: 1.45rem;
+}
+
+.prose h3 code {
+  font-size: 0.9em;
+}
+
+.prose p,
+.prose ul,
+.prose ol,
+.prose blockquote {
+  max-width: var(--measure);
+}
+
+.prose li + li {
+  margin-top: 0.3rem;
+}
+
+.prose :not(pre) > code {
+  padding: 0.12em 0.4em;
+  border-radius: 5px;
+  background: var(--bg-sunk);
+  font-size: 0.86em;
+  overflow-wrap: anywhere;
+}
+
+.prose :not(pre) > code .t-ctf {
+  font-weight: 600;
+}
+
+.prose h2,
+.prose h3 {
+  position: relative;
+}
+
+.anchor {
+  position: absolute;
+  left: -1.3em;
+  padding-right: 0.3em;
+  font-family: var(--font-mono);
+  font-size: 0.7em;
+  color: var(--ctf);
+  text-decoration: none;
+  opacity: 0;
+}
+
+h2:hover .anchor,
+h3:hover .anchor,
+.anchor:focus-visible {
+  opacity: 1;
+}
+
+.prose blockquote {
+  margin: 1.5rem 0;
+  padding: 0.1rem 1.25rem;
+  border-left: 3px solid var(--gen);
+  background: var(--gen-wash);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.prose table {
+  display: block;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.prose th,
+.prose td {
+  padding: 0.6rem 0.9rem;
+  border-bottom: 1px solid var(--rule);
+  text-align: left;
+  vertical-align: top;
+}
+
+.prose th {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  border-bottom: 2px solid var(--ink);
+  white-space: nowrap;
+}
+
+.prose > .code,
+.prose div > .code {
+  margin: 1.25rem 0;
+  max-width: 52rem;
+}
+
+.prose div > .pair,
+.prose > div > .pair {
+  max-width: none;
+}
+
+.showcase .prose h2 {
+  margin-top: 5rem;
+}
+
+.showcase .prose h2:first-child {
+  margin-top: 0;
+}
+
+.next {
+  margin-top: 5rem;
+}
+
+.next a {
+  display: inline-block;
+  padding: 1rem 1.5rem;
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius);
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.next a:hover {
+  background: var(--ctf-wash);
+  color: var(--ink);
+}
+
+.next span {
+  display: block;
+  font: 600 0.75rem var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ctf);
+}
