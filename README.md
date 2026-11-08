@@ -34,14 +34,17 @@ pnpm add solid-labels
 - 🤝 JS and TS Friendly!
 
 > Labels (`signal: x = 0`) and comment pragmas (`/* @signal */`) were removed
-> in 1.0 — see the [migration guide](https://github.com/LXSMNSYC/solid-labels/tree/main/docs/migration.md).
+> in 1.0 — see the [migration guide](/docs/migration).
 
 ## Usage
 
-- [Compile-Time Functions](https://github.com/LXSMNSYC/solid-labels/tree/main/docs/ctf.md)
+<!-- TODO: the links below are paths on the documentation website. Make them full URLs when the domain is known. -->
+
+- [Compile-Time Functions](/docs/ctf)
   [![Open in CodeSandbox](https://img.shields.io/badge/Open%20in-CodeSandbox-blue?style=flat-square&logo=codesandbox)](https://codesandbox.io/s/github/LXSMNSYC/solid-labels/tree/main/examples/ctf)
-- [Solid Namespace](https://github.com/LXSMNSYC/solid-labels/tree/main/docs/namespace.md)
-- [Migration from 0.x](https://github.com/LXSMNSYC/solid-labels/tree/main/docs/migration.md)
+- [Solid Namespace](/docs/namespace)
+- [Migration from 0.x](/docs/migration)
+- [REPL](/repl)
 
 ### Typescript
 

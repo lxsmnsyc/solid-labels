@@ -1,0 +1,163 @@
+/* The search dialog. Paper panel, ink border, and a vermilion offset like the hero stage. */
+.search {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  padding: 12vh 1rem 1rem;
+}
+
+.search-overlay {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--bg-sunk) 70%, transparent);
+  backdrop-filter: blur(4px);
+  animation: fade 0.15s ease-out;
+}
+
+.search-panel {
+  position: relative;
+  width: min(40rem, 100%);
+  overflow: hidden;
+  background: var(--bg-raised);
+  border: 1.5px solid var(--ink);
+  border-radius: 14px;
+  box-shadow: 8px 8px 0 -1px var(--ctf);
+  animation: rise 0.2s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+.search-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 1rem;
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink-soft);
+}
+
+.search-icon {
+  flex: none;
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 0;
+  height: 3.5rem;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 1.05rem;
+}
+
+.search-input:focus {
+  outline: none;
+}
+
+.search-input::placeholder {
+  color: var(--ink-soft);
+}
+
+.search-results {
+  max-height: min(28rem, 60vh);
+  margin: 0;
+  padding: 0.5rem;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.search-result {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  min-height: 2.75rem;
+  padding: 0.6rem 0.75rem;
+  border-left: 3px solid transparent;
+  border-radius: 8px;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.search-result .search-icon {
+  margin-top: 0.15rem;
+}
+
+.search-result[tc-active] {
+  background: var(--ctf-wash);
+  border-left-color: var(--ctf);
+  color: var(--ink);
+}
+
+.search-result[tc-active] .search-icon,
+.search-result[tc-active] .search-result-title {
+  color: var(--ctf);
+}
+
+.search-result-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.search-result-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.15rem 0.6rem;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.search-result-page {
+  color: var(--ink-soft);
+  font: 500 0.78rem var(--font-body);
+}
+
+.search-result-text {
+  overflow: hidden;
+  font-size: 0.84rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-empty {
+  padding: 2rem 1rem;
+  color: var(--ink-soft);
+  text-align: center;
+}
+
+/* On a phone the dialog is a full-width sheet. */
+@media (max-width: 700px) {
+  .search {
+    padding: 0;
+  }
+
+  .search-panel {
+    width: 100%;
+    max-height: 100dvh;
+    border-width: 0 0 1.5px;
+    border-radius: 0 0 14px 14px;
+    box-shadow: none;
+  }
+
+  .search-results {
+    max-height: calc(100dvh - 5rem);
+  }
+
+  .search-input {
+    font-size: 1rem;
+  }
+}

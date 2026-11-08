@@ -1,5 +1,5 @@
 import MagicString from 'magic-string';
-import { parseSync, rawTransferSupported } from 'oxc-parser';
+import * as oxc from 'oxc-parser';
 import type { ParserOptions } from 'oxc-parser';
 import { Ctx } from './context';
 import { CompileError } from './errors';
@@ -14,8 +14,11 @@ import type { CompileOutput, Options } from './types';
 // transfer: a rename makes parsing fall back to the slow path without an error.
 // The value must be `rawTransferSupported()`: `true` throws on platforms
 // without support.
+// The browser build of oxc-parser (wasm) has no `rawTransferSupported` export,
+// so the function is read from the namespace and a missing one means "off".
+const { parseSync } = oxc;
 const PARSE_OPTIONS: ParserOptions & { experimentalRawTransfer?: boolean } = {
-  experimentalRawTransfer: rawTransferSupported(),
+  experimentalRawTransfer: 'rawTransferSupported' in oxc && oxc.rawTransferSupported(),
 };
 
 export type { CompileOutput, Options };
