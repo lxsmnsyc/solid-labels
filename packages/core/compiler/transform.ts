@@ -35,10 +35,14 @@ function isStatementCall(ref: Ref, call: Node): boolean {
 function replaceAlias(ctx: Ctx, ref: Ref, name: string, source: string): void {
   const local = ctx.importIdent(name, source);
   ctx.consumed.add(ref.node);
+  // contentOnly keeps text already attached to the start edge, such as the
+  // `() => ` that an enclosing arrow CTF inserts before this identifier.
   if (ref.shorthand) {
-    ctx.s.overwrite(ref.node.start, ref.node.end, `${ref.node.name}: ${local}`);
+    ctx.s.overwrite(ref.node.start, ref.node.end, `${ref.node.name}: ${local}`, {
+      contentOnly: true,
+    });
   } else {
-    ctx.s.overwrite(ref.node.start, ref.node.end, local);
+    ctx.s.overwrite(ref.node.start, ref.node.end, local, { contentOnly: true });
   }
 }
 
