@@ -256,16 +256,7 @@ function rewriteWrite(
   const assign = parent;
   const target = assign.left;
   const right = assign.right;
-  if (assign.operator !== '=') {
-    // Compound assignment: functional update over the previous value.
-    const current = ctx.unique('current');
-    const operator = skipToOperator(code, target.end);
-    s.overwrite(assign.start, operator, `${set}(${current} => ${current} `, {
-      contentOnly: true,
-    });
-    closers.push({ order: assign.start, at: right.end, text: ')' });
-    return;
-  }
+  const compound = assign.operator !== '=';
   // oxc drops parentheses, so find the real span of the right-hand side.
   const [rightStart, rightEnd] = expandParens(
     code,
@@ -275,11 +266,18 @@ function rewriteWrite(
     assign.end,
   );
   if (containsAwaitOrYield(right)) {
+    // The right side is evaluated first into a temporary: the setter callback
+    // is not async and cannot hold the `await` or `yield`.
     const tmp = ctx.unique('tmp');
+    let write = `${set}(() => ${tmp})`;
+    if (compound) {
+      const current = ctx.unique('current');
+      write = `${set}(${current} => ${current} ${assign.operator} ${tmp})`;
+    }
     const grand = ref.parents[top - 1];
     if (grand?.type === 'ExpressionStatement') {
       s.overwrite(assign.start, rightStart, `const ${tmp} = `, { contentOnly: true });
-      closers.push({ order: assign.start, at: rightEnd, text: `;\n${set}(() => ${tmp})` });
+      closers.push({ order: assign.start, at: rightEnd, text: `;\n${write}` });
       return;
     }
     // Concise arrow body: `async () => (count = await value())`
@@ -290,13 +288,28 @@ function rewriteWrite(
       const arrow = ref.parents[arrowIndex];
       const [bodyStart, bodyEnd] = expandParens(code, assign.start, assign.end, arrow.start);
       s.overwrite(bodyStart, rightStart, `{ const ${tmp} = `);
-      s.overwrite(rightEnd, bodyEnd, `; return ${set}(() => ${tmp}); }`);
+      if (rightEnd < bodyEnd) {
+        s.overwrite(rightEnd, bodyEnd, `; return ${write}; }`);
+      } else {
+        // An unparenthesized body ends with the right side: nothing to overwrite.
+        closers.push({ order: assign.start, at: rightEnd, text: `; return ${write}; }` });
+      }
       return;
     }
     ctx.error(
       ref.node,
       `Assignments with await/yield to "${binding.name}" are only supported as statements or arrow bodies`,
     );
+  }
+  if (compound) {
+    // Compound assignment: functional update over the previous value.
+    const current = ctx.unique('current');
+    const operator = skipToOperator(code, target.end);
+    s.overwrite(assign.start, operator, `${set}(${current} => ${current} `, {
+      contentOnly: true,
+    });
+    closers.push({ order: assign.start, at: right.end, text: ')' });
+    return;
   }
   const object = code[rightStart] === '{';
   s.overwrite(assign.start, rightStart, `${set}(() => ${object ? '(' : ''}`, {

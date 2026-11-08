@@ -144,9 +144,7 @@ describe('arrow inserted before a signal access at the start of an argument', ()
     expectCompiled(
       `${HEAD}const m = $memo(c);`,
       `${OUT}const m = _createMemo(() => c());`,
-      // Dev mode puts the name before the `()` of a bare read on `1.0`. That is
-      // tracked apart from this fix, so the dev output is only parsed.
-      null,
+      `${DEV_OUT}const m = _createMemo(() => c(), { name: "m" });`,
     );
     expectCompiled(
       `${HEAD}const m = $memo({ c });`,
@@ -155,8 +153,6 @@ describe('arrow inserted before a signal access at the start of an argument', ()
     );
   });
 
-  // Dev mode attaches the memo name to the setter in these cases. That is
-  // tracked apart from this fix, so the dev output is only parsed.
   it('wraps a write', () => {
     expectCompiled(
       `${HEAD}const m = $untrack(c = 2);`,
@@ -166,7 +162,7 @@ describe('arrow inserted before a signal access at the start of an argument', ()
     expectCompiled(
       `${HEAD}const m = $memo(c += 2);`,
       `${OUT}const m = _createMemo(() => setc_1((current_1) => current_1 += 2));`,
-      null,
+      `${DEV_OUT}const m = _createMemo(() => setc_1((current_1) => current_1 += 2), { name: "m" });`,
     );
     expectCompiled(
       `${HEAD}const m = $untrack(c++);`,
@@ -179,12 +175,12 @@ describe('arrow inserted before a signal access at the start of an argument', ()
     expectCompiled(
       `${HEAD}const m = $memo((c as any) = 3);`,
       `${OUT}const m = _createMemo(() => setc_1(() => 3));`,
-      null,
+      `${DEV_OUT}const m = _createMemo(() => setc_1(() => 3), { name: "m" });`,
     );
     expectCompiled(
       `${HEAD}const m = $memo(c! += 2);`,
       `${OUT}const m = _createMemo(() => setc_1((current_1) => current_1 += 2));`,
-      null,
+      `${DEV_OUT}const m = _createMemo(() => setc_1((current_1) => current_1 += 2), { name: "m" });`,
     );
     expectCompiled(
       `${HEAD}const m = $untrack((c as number)++);`,
