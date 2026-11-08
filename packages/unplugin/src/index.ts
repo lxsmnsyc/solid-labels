@@ -1,15 +1,12 @@
-import type { FilterPattern } from '@rollup/pluginutils';
-import { createFilter } from '@rollup/pluginutils';
 import type { Options } from 'solid-labels/compiler';
 import { compile } from 'solid-labels/compiler';
 import type { TransformResult } from 'unplugin';
 import { createUnplugin } from 'unplugin';
 import type { Plugin } from 'vite';
+import type { SolidLabelsPluginFilter } from './filter';
+import { createIdFilter } from './filter';
 
-export interface SolidLabelsPluginFilter {
-  include?: FilterPattern;
-  exclude?: FilterPattern;
-}
+export type { SolidLabelsPluginFilter };
 
 export interface SolidLabelsPluginOptions extends Options {
   filter?: SolidLabelsPluginFilter;
@@ -38,15 +35,9 @@ function repushPlugin(plugins: Plugin[], pluginName: string, pluginNames: string
   }
 }
 
-const DEFAULT_INCLUDE = 'src/**/*.{jsx,tsx,ts,js,mjs,cjs}';
-const DEFAULT_EXCLUDE = 'node_modules/**/*.{jsx,tsx,ts,js,mjs,cjs}';
-
 const solidLabelsPlugin = createUnplugin((rawOptions?: SolidLabelsPluginOptions) => {
   const options = rawOptions ?? {};
-  const filter = createFilter(
-    options.filter?.include ?? DEFAULT_INCLUDE,
-    options.filter?.exclude ?? DEFAULT_EXCLUDE,
-  );
+  const filter = createIdFilter(options.filter);
 
   let env: string;
 
