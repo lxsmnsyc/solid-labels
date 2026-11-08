@@ -1,5 +1,6 @@
 import { Script, runInNewContext } from 'node:vm';
 import * as solid from 'solid-js';
+import { parseSync } from 'oxc-parser';
 import { describe, expect, it } from 'vitest';
 import transform from './util';
 
@@ -233,5 +234,64 @@ const result = [list, count];
       expect(code).toContain('setx_1(current_1 => ++current_1)');
       expect(code).not.toContain('x()');
     }
+  });
+  it('writes through wrapped assignment targets', () => {
+    const targets = ['x!', '(x as any)', '(x satisfies number)', '((x as any))', '(x!)'];
+    for (const target of targets) {
+      for (const dev of [false, true]) {
+        const plain = transform(`let x = $signal(0);\n${target} = 1;`, { dev });
+        expect(parseSync('out.ts', plain).errors).toEqual([]);
+        expect(plain).toContain('setx_1(() => 1);');
+        expect(plain).not.toMatch(/as any|satisfies|!|<any>/);
+        const compound = transform(`let x = $signal(0);\n${target} += 1;`, { dev });
+        expect(parseSync('out.ts', compound).errors).toEqual([]);
+        expect(compound).toContain('setx_1(current_1 => current_1 += 1);');
+        expect(compound).not.toMatch(/as any|satisfies|!|<any>/);
+      }
+    }
+  });
+  it('writes through type assertion targets in .ts files', () => {
+    for (const dev of [false, true]) {
+      const plain = transform('let x = $signal(0);\n(<any>x) = 1;', { dev }, 'test.ts');
+      expect(parseSync('out.ts', plain).errors).toEqual([]);
+      expect(plain).toContain('setx_1(() => 1);');
+      expect(plain).not.toContain('<any>');
+      const compound = transform('let x = $signal(0);\n(<any>x) += 1;', { dev }, 'test.ts');
+      expect(parseSync('out.ts', compound).errors).toEqual([]);
+      expect(compound).toContain('setx_1(current_1 => current_1 += 1);');
+    }
+  });
+  it('keeps comments that contain the operator out of the way', () => {
+    const cases = [
+      'x /* += */ += 1;',
+      'x // +=\n+= 1;',
+      '(x as any) /* += */ += 1;',
+      '(x as any /* += */) += 1;',
+      'x! /* += */ += 1;',
+      '(x as any) /* = */ = 1;',
+    ];
+    for (const source of cases) {
+      for (const dev of [false, true]) {
+        const code = transform(`let x = $signal(0);\n${source}`, { dev });
+        expect(parseSync('out.ts', code).errors).toEqual([]);
+        expect(code).toMatch(/setx_1\((current_1 => current_1 \+= 1|\(\) => 1)\)/);
+      }
+    }
+  });
+  it('writes through wrapped targets with await and object values', () => {
+    const awaited = transform('let x = $signal(0);\n(x as any) = await f();');
+    expect(awaited).toContain('const tmp_1 = await f();\nsetx_1(() => tmp_1)');
+    const object = transform('let x = $signal(0);\nx! = { a: 1 };');
+    expect(object).toContain('setx_1(() => ({ a: 1 }))');
+    const used = transform('let x = $signal(0);\nconst y = (x as any) = 2;');
+    expect(used).toContain('const y = setx_1(() => 2);');
+    for (const code of [awaited, object, used]) {
+      expect(parseSync('out.ts', code).errors).toEqual([]);
+    }
+  });
+  it('still rejects wrapped destructuring targets', () => {
+    expect(() => transform('let x = $signal(0);\n[x as any] = [1];')).toThrow(
+      'Unsupported write to reactive variable "x"',
+    );
   });
 });
