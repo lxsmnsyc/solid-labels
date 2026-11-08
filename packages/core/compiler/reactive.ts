@@ -266,40 +266,69 @@ function rewriteWrite(
     assign.end,
   );
   if (containsAwaitOrYield(right)) {
-    // The right side is evaluated first into a temporary: the setter callback
-    // is not async and cannot hold the `await` or `yield`.
-    const tmp = ctx.unique('tmp');
-    let write = `${set}(() => ${tmp})`;
-    if (compound) {
-      const current = ctx.unique('current');
-      write = `${set}(${current} => ${current} ${assign.operator} ${tmp})`;
-    }
+    // The setter callback is not async and cannot hold the `await` or `yield`,
+    // so the right side is evaluated into a temporary first. JS evaluates the
+    // left operand before the right side, so an arithmetic update reads the
+    // signal before it. A logical update runs the right side only when the
+    // signal does not decide the result.
     const grand = ref.parents[top - 1];
-    if (grand?.type === 'ExpressionStatement') {
-      s.overwrite(assign.start, rightStart, `const ${tmp} = `, { contentOnly: true });
-      closers.push({ order: assign.start, at: rightEnd, text: `;\n${write}` });
-      return;
-    }
-    // Concise arrow body: `async () => (count = await value())`
     const arrowIndex = ref.parents.findIndex(
       (p) => p.type === 'ArrowFunctionExpression' && unwrap(p.body) === assign,
     );
-    if (arrowIndex !== -1) {
-      const arrow = ref.parents[arrowIndex];
-      const [bodyStart, bodyEnd] = expandParens(code, assign.start, assign.end, arrow.start);
-      s.overwrite(bodyStart, rightStart, `{ const ${tmp} = `);
-      if (rightEnd < bodyEnd) {
-        s.overwrite(rightEnd, bodyEnd, `; return ${write}; }`);
-      } else {
-        // An unparenthesized body ends with the right side: nothing to overwrite.
-        closers.push({ order: assign.start, at: rightEnd, text: `; return ${write}; }` });
+    const inStatement = grand?.type === 'ExpressionStatement';
+    if (!inStatement && arrowIndex === -1) {
+      ctx.error(
+        ref.node,
+        `Assignments with await/yield to "${binding.name}" are only supported as statements or arrow bodies`,
+      );
+    }
+    const read = `${info.get}()`;
+    const operator = assign.operator;
+    // A statement ends with the write. A concise arrow body becomes a block
+    // that returns the value the expression had.
+    let head: string;
+    let tail: string;
+    if (operator === '||=' || operator === '&&=' || operator === '??=') {
+      const old = ctx.unique('tmp');
+      const tmp = ctx.unique('tmp');
+      let test = `!${old}`;
+      if (operator === '&&=') {
+        test = old;
+      } else if (operator === '??=') {
+        test = `${old} == null`;
       }
+      head = `const ${old} = ${read}; if (${test}) { const ${tmp} = `;
+      tail = inStatement
+        ? `;\n${set}(() => ${tmp}); }`
+        : `; return ${set}(() => ${tmp}); } return ${old};`;
+    } else if (compound) {
+      const old = ctx.unique('tmp');
+      const tmp = ctx.unique('tmp');
+      head = `const ${old} = ${read}; const ${tmp} = `;
+      const write = `${set}(() => ${old} ${operator.slice(0, -1)} ${tmp})`;
+      tail = inStatement ? `;\n${write}` : `; return ${write};`;
+    } else {
+      const tmp = ctx.unique('tmp');
+      head = `const ${tmp} = `;
+      const write = `${set}(() => ${tmp})`;
+      tail = inStatement ? `;\n${write}` : `; return ${write};`;
+    }
+    if (inStatement) {
+      s.overwrite(assign.start, rightStart, head, { contentOnly: true });
+      closers.push({ order: assign.start, at: rightEnd, text: tail });
       return;
     }
-    ctx.error(
-      ref.node,
-      `Assignments with await/yield to "${binding.name}" are only supported as statements or arrow bodies`,
-    );
+    // Concise arrow body: `async () => (count = await value())`
+    const arrow = ref.parents[arrowIndex];
+    const [bodyStart, bodyEnd] = expandParens(code, assign.start, assign.end, arrow.start);
+    s.overwrite(bodyStart, rightStart, `{ ${head}`);
+    if (rightEnd < bodyEnd) {
+      s.overwrite(rightEnd, bodyEnd, `${tail} }`);
+    } else {
+      // An unparenthesized body ends with the right side: nothing to overwrite.
+      closers.push({ order: assign.start, at: rightEnd, text: `${tail} }` });
+    }
+    return;
   }
   if (compound) {
     // Compound assignment: functional update over the previous value.
