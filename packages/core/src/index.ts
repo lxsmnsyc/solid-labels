@@ -174,7 +174,23 @@ declare global {
   const NoHydration: typeof solidWeb.NoHydration;
 }
 
-type Props<T> = T extends (props: infer P) => any ? P : never;
+/**
+ * Props of every overload of a component, as a union.
+ * Matching `T` against a function type with five call signatures also matches
+ * a component with fewer, and the missing ones repeat the last overload. Five
+ * is the most any Solid component has (`Match`).
+ * Generic parameters of an overload become their constraints, because an
+ * intrinsic element cannot be generic.
+ */
+export type Props<T> = T extends {
+  (props: infer A): any;
+  (props: infer B): any;
+  (props: infer C): any;
+  (props: infer D): any;
+  (props: infer E): any;
+}
+  ? A | B | C | D | E
+  : never;
 
 declare module '@solidjs/web' {
   // JSX namespace augmentation

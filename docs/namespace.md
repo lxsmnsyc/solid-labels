@@ -1,5 +1,7 @@
 # Namespace
 
+`solid:` elements cannot infer generic types (the `item` of `<solid:for>`, the `when` value of `<solid:show>` and `<solid:match>`). Use the bare `<For>`, `<Show>` or `<Match>` when you need typed callbacks.
+
 ## `<solid:for>`
 
 Alias for [`<For>`](https://www.solidjs.com/docs/latest#%3Cfor%3E)
