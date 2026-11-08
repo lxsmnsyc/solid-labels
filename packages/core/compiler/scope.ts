@@ -20,6 +20,8 @@ export interface Binding {
   node: Node;
   scope: Scope;
   refs: Ref[];
+  /** Set for `export` declarations directly inside a namespace body. */
+  exported?: boolean;
 }
 
 export type ScopeKind = 'module' | 'function' | 'block';
@@ -29,6 +31,11 @@ export interface Scope {
   node: Node;
   parent: Scope | null;
   bindings: Map<string, Binding>;
+  /**
+   * Scopes of other declarations of the same enum or namespace in the same
+   * scope. Their enum members and exported namespace members are visible here.
+   */
+  merged?: Scope[];
 }
 
 export interface JSXName {
@@ -74,6 +81,8 @@ const FUNCTION_SCOPES = new Set([
   'TSModuleBlock',
 ]);
 
+const IDENTIFIER_NAME = /^[\p{ID_Start}$_][\p{ID_Continue}$\u200c\u200d]*$/u;
+
 const SKIP_TS_STATEMENTS = new Set([
   'TSInterfaceDeclaration',
   'TSTypeAliasDeclaration',
@@ -110,16 +119,52 @@ export function analyze(program: Node): Analysis {
     bindingByNode: new Map(),
   };
 
+  /** Namespace scope whose `export` declaration is being declared, if any. */
+  let exportScope: Scope | null = null;
+
   /** Declares a binding in `scope`; first declaration of a name wins. */
-  function declare(id: Node, kind: string, scope: Scope): void {
-    analysis.names.add(id.name);
-    if (scope.bindings.has(id.name)) {
+  function declare(id: Node, kind: string, scope: Scope, name: string = id.name): void {
+    analysis.names.add(name);
+    if (scope.bindings.has(name)) {
       return;
     }
-    const binding: Binding = { name: id.name, kind, node: id, scope, refs: [] };
-    scope.bindings.set(id.name, binding);
+    const binding: Binding = { name, kind, node: id, scope, refs: [] };
+    if (scope === exportScope) {
+      binding.exported = true;
+    }
+    scope.bindings.set(name, binding);
     analysis.bindings.push(binding);
     analysis.bindingByNode.set(id, binding);
+  }
+
+  /** Earlier and sibling scopes of one enum or namespace, by containing scope and name. */
+  const mergeGroups = new Map<Scope, Map<string, Scope[]>>();
+
+  /** Group of scopes that declare the same enum or namespace within `scope`. */
+  function mergeGroup(scope: Scope, key: string): Scope[] {
+    let groups = mergeGroups.get(scope);
+    if (!groups) {
+      groups = new Map();
+      mergeGroups.set(scope, groups);
+    }
+    let group = groups.get(key);
+    if (!group) {
+      group = [];
+      groups.set(key, group);
+    }
+    return group;
+  }
+
+  /** Dotted name of a namespace id (`A.B`), or null for `declare module "x"`. */
+  function namespaceKey(id: Node): string | null {
+    if (id.type === 'Identifier') {
+      return id.name;
+    }
+    if (id.type === 'TSQualifiedName') {
+      const left = namespaceKey(id.left);
+      return left == null ? null : `${left}.${id.right.name}`;
+    }
+    return null;
   }
 
   /** Function bodies that get their own var scope (the function has parameter expressions). */
@@ -328,9 +373,20 @@ export function analyze(program: Node): Analysis {
       case 'TSEnumDeclaration': {
         // The name lives in the outer scope; the members live in the enum's own scope.
         declare(node.id, 'enum', scope);
+        // Members of earlier `enum E {}` blocks in the same scope are visible here.
+        const enumGroup = mergeGroup(scope, `enum ${node.id.name}`);
+        currentScope.merged = [...enumGroup];
+        enumGroup.push(currentScope);
         for (const member of node.body.members) {
           if (member.id.type === 'Identifier') {
             declare(member.id, 'enum-member', currentScope);
+          } else if (
+            member.id.type === 'Literal' &&
+            typeof member.id.value === 'string' &&
+            IDENTIFIER_NAME.test(member.id.value)
+          ) {
+            // `"a" = 1` can be referenced as `a`.
+            declare(member.id, 'enum-member', currentScope, member.id.value);
           } else if (member.computed) {
             declareWalk(member.id, currentScope);
           }
@@ -353,7 +409,28 @@ export function analyze(program: Node): Analysis {
         }
         if (node.body) {
           declareWalk(node.body, currentScope);
+          // Exported members of every block of the same namespace see each other.
+          const key = node.kind === 'global' ? null : namespaceKey(node.id);
+          const body = scopeMap.get(node.body);
+          if (key != null && body) {
+            const group = mergeGroup(scope, `namespace ${key}`);
+            for (const other of group) {
+              (other.merged ??= []).push(body);
+              (body.merged ??= []).push(other);
+            }
+            group.push(body);
+          }
         }
+        break;
+      }
+      case 'ExportNamedDeclaration': {
+        // Only declarations directly in a namespace body become namespace members.
+        const previous = exportScope;
+        exportScope = scope.node.type === 'TSModuleBlock' ? scope : null;
+        eachChild(node, (child) => {
+          declareWalk(child, currentScope);
+        });
+        exportScope = previous;
         break;
       }
       case 'TSImportEqualsDeclaration': {
@@ -383,6 +460,13 @@ export function analyze(program: Node): Analysis {
       const binding = scopeStack[i].bindings.get(name);
       if (binding) {
         return binding;
+      }
+      // Enum members and exported namespace members of merged declarations.
+      for (const other of scopeStack[i].merged ?? []) {
+        const shared = other.bindings.get(name);
+        if (shared && (shared.exported || shared.kind === 'enum-member')) {
+          return shared;
+        }
       }
     }
     return null;
