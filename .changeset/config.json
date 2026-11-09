@@ -5,7 +5,7 @@
   "fixed": [],
   "linked": [],
   "access": "public",
-  "baseBranch": "main",
+  "baseBranch": "0.x",
   "updateInternalDependencies": "patch",
   "ignore": ["vite-example-comments", "vite-example-ctf", "vite-example-labels"]
 }

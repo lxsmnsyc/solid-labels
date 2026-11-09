@@ -1,12 +1,12 @@
 name: Release
 
-# Every push to `main` either opens or updates a "Version Packages" pull request
+# Every push to `0.x` either opens or updates a "Version Packages" pull request
 # from the pending changesets. Once that pull request is merged, the next push
 # publishes the versions that are not on npm yet.
 on:
   push:
     branches:
-      - main
+      - 0.x
     # Roadmaps, debates, proposals and decisions carry no changesets.
     paths-ignore:
       - 'docs/**'
