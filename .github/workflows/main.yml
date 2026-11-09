@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches:
-      - main
+      - 0.x
     # Roadmaps, debates, proposals and decisions are not build inputs.
     paths-ignore:
       - 'docs/**'
