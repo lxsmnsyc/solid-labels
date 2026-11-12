@@ -1,6 +1,6 @@
 {
   "name": "solid-labels",
-  "version": "0.17.0",
+  "version": "1.0.0-next.0",
   "private": false,
   "description": "Simple, reactive labels for SolidJS",
   "keywords": [
