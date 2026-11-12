@@ -1,0 +1,164 @@
+/*
+ * Color system. Paper and ink, with two inks that carry meaning everywhere:
+ * vermilion marks what you write (compile-time), cobalt marks what the
+ * compiler emits (Solid). Every pair below keeps 4.5:1 or better on its ground.
+ */
+:root {
+  color-scheme: light dark;
+
+  --bg: light-dark(#f4efe4, #13110e);
+  --bg-raised: light-dark(#fbf8f0, #1b1814);
+  --bg-sunk: light-dark(#ebe4d3, #0d0b09);
+  --ink: light-dark(#1a1712, #efe9dc);
+  --ink-soft: light-dark(#5a5345, #a8a291);
+  --rule: light-dark(#d8cfba, #2f2a23);
+  --ctf: light-dark(#bf2f0e, #ff7d57);
+  --ctf-wash: light-dark(#bf2f0e14, #ff7d5718);
+  --gen: light-dark(#2342c4, #8aaaff);
+  --gen-wash: light-dark(#2342c412, #8aaaff16);
+  --string: light-dark(#1d6b46, #92d3a9);
+  --number: light-dark(#8a4a00, #f1b86e);
+  --comment: light-dark(#645d4f, #9a9585);
+  --edge: color-mix(in srgb, var(--ink) 28%, transparent);
+  --on-accent: light-dark(#fff8f2, #1b0b04);
+
+  --font-display: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+  --font-body: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  --measure: 68ch;
+  --page: 1180px;
+  --gutter: clamp(1rem, 4vw, 2.5rem);
+  --radius: 10px;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: 5.5rem;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  font-optical-sizing: auto;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+a {
+  color: inherit;
+  text-decoration-color: var(--ctf);
+  text-decoration-thickness: 0.12em;
+  text-underline-offset: 0.18em;
+}
+
+a:hover {
+  color: var(--ctf);
+}
+
+:focus-visible {
+  outline: 2px solid var(--ctf);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+::selection {
+  background: var(--ctf);
+  color: var(--on-accent);
+}
+
+/* Code shows what was typed. Ligatures would turn => into a single arrow. */
+code,
+pre,
+textarea {
+  font-family: var(--font-mono);
+  font-variant-ligatures: none;
+  font-feature-settings:
+    'liga' 0,
+    'calt' 0;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 50;
+  padding: 0.6rem 1rem;
+  background: var(--ink);
+  color: var(--bg);
+  border-radius: var(--radius);
+}
+
+.skip:focus {
+  top: 1rem;
+}
+
+/* Buttons that only work with scripts stay hidden until the boot script runs. */
+html:not(.js) [data-copy],
+html:not(.js) [data-theme-toggle] {
+  display: none;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

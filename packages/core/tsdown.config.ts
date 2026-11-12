@@ -4,10 +4,9 @@ export default defineConfig({
   entry: [
     'src/index.ts',
     {
-      babel: 'babel/index.ts',
+      compiler: 'compiler/index.ts',
     },
   ],
-  format: ['esm', 'cjs'],
   platform: 'neutral',
   dts: true,
   exports: true,

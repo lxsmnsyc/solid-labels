@@ -1,0 +1,266 @@
+.hero {
+  position: relative;
+  max-width: var(--page);
+  margin: 0 auto;
+  padding: clamp(2.5rem, 7vw, 5.5rem) var(--gutter) 0;
+  isolation: isolate;
+  overflow-x: clip;
+}
+
+/* A very large sigil sits behind the headline. */
+.hero-glyph {
+  position: absolute;
+  z-index: -1;
+  top: -0.15em;
+  right: -0.05em;
+  font: italic 700 clamp(18rem, 48vw, 42rem) / 1 var(--font-display);
+  color: var(--ctf);
+  opacity: 0.09;
+  user-select: none;
+  pointer-events: none;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.eyebrow {
+  margin: 0 0 1.25rem;
+  font: 600 0.8rem var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ctf);
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(3rem, 9.5vw, 7.5rem);
+  font-weight: 700;
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+}
+
+.h1-accent {
+  color: var(--gen);
+  font-style: italic;
+}
+
+.lead {
+  max-width: 44rem;
+  margin: 1.75rem 0 0;
+  font-size: clamp(1.1rem, 2vw, 1.3rem);
+  color: var(--ink-soft);
+}
+
+.lead code {
+  font-size: 0.9em;
+  color: var(--ctf);
+  font-weight: 600;
+}
+
+.hero > :not(.hero-glyph) {
+  animation: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.hero > .eyebrow {
+  animation-delay: 0.05s;
+}
+
+.hero > h1 {
+  animation-delay: 0.12s;
+}
+
+.hero > .lead {
+  animation-delay: 0.22s;
+}
+
+.hero > .actions {
+  animation-delay: 0.3s;
+}
+
+.hero > .beam {
+  animation-delay: 0.4s;
+}
+
+/*
+ * The beam is the hero demo. A line sweeps down four rows of code. Rows
+ * above it show the compiled output, rows below it show the source, so one
+ * pass reads as one compile. It sweeps on its own, and you can take over with
+ * the pointer or the arrow keys.
+ */
+@property --beam {
+  syntax: '<percentage>';
+  inherits: true;
+  initial-value: 50%;
+}
+
+.beam {
+  position: relative;
+  margin-top: clamp(2.5rem, 6vw, 4.5rem);
+}
+
+.beam-toggle {
+  position: absolute;
+  z-index: 2;
+  top: 0.55rem;
+  right: 0.55rem;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--rule);
+  border-radius: 50%;
+  background: var(--bg);
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.beam-toggle:hover {
+  color: var(--ctf);
+  border-color: var(--ctf);
+}
+
+.beam-toggle svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.beam-toggle .icon-play,
+.beam-toggle[data-paused] .icon-pause {
+  display: none;
+}
+
+.beam-toggle[data-paused] .icon-play {
+  display: block;
+}
+
+html:not(.js) .beam-toggle {
+  display: none;
+}
+
+.beam-code {
+  position: relative;
+  display: grid;
+}
+
+.beam-stage {
+  --beam: 50%;
+  position: relative;
+  padding: clamp(1.25rem, 3vw, 2.25rem);
+  background: var(--bg-raised);
+  border: 1.5px solid var(--ink);
+  border-radius: 14px;
+  box-shadow: 8px 8px 0 -1px var(--ctf);
+  cursor: ew-resize;
+  /* Vertical drags scroll the page. Only horizontal drags move the line. */
+  touch-action: pan-y;
+  animation: sweep 7s ease-in-out infinite alternate;
+}
+
+.beam-stage:hover,
+.beam-stage:focus-visible,
+.beam[data-manual] .beam-stage {
+  animation-play-state: paused;
+}
+
+.beam[data-manual] .beam-stage {
+  animation: none;
+}
+
+@keyframes sweep {
+  0% {
+    --beam: 0%;
+  }
+  18% {
+    --beam: 0%;
+  }
+  82% {
+    --beam: 100%;
+  }
+  100% {
+    --beam: 100%;
+  }
+}
+
+.beam-layer {
+  grid-area: 1 / 1;
+  margin: 0;
+  font-size: clamp(0.78rem, 2.1vw, 1.3rem);
+  line-height: 1.9;
+  white-space: pre;
+  overflow: hidden;
+}
+
+/* Rows above the line show the output. */
+.beam-out {
+  clip-path: inset(0 0 calc(100% - var(--beam)) 0);
+  background: var(--bg-raised);
+}
+
+.beam-src {
+  clip-path: inset(var(--beam) 0 0 0);
+}
+
+.beam-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: var(--beam);
+  height: 0;
+  border-top: 2px solid var(--ctf);
+  box-shadow:
+    0 0 18px 2px var(--ctf),
+    0 0 2px var(--ctf);
+  pointer-events: none;
+}
+
+.beam-line::after {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: -7px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--ctf);
+}
+
+/* Print-proof corner marks. */
+.beam-stage::before,
+.beam-stage::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 0 solid var(--ink);
+  pointer-events: none;
+}
+
+.beam-stage::before {
+  top: 8px;
+  left: 8px;
+  border-width: 2px 0 0 2px;
+}
+
+.beam-stage::after {
+  right: 8px;
+  bottom: 8px;
+  border-width: 0 2px 2px 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .beam-stage {
+    animation: none;
+  }
+
+  .beam-toggle {
+    display: none;
+  }
+
+  .hero > :not(.hero-glyph) {
+    animation: none;
+  }
+}
+
+.not-found {
+  padding-bottom: 6rem;
+}

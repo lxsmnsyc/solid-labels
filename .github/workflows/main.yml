@@ -46,5 +46,8 @@ jobs:
       - name: Format
         run: pnpm run format:check
 
+      - name: Typecheck
+        run: pnpm -C packages/core typecheck
+
       - name: Test
         run: pnpm -r --filter "./packages/*" --if-present test

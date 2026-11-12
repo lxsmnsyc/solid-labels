@@ -1,0 +1,326 @@
+diff --git a/packages/core/compiler/context.ts b/packages/core/compiler/context.ts
+index a79a09d..22e99b6 100644
+--- a/packages/core/compiler/context.ts
++++ b/packages/core/compiler/context.ts
+@@ -29,6 +29,8 @@ export interface EffectRegion {
+   start: number;
+   end: number;
+   captured: Map<Binding, CaptureInfo>;
++  /** Innermost region enclosing this one. */
++  parent?: EffectRegion | null;
+ }
+ 
+ export interface PendingHoist {
+@@ -63,6 +65,12 @@ export class Ctx {
+   untrackSpans: [number, number][] = [];
+   pendingHoists: PendingHoist[] = [];
+   unresolvedByNode = new Map<Node, Ref>();
++  /** Every resolved reference, sorted by start offset. */
++  sortedRefs: Ref[] = [];
++  /** Unresolved `arguments` references (block effect hoisting). */
++  argumentsRefs: Ref[] = [];
++  /** Next free suffix per `unique` base. */
++  uniqueCounters = new Map<string, number>();
+ 
+   constructor(
+     s: MagicString,
+@@ -79,16 +87,48 @@ export class Ctx {
+     this.names = analysis.names;
+     for (const ref of analysis.unresolved) {
+       this.unresolvedByNode.set(ref.node, ref);
++      if (ref.node.name === 'arguments') {
++        this.argumentsRefs.push(ref);
++      }
++    }
++    for (const binding of analysis.bindings) {
++      for (const ref of binding.refs) {
++        this.sortedRefs.push(ref);
++      }
+     }
++    this.sortedRefs.sort((a, b) => a.node.start - b.node.start);
++  }
++
++  /** Resolved references whose identifier lies inside `[start, end)`. */
++  refsIn(start: number, end: number): Ref[] {
++    const refs = this.sortedRefs;
++    let lo = 0;
++    let hi = refs.length;
++    while (lo < hi) {
++      const mid = (lo + hi) >> 1;
++      if (refs[mid].node.start < start) {
++        lo = mid + 1;
++      } else {
++        hi = mid;
++      }
++    }
++    const result: Ref[] = [];
++    for (let i = lo; i < refs.length && refs[i].node.start < end; i++) {
++      if (refs[i].node.end <= end) {
++        result.push(refs[i]);
++      }
++    }
++    return result;
+   }
+ 
+   /** Returns a collision-free identifier `base_N` and reserves it. */
+   unique(base: string): string {
+-    let index = 1;
++    let index = this.uniqueCounters.get(base) ?? 1;
+     while (this.names.has(`${base}_${index}`)) {
+       index++;
+     }
+     const name = `${base}_${index}`;
++    this.uniqueCounters.set(base, index + 1);
+     this.names.add(name);
+     return name;
+   }
+@@ -119,31 +159,39 @@ export class Ctx {
+     this.reactive.set(binding, info);
+   }
+ 
++  /** Records an effect region; regions arrive in source order. */
++  addRegion(region: EffectRegion): void {
++    region.parent = this.enclosingRegion(region.start);
++    this.regions.push(region);
++  }
++
+   /** Innermost effect region containing the position that captures the binding. */
+   regionFor(binding: Binding, pos: number): EffectRegion | null {
+-    let found: EffectRegion | null = null;
+-    for (const region of this.regions) {
+-      if (
+-        pos >= region.start &&
+-        pos < region.end &&
+-        region.captured.has(binding) &&
+-        (!found || region.start >= found.start)
+-      ) {
+-        found = region;
+-      }
++    let region = this.enclosingRegion(pos);
++    while (region && !region.captured.has(binding)) {
++      region = region.parent ?? null;
+     }
+-    return found;
++    return region;
+   }
+ 
+   /** Innermost effect region containing a position, regardless of captures. */
+   enclosingRegion(pos: number): EffectRegion | null {
+-    let found: EffectRegion | null = null;
+-    for (const region of this.regions) {
+-      if (pos >= region.start && pos < region.end && (!found || region.start >= found.start)) {
+-        found = region;
++    const regions = this.regions;
++    let lo = 0;
++    let hi = regions.length;
++    while (lo < hi) {
++      const mid = (lo + hi) >> 1;
++      if (regions[mid].start <= pos) {
++        lo = mid + 1;
++      } else {
++        hi = mid;
+       }
+     }
+-    return found;
++    let region: EffectRegion | null = lo > 0 ? regions[lo - 1] : null;
++    while (region && !(pos >= region.start && pos < region.end)) {
++      region = region.parent ?? null;
++    }
++    return region;
+   }
+ 
+   /** Throws a `CompileError` located at the node. */
+diff --git a/packages/core/compiler/effect.ts b/packages/core/compiler/effect.ts
+index c62c769..97044b8 100644
+--- a/packages/core/compiler/effect.ts
++++ b/packages/core/compiler/effect.ts
+@@ -34,37 +34,32 @@ function analyzeCaptures(ctx: Ctx, call: Node, target: Node, body: Node): Captur
+   const captured = new Map<Binding, CaptureInfo>();
+   let blocked = false;
+ 
+-  for (const binding of ctx.analysis.bindings) {
+-    // Declared inside the callback: not free.
++  // Group the references inside the body by binding.
++  const byBinding = new Map<
++    Binding,
++    { tracked: boolean; untracked: boolean; writes: boolean; firstRef: number }
++  >();
++  for (const bindingRef of ctx.refsIn(body.start, body.end)) {
++    const binding = bindingRef.binding!;
+     if (binding.node.start >= target.start && binding.node.end <= target.end) {
+       continue;
+     }
+-    let tracked = false;
+-    let untracked = false;
+-    let writes = false;
+-    let firstRef = -1;
+-    for (const bindingRef of binding.refs) {
+-      const pos = bindingRef.node.start;
+-      if (pos < body.start || bindingRef.node.end > body.end) {
+-        continue;
+-      }
+-      if (firstRef === -1 || pos < firstRef) {
+-        firstRef = pos;
+-      }
+-      if (bindingRef.mode === 'read') {
+-        if (insideUntrack(ctx, bindingRef.node)) {
+-          untracked = true;
+-        } else {
+-          tracked = true;
+-        }
++    let entry = byBinding.get(binding);
++    if (!entry) {
++      entry = { tracked: false, untracked: false, writes: false, firstRef: bindingRef.node.start };
++      byBinding.set(binding, entry);
++    }
++    if (bindingRef.mode === 'read') {
++      if (insideUntrack(ctx, bindingRef.node)) {
++        entry.untracked = true;
+       } else {
+-        // Compound updates read through the setter's functional form.
+-        writes = true;
++        entry.tracked = true;
+       }
++    } else {
++      entry.writes = true;
+     }
+-    if (firstRef === -1) {
+-      continue;
+-    }
++  }
++  for (const [binding, { tracked, untracked, writes, firstRef }] of byBinding) {
+     const reactive = ctx.reactive.get(binding);
+     if (reactive && reactive.kind !== 'raw') {
+       if (writes && !reactive.set) {
+@@ -200,8 +195,8 @@ function isHoistable(ctx: Ctx, target: Node, blocked: boolean): boolean {
+   const hasThis = ctx.analysis.thisSpans.some(
+     ([start, end]) => start >= target.start && end <= target.end,
+   );
+-  const hasArguments = ctx.analysis.unresolved.some(
+-    (r) => r.node.name === 'arguments' && r.node.start >= target.start && r.node.end <= target.end,
++  const hasArguments = ctx.argumentsRefs.some(
++    (r) => r.node.start >= target.start && r.node.end <= target.end,
+   );
+   return !(hasThis || hasArguments);
+ }
+@@ -259,7 +254,7 @@ export default function transformEffect(
+     );
+ 
+     const { entries, params, captured, blocked } = analyzeCaptures(ctx, call, target, body);
+-    ctx.regions.push({ start: body.start, end: body.end, captured });
++    ctx.addRegion({ start: body.start, end: body.end, captured });
+ 
+     ctx.consumed.add(ref.node);
+     s.overwrite(ref.node.start, ref.node.end, ctx.importIdent(importName, 'solid-js'));
+@@ -301,7 +296,7 @@ export default function transformEffect(
+   );
+ 
+   const { entries, params, captured, blocked } = analyzeCaptures(ctx, call, expr, expr);
+-  ctx.regions.push({ start: expr.start, end: expr.end, captured });
++  ctx.addRegion({ start: expr.start, end: expr.end, captured });
+ 
+   ctx.consumed.add(ref.node);
+   s.overwrite(ref.node.start, ref.node.end, ctx.importIdent(importName, 'solid-js'));
+diff --git a/packages/core/compiler/index.ts b/packages/core/compiler/index.ts
+index e023d0e..a452979 100644
+--- a/packages/core/compiler/index.ts
++++ b/packages/core/compiler/index.ts
+@@ -1,5 +1,5 @@
+ import MagicString from 'magic-string';
+-import { parseSync } from 'oxc-parser';
++import { parseSync, rawTransferSupported } from 'oxc-parser';
+ import { Ctx } from './context';
+ import { CompileError } from './errors';
+ import { analyze } from './scope';
+@@ -34,6 +34,7 @@ export function compile(id: string, code: string, options: Options = {}): Compil
+     lang: languageOf(id),
+     sourceType: 'module',
+     preserveParens: false,
++    experimentalRawTransfer: rawTransferSupported(),
+   });
+   if (result.errors.length > 0) {
+     const first = result.errors[0];
+diff --git a/packages/core/compiler/render.ts b/packages/core/compiler/render.ts
+index b13cd83..7d38487 100644
+--- a/packages/core/compiler/render.ts
++++ b/packages/core/compiler/render.ts
+@@ -13,14 +13,10 @@ export default function renderSlice(ctx: Ctx, start: number, end: number): strin
+     text: string;
+   }
+   const edits: Edit[] = [];
+-  for (const [binding, info] of ctx.reactive) {
+-    if (info.kind === 'raw') {
+-      continue;
+-    }
+-    for (const ref of binding.refs) {
+-      if (ref.node.start < start || ref.node.end > end) {
+-        continue;
+-      }
++  for (const ref of ctx.refsIn(start, end)) {
++    const binding = ref.binding!;
++    const info = ctx.reactive.get(binding);
++    if (info && info.kind !== 'raw') {
+       if (ctx.consumed.has(ref.node)) {
+         continue;
+       }
+diff --git a/packages/core/compiler/transform.ts b/packages/core/compiler/transform.ts
+index c966af3..96c9f03 100644
+--- a/packages/core/compiler/transform.ts
++++ b/packages/core/compiler/transform.ts
+@@ -223,21 +223,19 @@ function extractHoistedCallbacks(ctx: Ctx): void {
+   if (ctx.pendingHoists.length === 0) {
+     return;
+   }
+-  const byDepth = [...ctx.pendingHoists].sort((a, b) => b.body.start - a.body.start);
+-  for (const pending of byDepth) {
+-    // slice/overwrite treat edge insertions the same across magic-string
+-    // versions; snip/remove changed in 1.4.
+-    pending.text = ctx.s.slice(pending.body.start, pending.body.end);
+-    ctx.s.overwrite(pending.body.start, pending.body.end, '');
+-  }
+-  let trailer = '';
++  // Each body moves to the end of the output with its edits intact, so no
++  // span is re-read through MagicString#slice (linear in the chunk count).
++  const end = ctx.code.length;
+   for (const pending of ctx.pendingHoists) {
+-    const header = `function ${pending.name}([${pending.params.join(', ')}]) `;
+-    let body = pending.text;
++    const header = `\nfunction ${pending.name}([${pending.params.join(', ')}]) `;
+     if (pending.concise) {
+-      body = pending.statement ? `{\n  ${pending.text};\n}` : `{\n  return ${pending.text};\n}`;
+-    }
+-    trailer += `\n${header}${body}\n`;
++      const open = pending.statement ? '{\n  ' : '{\n  return ';
++      ctx.s.prependRight(pending.body.start, header + open);
++      ctx.s.appendLeft(pending.body.end, ';\n}\n');
++    } else {
++      ctx.s.prependRight(pending.body.start, header);
++      ctx.s.appendLeft(pending.body.end, '\n');
++    }
++    ctx.s.move(pending.body.start, pending.body.end, end);
+   }
+-  ctx.s.append(trailer);
+ }
+diff --git a/packages/core/compiler/variables.ts b/packages/core/compiler/variables.ts
+index aa1b251..e116f0c 100644
+--- a/packages/core/compiler/variables.ts
++++ b/packages/core/compiler/variables.ts
+@@ -100,14 +100,10 @@ function devNameOptions(
+ 
+ /** True when the span reads a reactive variable (rewritten in a later phase). */
+ function containsReactiveRead(ctx: Ctx, node: Node): boolean {
+-  for (const [binding, info] of ctx.reactive) {
+-    if (info.kind === 'raw') {
+-      continue;
+-    }
+-    for (const bindingRef of binding.refs) {
+-      if (bindingRef.node.start >= node.start && bindingRef.node.end <= node.end) {
+-        return true;
+-      }
++  for (const bindingRef of ctx.refsIn(node.start, node.end)) {
++    const info = ctx.reactive.get(bindingRef.binding!);
++    if (info && info.kind !== 'raw') {
++      return true;
+     }
+   }
+   return false;
