@@ -1,0 +1,55 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`$destructure > destructures objects 1`] = `
+"
+const a = () => props.a,
+  b = () => props.b;
+console.log(a(), b());
+"
+`;
+
+exports[`$destructure > lets defaults reference earlier properties 1`] = `
+"import { createMemo as _createMemo } from "solid-js";
+
+const a = () => props.a,
+  def_1 = _createMemo(() => a()),
+  b = () => { const value_1 = props.b; return value_1 === void 0 ? def_1() : value_1; };
+console.log(b());
+"
+`;
+
+exports[`$destructure > reads reactive sources per property 1`] = `
+"import { createSignal as _createSignal } from "solid-js";
+
+let [state, setstate_1] = _createSignal({ a: 1, b: 2 });
+const a = () => state().a,
+  b = () => state().b;
+console.log(a(), b());
+"
+`;
+
+exports[`$destructure > supports computed keys and array patterns 1`] = `
+"
+const value = () => props[key];
+const first = () => pair[0],
+  second = () => pair[1];
+console.log(value(), first(), second());
+"
+`;
+
+exports[`$destructure > supports nested patterns, defaults and rest 1`] = `
+"import { createMemo as _createMemo } from "solid-js";
+import { omit as _omit } from "solid-js";
+
+let prop_1 = () => x.a,
+  b = () => prop_1().b,
+  c = () => prop_1().c,
+  prop_2 = () => x.b,
+  def_1 = defaultD,
+  d = () => { const value_1 = prop_2().d; return value_1 === void 0 ? def_1 : value_1; },
+  def_2 = _createMemo(() => compute()),
+  e = () => { const value_2 = prop_2().e; return value_2 === void 0 ? def_2() : value_2; },
+  f = _omit(x, "a", "b");
+console.log(b(), c(), d(), e(), f);
+"
+`;

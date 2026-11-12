@@ -1,6 +1,6 @@
 {
   "name": "unplugin-solid-labels",
-  "version": "0.17.1",
+  "version": "0.17.0",
   "private": false,
   "description": "Unplugin for solid-labels",
   "keywords": [
@@ -25,14 +25,8 @@
     "src"
   ],
   "type": "module",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.cts",
   "exports": {
-    ".": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs"
-    },
+    ".": "./dist/index.mjs",
     "./package.json": "./package.json"
   },
   "publishConfig": {
@@ -41,25 +35,26 @@
   "scripts": {
     "prepublishOnly": "tsdown",
     "build": "tsdown",
-    "watch": "tsdown --watch"
+    "watch": "tsdown --watch",
+    "test": "vitest run"
   },
   "dependencies": {
-    "@babel/core": "^7.29.7",
-    "@rollup/pluginutils": "^5.4.0",
-    "unplugin": "^2.3.11"
+    "@rollup/pluginutils": "^5.5.1",
+    "unplugin": "^3.7.0"
   },
   "devDependencies": {
-    "@types/babel__core": "^7.20.5",
-    "@types/node": "^26.6.5",
-    "rollup": "^4.64.6",
+    "@types/node": "^26.6.6",
+    "rollup": "^4.67.5",
     "solid-labels": "workspace:*",
-    "tsdown": "^0.23.1",
+    "tsdown": "^0.23.7",
+    "tslib": "^2.9.1",
     "typescript": "^7.0.2",
-    "vite": "^8.3.4"
+    "vite": "^8.3.6",
+    "vitest": "^5.1.0"
   },
   "peerDependencies": {
-    "rollup": "^3 || ^4",
-    "solid-labels": "^0.17.1",
+    "rollup": "^3 || 4",
+    "solid-labels": "^0.17",
     "vite": "^3 || ^4 || ^5 || ^6 || ^7 || ^8"
   },
   "peerDependenciesMeta": {

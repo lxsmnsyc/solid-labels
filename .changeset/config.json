@@ -7,5 +7,5 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["vite-example-comments", "vite-example-ctf", "vite-example-labels"]
+  "ignore": ["vite-example-ctf", "bun-example-ctf", "website"]
 }

@@ -10,17 +10,17 @@
     "changeset": "changeset",
     "version": "changeset version",
     "release": "pnpm -r --filter \"./packages/*\" build && changeset publish",
-    "lint": "oxlint",
+    "lint": "pnpm -r --filter \"./packages/*\" build && oxlint",
     "format": "oxfmt",
     "format:check": "oxfmt --check"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.3",
     "@lxsmnsyc/oxlint-config": "^0.1.3",
-    "oxfmt": "^0.73.0",
-    "oxlint": "^1.88.0",
-    "oxlint-tsgolint": "^7.0.2004",
+    "oxfmt": "^0.76.0",
+    "oxlint": "^1.91.0",
+    "oxlint-tsgolint": "^7.0.2006",
     "typescript": "^7.0.2"
   },
-  "packageManager": "pnpm@12.7.0"
+  "packageManager": "pnpm@12.18.0"
 }

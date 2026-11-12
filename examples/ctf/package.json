@@ -12,14 +12,14 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "solid-js": "^1.9.17"
+    "@solidjs/web": "2.0.0-rc.21",
+    "solid-js": "2.0.0-rc.21"
   },
   "devDependencies": {
-    "@types/node": "^26.6.5",
+    "@solidjs/vite-plugin": "^3.0.0-next.56",
     "solid-labels": "workspace:*",
     "typescript": "^7.0.2",
-    "vite": "^8.3.4",
-    "vite-plugin-solid": "^2.11.14",
-    "vite-plugin-solid-labels": "workspace:*"
+    "unplugin-solid-labels": "workspace:*",
+    "vite": "^8.3.6"
   }
 }

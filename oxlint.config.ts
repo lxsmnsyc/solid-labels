@@ -3,12 +3,13 @@ import { defineConfig } from 'oxlint';
 
 export default defineConfig({
   extends: [selfConfig],
-  ignorePatterns: ['**/dist/**', '**/node_modules/**'],
+  // Roadmaps and their prototype scripts are not build inputs.
+  ignorePatterns: ['**/dist/**', '**/node_modules/**', 'docs/**'],
   overrides: [
     {
-      // The Babel plugin works on loosely typed AST nodes; property access is
+      // The compiler works on a structural AST type; property access is
       // inherently untyped there.
-      files: ['packages/core/babel/**', 'packages/core/test/**'],
+      files: ['packages/core/compiler/**', 'packages/core/test/**'],
       rules: {
         'typescript/no-unsafe-argument': 'off',
         'typescript/no-unsafe-assignment': 'off',
@@ -18,8 +19,6 @@ export default defineConfig({
         'typescript/no-unsafe-type-assertion': 'off',
         'typescript/no-unnecessary-condition': 'off',
         'typescript/no-explicit-any': 'off',
-        // Each module exports one named helper.
-        'import/prefer-default-export': 'off',
       },
     },
     {
@@ -30,11 +29,43 @@ export default defineConfig({
       },
     },
     {
-      // Label syntax declares variables with `var`.
-      files: ['examples/labels/**'],
+      // Small modules and components export one name on purpose.
+      files: ['website/**'],
       rules: {
-        'no-var': 'off',
-        'no-unused-labels': 'off',
+        'import/prefer-default-export': 'off',
+      },
+    },
+    {
+      // `export *` from packages that oxlint cannot read the exports of.
+      files: ['website/plugins/runtime-entry.js'],
+      rules: {
+        'import/export': 'off',
+      },
+    },
+    {
+      // The Markdown lexer types its tokens loosely.
+      files: ['website/plugins/search-index.ts'],
+      rules: {
+        'typescript/no-unsafe-argument': 'off',
+        'typescript/no-unsafe-call': 'off',
+        'typescript/no-unsafe-member-access': 'off',
+        'typescript/no-unsafe-return': 'off',
+        'typescript/no-unsafe-type-assertion': 'off',
+      },
+    },
+    {
+      // Node scripts that run after the build. They log, and their imports are
+      // untyped plain .mjs modules.
+      files: ['website/scripts/**'],
+      rules: {
+        'no-console': 'off',
+        'typescript/no-unsafe-argument': 'off',
+        'typescript/no-unsafe-assignment': 'off',
+        'typescript/no-unsafe-call': 'off',
+        'typescript/no-unsafe-member-access': 'off',
+        'typescript/no-unsafe-return': 'off',
+        'typescript/no-misused-promises': 'off',
+        'typescript/strict-void-return': 'off',
       },
     },
     {
@@ -46,8 +77,6 @@ export default defineConfig({
         'typescript/no-namespace': 'off',
         'typescript/no-unnecessary-type-parameters': 'off',
         'typescript/no-invalid-void-type': 'off',
-        // `$error` keeps exposing the deprecated `onError` for Solid 1.x.
-        'typescript/no-deprecated': 'off',
       },
     },
   ],

@@ -1,0 +1,884 @@
+import { type Node, eachChild } from './ast';
+
+export type RefMode = 'read' | 'write' | 'readwrite';
+
+export interface Ref {
+  node: Node;
+  mode: RefMode;
+  /** Ancestor chain, outermost first, excluding the identifier itself. */
+  parents: Node[];
+  binding: Binding | null;
+  /** Set when the identifier is the value of a shorthand object property. */
+  shorthand?: Node;
+  /** Set when the identifier is a local name in an export specifier. */
+  exported?: boolean;
+}
+
+export interface Binding {
+  name: string;
+  kind: string;
+  node: Node;
+  scope: Scope;
+  refs: Ref[];
+  /** Set for `export` declarations directly inside a namespace body. */
+  exported?: boolean;
+}
+
+export type ScopeKind = 'module' | 'function' | 'block';
+
+export interface Scope {
+  kind: ScopeKind;
+  node: Node;
+  parent: Scope | null;
+  bindings: Map<string, Binding>;
+  /**
+   * Scopes of other declarations of the same enum or namespace in the same
+   * scope. Their enum members and exported namespace members are visible here.
+   */
+  merged?: Scope[];
+}
+
+export interface JSXName {
+  element: Node;
+  opening: Node;
+  closing: Node | null;
+  /** Root identifier of the element name. */
+  root: Node;
+  resolved: boolean;
+}
+
+export interface Analysis {
+  module: Scope;
+  bindings: Binding[];
+  unresolved: Ref[];
+  names: Set<string>;
+  jsxNames: JSXName[];
+  /** Spans of `this` / `super` / meta-property usages (blocks effect hoisting). */
+  thisSpans: [number, number][];
+  bindingByNode: Map<Node, Binding>;
+}
+
+const SCOPE_NODES = new Set([
+  'FunctionDeclaration',
+  'FunctionExpression',
+  'ArrowFunctionExpression',
+  'BlockStatement',
+  'StaticBlock',
+  'ForStatement',
+  'ForInStatement',
+  'ForOfStatement',
+  'CatchClause',
+  'SwitchStatement',
+  'TSModuleBlock',
+  'TSEnumDeclaration',
+]);
+
+const FUNCTION_SCOPES = new Set([
+  'FunctionDeclaration',
+  'FunctionExpression',
+  'ArrowFunctionExpression',
+  'StaticBlock',
+  'TSModuleBlock',
+]);
+
+const IDENTIFIER_NAME = /^[\p{ID_Start}$_][\p{ID_Continue}$\u200c\u200d]*$/u;
+
+const SKIP_TS_STATEMENTS = new Set([
+  'TSInterfaceDeclaration',
+  'TSTypeAliasDeclaration',
+  'TSDeclareFunction',
+]);
+
+/**
+ * Two-pass scope analysis over the whole program:
+ *
+ * - Pass A (`declareWalk`) builds the scope tree and declares every binding,
+ *   honoring `var` hoisting to the nearest function scope.
+ * - Pass B (`resolve`) walks expressions, resolving each identifier to its
+ *   binding (or recording it as unresolved — the CTF candidates), tracking
+ *   read/write mode, the ancestor chain, shorthand-property and export
+ *   positions, JSX element names, and `this`/`super`/meta-property spans.
+ */
+export function analyze(program: Node): Analysis {
+  const scopeMap = new Map<Node, Scope>();
+  const moduleScope: Scope = {
+    kind: 'module',
+    node: program,
+    parent: null,
+    bindings: new Map(),
+  };
+  scopeMap.set(program, moduleScope);
+
+  const analysis: Analysis = {
+    module: moduleScope,
+    bindings: [],
+    unresolved: [],
+    names: new Set(),
+    jsxNames: [],
+    thisSpans: [],
+    bindingByNode: new Map(),
+  };
+
+  /** Namespace scope whose `export` declaration is being declared, if any. */
+  let exportScope: Scope | null = null;
+
+  /** Declares a binding in `scope`; first declaration of a name wins. */
+  function declare(id: Node, kind: string, scope: Scope, name: string = id.name): void {
+    analysis.names.add(name);
+    if (scope.bindings.has(name)) {
+      return;
+    }
+    const binding: Binding = { name, kind, node: id, scope, refs: [] };
+    if (scope === exportScope) {
+      binding.exported = true;
+    }
+    scope.bindings.set(name, binding);
+    analysis.bindings.push(binding);
+    analysis.bindingByNode.set(id, binding);
+  }
+
+  /** Earlier and sibling scopes of one enum or namespace, by containing scope and name. */
+  const mergeGroups = new Map<Scope, Map<string, Scope[]>>();
+
+  /** Group of scopes that declare the same enum or namespace within `scope`. */
+  function mergeGroup(scope: Scope, key: string): Scope[] {
+    let groups = mergeGroups.get(scope);
+    if (!groups) {
+      groups = new Map();
+      mergeGroups.set(scope, groups);
+    }
+    let group = groups.get(key);
+    if (!group) {
+      group = [];
+      groups.set(key, group);
+    }
+    return group;
+  }
+
+  /** Dotted name of a namespace id (`A.B`), or null for `declare module "x"`. */
+  function namespaceKey(id: Node): string | null {
+    if (id.type === 'Identifier') {
+      return id.name;
+    }
+    if (id.type === 'TSQualifiedName') {
+      const left = namespaceKey(id.left);
+      return left == null ? null : `${left}.${id.right.name}`;
+    }
+    return null;
+  }
+
+  /** Function bodies that get their own var scope (the function has parameter expressions). */
+  const separateBodies = new Set<Node>();
+  /** Scopes holding a function or class expression's own name, keyed by that expression. */
+  const nameScopeMap = new Map<Node, Scope>();
+
+  /** Whether a parameter pattern holds a default value or a computed key. */
+  function hasParameterExpression(pattern: Node): boolean {
+    switch (pattern.type) {
+      case 'AssignmentPattern':
+        return true;
+      case 'TSParameterProperty':
+        return hasParameterExpression(pattern.parameter);
+      case 'RestElement':
+        return hasParameterExpression(pattern.argument);
+      case 'ArrayPattern':
+        for (const el of pattern.elements) {
+          if (el && hasParameterExpression(el)) {
+            return true;
+          }
+        }
+        return false;
+      case 'ObjectPattern':
+        for (const prop of pattern.properties) {
+          if (prop.type === 'RestElement') {
+            if (hasParameterExpression(prop.argument)) {
+              return true;
+            }
+          } else if (prop.computed || hasParameterExpression(prop.value)) {
+            return true;
+          }
+        }
+        return false;
+      default:
+        return false;
+    }
+  }
+
+  /** Declares parameters, then the body, keeping body `var`s apart from defaults when needed. */
+  function declareFunction(node: Node, currentScope: Scope): void {
+    let separate = false;
+    for (const param of node.params) {
+      declarePattern(param, 'param', currentScope, currentScope);
+      if (!separate && hasParameterExpression(param)) {
+        separate = true;
+      }
+    }
+    if (node.body) {
+      if (separate && node.body.type === 'BlockStatement') {
+        separateBodies.add(node.body);
+      }
+      declareWalk(node.body, currentScope);
+    }
+  }
+
+  /** Creates the scope that holds a function or class expression's own name. */
+  function declareNameScope(node: Node, kind: string, scope: Scope): Scope {
+    const nameScope: Scope = { kind: 'block', node, parent: scope, bindings: new Map() };
+    declare(node.id, kind, nameScope);
+    nameScopeMap.set(node, nameScope);
+    return nameScope;
+  }
+
+  /** Nearest function (or module) scope — the hoisting target for `var`. */
+  function varScope(scope: Scope): Scope {
+    let current = scope;
+    while (current.kind === 'block' && current.parent) {
+      current = current.parent;
+    }
+    return current;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Pass A: build scopes and declare bindings.
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Declares every identifier bound by a pattern into `scope`, while walking
+   * computed keys and default expressions in `walkScope` (they may contain
+   * further declarations, e.g. function expressions).
+   */
+  function declarePattern(pattern: Node, kind: string, scope: Scope, walkScope: Scope): void {
+    // Decorators on a parameter hold expressions of their own.
+    if (pattern.decorators) {
+      for (const decorator of pattern.decorators) {
+        declareWalk(decorator, walkScope);
+      }
+    }
+    switch (pattern.type) {
+      case 'Identifier':
+        declare(pattern, kind, scope);
+        break;
+      case 'ObjectPattern':
+        for (const prop of pattern.properties) {
+          if (prop.type === 'Property') {
+            if (prop.computed) {
+              declareWalk(prop.key, walkScope);
+            }
+            declarePattern(prop.value, kind, scope, walkScope);
+          } else if (prop.type === 'RestElement') {
+            declarePattern(prop.argument, kind, scope, walkScope);
+          }
+        }
+        break;
+      case 'ArrayPattern':
+        for (const el of pattern.elements) {
+          if (el) {
+            declarePattern(el, kind, scope, walkScope);
+          }
+        }
+        break;
+      case 'AssignmentPattern': {
+        declarePattern(pattern.left, kind, scope, walkScope);
+        declareWalk(pattern.right, walkScope);
+        break;
+      }
+      case 'RestElement':
+        declarePattern(pattern.argument, kind, scope, walkScope);
+        break;
+      case 'TSParameterProperty':
+        declarePattern(pattern.parameter, kind, scope, walkScope);
+        break;
+      default:
+        break;
+    }
+  }
+
+  /** Pass A walker: creates scopes for scope-carrying nodes and declares bindings. */
+  function declareWalk(node: Node, scope: Scope): void {
+    if (SKIP_TS_STATEMENTS.has(node.type)) {
+      return;
+    }
+    let currentScope = scope;
+    if (node.type === 'FunctionExpression' && node.id) {
+      currentScope = declareNameScope(node, 'function', scope);
+    }
+    if (node !== program && SCOPE_NODES.has(node.type)) {
+      currentScope = {
+        kind: FUNCTION_SCOPES.has(node.type) || separateBodies.has(node) ? 'function' : 'block',
+        node,
+        parent: currentScope,
+        bindings: new Map(),
+      };
+      scopeMap.set(node, currentScope);
+    }
+    switch (node.type) {
+      case 'VariableDeclaration': {
+        const target = node.kind === 'var' ? varScope(currentScope) : currentScope;
+        for (const decl of node.declarations) {
+          declarePattern(decl.id, node.kind, target, currentScope);
+          if (decl.init) {
+            declareWalk(decl.init, currentScope);
+          }
+        }
+        break;
+      }
+      case 'FunctionDeclaration': {
+        if (node.id) {
+          declare(node.id, 'function', scope);
+        }
+        declareFunction(node, currentScope);
+        break;
+      }
+      case 'FunctionExpression':
+      case 'ArrowFunctionExpression': {
+        declareFunction(node, currentScope);
+        break;
+      }
+      case 'CatchClause': {
+        if (node.param) {
+          declarePattern(node.param, 'catch', currentScope, currentScope);
+        }
+        declareWalk(node.body, currentScope);
+        break;
+      }
+      case 'ImportDeclaration': {
+        for (const spec of node.specifiers) {
+          declare(spec.local, 'import', moduleScope);
+        }
+        break;
+      }
+      case 'ClassDeclaration': {
+        if (node.id) {
+          declare(node.id, 'class', currentScope);
+        }
+        eachChild(node, (child) => {
+          if (child !== node.id) {
+            declareWalk(child, currentScope);
+          }
+        });
+        break;
+      }
+      case 'ClassExpression': {
+        if (node.id) {
+          currentScope = declareNameScope(node, 'class', scope);
+        }
+        const classScope = currentScope;
+        eachChild(node, (child) => {
+          if (child !== node.id) {
+            declareWalk(child, classScope);
+          }
+        });
+        break;
+      }
+      case 'TSEnumDeclaration': {
+        // The name lives in the outer scope; the members live in the enum's own scope.
+        declare(node.id, 'enum', scope);
+        // Members of earlier `enum E {}` blocks in the same scope are visible here.
+        const enumGroup = mergeGroup(scope, `enum ${node.id.name}`);
+        currentScope.merged = [...enumGroup];
+        enumGroup.push(currentScope);
+        for (const member of node.body.members) {
+          if (member.id.type === 'Identifier') {
+            declare(member.id, 'enum-member', currentScope);
+          } else if (
+            member.id.type === 'Literal' &&
+            typeof member.id.value === 'string' &&
+            IDENTIFIER_NAME.test(member.id.value)
+          ) {
+            // `"a" = 1` can be referenced as `a`.
+            declare(member.id, 'enum-member', currentScope, member.id.value);
+          } else if (member.computed) {
+            declareWalk(member.id, currentScope);
+          }
+        }
+        for (const member of node.body.members) {
+          if (member.initializer) {
+            declareWalk(member.initializer, currentScope);
+          }
+        }
+        break;
+      }
+      case 'TSModuleDeclaration': {
+        // `namespace A.B {}` declares `A`. `declare module "x"` and `declare global` declare nothing.
+        let root = node.id;
+        while (root.type === 'TSQualifiedName') {
+          root = root.left;
+        }
+        if (root.type === 'Identifier' && node.kind !== 'global') {
+          declare(root, 'namespace', scope);
+        }
+        if (node.body) {
+          declareWalk(node.body, currentScope);
+          // Exported members of every block of the same namespace see each other.
+          const key = node.kind === 'global' ? null : namespaceKey(node.id);
+          const body = scopeMap.get(node.body);
+          if (key != null && body) {
+            const group = mergeGroup(scope, `namespace ${key}`);
+            for (const other of group) {
+              (other.merged ??= []).push(body);
+              (body.merged ??= []).push(other);
+            }
+            group.push(body);
+          }
+        }
+        break;
+      }
+      case 'ExportNamedDeclaration': {
+        // Only declarations directly in a namespace body become namespace members.
+        const previous = exportScope;
+        exportScope = scope.node.type === 'TSModuleBlock' ? scope : null;
+        eachChild(node, (child) => {
+          declareWalk(child, currentScope);
+        });
+        exportScope = previous;
+        break;
+      }
+      case 'TSImportEqualsDeclaration': {
+        declare(node.id, 'import', currentScope);
+        break;
+      }
+      default:
+        eachChild(node, (child) => {
+          declareWalk(child, currentScope);
+        });
+        break;
+    }
+  }
+
+  declareWalk(program, moduleScope);
+
+  // ---------------------------------------------------------------------------
+  // Pass B: resolve references.
+  // ---------------------------------------------------------------------------
+
+  const scopeStack: Scope[] = [moduleScope];
+  const parentStack: Node[] = [];
+
+  /** Resolves a name through the current scope stack, innermost first. */
+  function lookup(name: string): Binding | null {
+    for (let i = scopeStack.length - 1; i >= 0; i--) {
+      const binding = scopeStack[i].bindings.get(name);
+      if (binding) {
+        return binding;
+      }
+      // Enum members and exported namespace members of merged declarations.
+      const merged = scopeStack[i].merged;
+      if (merged) {
+        for (const other of merged) {
+          const shared = other.bindings.get(name);
+          if (shared && (shared.exported || shared.kind === 'enum-member')) {
+            return shared;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Records a reference: attached to its binding when resolved, otherwise
+   * pushed to `analysis.unresolved`. The ancestor chain is snapshotted from
+   * the current traversal stack (excluding the identifier itself).
+   */
+  function reference(
+    node: Node,
+    mode: RefMode,
+    extra?: { shorthand?: Node; exported?: boolean },
+  ): void {
+    analysis.names.add(node.name);
+    const binding = lookup(node.name);
+    const parents =
+      parentStack[parentStack.length - 1] === node ? parentStack.slice(0, -1) : parentStack.slice();
+    const ref: Ref = {
+      node,
+      mode,
+      parents,
+      binding,
+      shorthand: extra?.shorthand,
+      exported: extra?.exported,
+    };
+    if (binding) {
+      binding.refs.push(ref);
+    } else {
+      analysis.unresolved.push(ref);
+    }
+  }
+
+  /**
+   * Resolves decorators with the scopes above `depth` removed. A decorator is
+   * evaluated outside the function or class it is written on, so it cannot
+   * see that node's parameters or class name.
+   */
+  function resolveDecorators(decorators: Node[], depth: number): void {
+    const inner = scopeStack.splice(depth);
+    for (const decorator of decorators) {
+      resolve(decorator);
+    }
+    scopeStack.push(...inner);
+  }
+
+  /** Resolves the decorators written on a parameter pattern, outside the function scope. */
+  function resolveParameterDecorators(pattern: Node, depth: number): void {
+    if (pattern.decorators) {
+      resolveDecorators(pattern.decorators, depth);
+    }
+    if (pattern.type === 'TSParameterProperty') {
+      resolveParameterDecorators(pattern.parameter, depth);
+    } else if (pattern.type === 'AssignmentPattern') {
+      resolveParameterDecorators(pattern.left, depth);
+    } else if (pattern.type === 'RestElement') {
+      resolveParameterDecorators(pattern.argument, depth);
+    }
+  }
+
+  /**
+   * Pass B over a declaration pattern: identifiers were declared in pass A,
+   * so only computed keys and default expressions are resolved here.
+   */
+  function visitPatternDecl(pattern: Node): void {
+    switch (pattern.type) {
+      case 'Identifier':
+        break;
+      case 'ObjectPattern':
+        for (const prop of pattern.properties) {
+          if (prop.type === 'Property') {
+            if (prop.computed) {
+              resolve(prop.key);
+            }
+            visitPatternDecl(prop.value);
+          } else if (prop.type === 'RestElement') {
+            visitPatternDecl(prop.argument);
+          }
+        }
+        break;
+      case 'ArrayPattern':
+        for (const el of pattern.elements) {
+          if (el) {
+            visitPatternDecl(el);
+          }
+        }
+        break;
+      case 'AssignmentPattern': {
+        visitPatternDecl(pattern.left);
+        resolve(pattern.right);
+        break;
+      }
+      case 'RestElement':
+        visitPatternDecl(pattern.argument);
+        break;
+      case 'TSParameterProperty':
+        visitPatternDecl(pattern.parameter);
+        break;
+      default:
+        break;
+    }
+  }
+
+  /**
+   * Resolves an assignment target: identifiers become write (or readwrite for
+   * compound operators) references; member expressions, computed keys, and
+   * defaults are plain reads; destructuring recurses with `write`.
+   */
+  function visitAssignTarget(target: Node, mode: RefMode): void {
+    switch (target.type) {
+      case 'Identifier':
+        reference(target, mode);
+        break;
+      case 'MemberExpression':
+        resolve(target);
+        break;
+      case 'ObjectPattern':
+        for (const prop of target.properties) {
+          if (prop.type === 'Property') {
+            if (prop.computed) {
+              resolve(prop.key);
+            }
+            visitAssignTarget(prop.value, 'write');
+          } else if (prop.type === 'RestElement') {
+            visitAssignTarget(prop.argument, 'write');
+          }
+        }
+        break;
+      case 'ArrayPattern':
+        for (const el of target.elements) {
+          if (el) {
+            visitAssignTarget(el, 'write');
+          }
+        }
+        break;
+      case 'AssignmentPattern': {
+        visitAssignTarget(target.left, 'write');
+        resolve(target.right);
+        break;
+      }
+      case 'RestElement':
+        visitAssignTarget(target.argument, 'write');
+        break;
+      case 'TSAsExpression':
+      case 'TSSatisfiesExpression':
+      case 'TSNonNullExpression':
+      case 'TSTypeAssertion':
+        visitAssignTarget(target.expression, mode);
+        break;
+      default:
+        resolve(target);
+        break;
+    }
+  }
+
+  function visitJSXAttributes(attributes: Node[]): void {
+    for (const attr of attributes) {
+      if (attr.type === 'JSXAttribute') {
+        if (attr.value?.type === 'JSXExpressionContainer') {
+          if (attr.value.expression.type !== 'JSXEmptyExpression') {
+            resolve(attr.value.expression);
+          }
+        } else if (attr.value?.type === 'JSXElement') {
+          resolve(attr.value);
+        }
+      } else if (attr.type === 'JSXSpreadAttribute') {
+        resolve(attr.argument);
+      }
+    }
+  }
+
+  function visitJSXChildren(children: Node[]): void {
+    for (const child of children) {
+      if (child.type === 'JSXExpressionContainer') {
+        if (child.expression.type !== 'JSXEmptyExpression') {
+          resolve(child.expression);
+        }
+      } else if (
+        child.type === 'JSXElement' ||
+        child.type === 'JSXFragment' ||
+        child.type === 'JSXSpreadChild'
+      ) {
+        resolve(child);
+      }
+    }
+  }
+
+  /** Root of a JSX element name: `a` for `<a.b.c>`, the namespace for `<ns:x>`. */
+  function jsxRoot(name: Node): Node {
+    let current = name;
+    while (current.type === 'JSXMemberExpression') {
+      current = current.object;
+    }
+    if (current.type === 'JSXNamespacedName') {
+      return current.namespace;
+    }
+    return current;
+  }
+
+  /** Pass B walker: resolves references, maintaining scope and ancestor stacks. */
+  function resolve(node: Node): void {
+    if (SKIP_TS_STATEMENTS.has(node.type)) {
+      return;
+    }
+    const outerDepth = scopeStack.length;
+    const named = nameScopeMap.get(node);
+    if (named) {
+      scopeStack.push(named);
+    }
+    const mapped = scopeMap.get(node);
+    if (mapped) {
+      scopeStack.push(mapped);
+    }
+    parentStack.push(node);
+    switch (node.type) {
+      case 'Identifier':
+        reference(node, 'read');
+        break;
+      case 'MemberExpression': {
+        resolve(node.object);
+        if (node.computed) {
+          resolve(node.property);
+        }
+        break;
+      }
+      case 'Property': {
+        if (node.computed) {
+          resolve(node.key);
+        }
+        if (node.shorthand && node.value.type === 'Identifier') {
+          reference(node.value, 'read', { shorthand: node });
+        } else {
+          resolve(node.value);
+        }
+        break;
+      }
+      case 'VariableDeclarator': {
+        visitPatternDecl(node.id);
+        if (node.init) {
+          resolve(node.init);
+        }
+        break;
+      }
+      case 'FunctionDeclaration':
+      case 'FunctionExpression':
+      case 'ArrowFunctionExpression': {
+        for (const param of node.params) {
+          resolveParameterDecorators(param, outerDepth);
+          visitPatternDecl(param);
+        }
+        if (node.body) {
+          resolve(node.body);
+        }
+        break;
+      }
+      case 'AssignmentExpression': {
+        visitAssignTarget(node.left, node.operator === '=' ? 'write' : 'readwrite');
+        resolve(node.right);
+        break;
+      }
+      case 'UpdateExpression': {
+        visitAssignTarget(node.argument, 'readwrite');
+        break;
+      }
+      case 'ForInStatement':
+      case 'ForOfStatement': {
+        // A non-declaration target is an assignment, not a read.
+        if (node.left.type === 'VariableDeclaration') {
+          resolve(node.left);
+        } else {
+          visitAssignTarget(node.left, 'write');
+        }
+        resolve(node.right);
+        resolve(node.body);
+        break;
+      }
+      case 'CatchClause': {
+        if (node.param) {
+          visitPatternDecl(node.param);
+        }
+        resolve(node.body);
+        break;
+      }
+      case 'ImportDeclaration':
+      case 'ExportAllDeclaration':
+      case 'BreakStatement':
+      case 'ContinueStatement':
+        break;
+      case 'ExportNamedDeclaration': {
+        if (node.declaration) {
+          resolve(node.declaration);
+        } else if (!node.source) {
+          for (const spec of node.specifiers) {
+            reference(spec.local, 'read', { exported: true });
+          }
+        }
+        break;
+      }
+      case 'ExportDefaultDeclaration': {
+        resolve(node.declaration);
+        break;
+      }
+      case 'LabeledStatement': {
+        resolve(node.body);
+        break;
+      }
+      case 'ThisExpression':
+      case 'Super':
+      case 'MetaProperty': {
+        analysis.thisSpans.push([node.start, node.end]);
+        break;
+      }
+      case 'ClassDeclaration':
+      case 'ClassExpression': {
+        resolveDecorators(node.decorators, outerDepth);
+        if (node.superClass) {
+          resolve(node.superClass);
+        }
+        resolve(node.body);
+        break;
+      }
+      case 'PropertyDefinition':
+      case 'MethodDefinition':
+      case 'AccessorProperty': {
+        for (const decorator of node.decorators) {
+          resolve(decorator);
+        }
+        if (node.computed) {
+          resolve(node.key);
+        }
+        if (node.value) {
+          resolve(node.value);
+        }
+        break;
+      }
+      case 'TSEnumDeclaration': {
+        for (const member of node.body.members) {
+          if (member.computed) {
+            resolve(member.id);
+          }
+          if (member.initializer) {
+            resolve(member.initializer);
+          }
+        }
+        break;
+      }
+      case 'TSModuleDeclaration': {
+        if (node.body) {
+          resolve(node.body);
+        }
+        break;
+      }
+      case 'TSImportEqualsDeclaration': {
+        // `import x = A.B` references `A`. `require("m")` references nothing.
+        let root = node.moduleReference;
+        while (root.type === 'TSQualifiedName') {
+          root = root.left;
+        }
+        if (root.type === 'Identifier') {
+          reference(root, 'read');
+        }
+        break;
+      }
+      case 'JSXElement': {
+        const opening = node.openingElement;
+        const closing = node.closingElement;
+        const root = jsxRoot(opening.name);
+        const binding = root.type === 'JSXIdentifier' ? lookup(root.name) : null;
+        analysis.names.add(root.name);
+        analysis.jsxNames.push({
+          element: node,
+          opening: opening.name,
+          closing: closing ? closing.name : null,
+          root,
+          resolved: binding != null,
+        });
+        visitJSXAttributes(opening.attributes);
+        visitJSXChildren(node.children);
+        break;
+      }
+      case 'JSXFragment': {
+        visitJSXChildren(node.children);
+        break;
+      }
+      case 'JSXExpressionContainer': {
+        if (node.expression.type !== 'JSXEmptyExpression') {
+          resolve(node.expression);
+        }
+        break;
+      }
+      default:
+        eachChild(node, resolve);
+        break;
+    }
+    parentStack.pop();
+    if (mapped) {
+      scopeStack.pop();
+    }
+    if (named) {
+      scopeStack.pop();
+    }
+  }
+
+  parentStack.push(program);
+  for (const stmt of program.body) {
+    resolve(stmt);
+  }
+  parentStack.pop();
+
+  return analysis;
+}
