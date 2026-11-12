@@ -36,14 +36,27 @@ for (const route of routes) {
 }
 await render('/404', '404.html');
 
+// The same address as `getOrigin` in src/site.ts. A canonical link must be
+// absolute.
+const fromEnv =
+  process.env.SITE_URL ??
+  process.env.VERCEL_PROJECT_PRODUCTION_URL ??
+  process.env.VERCEL_BRANCH_URL ??
+  process.env.VERCEL_URL;
+let origin = 'https://solid-labels.vercel.app';
+if (fromEnv !== undefined && fromEnv !== '') {
+  origin = fromEnv.startsWith('http') ? fromEnv : `https://${fromEnv}`;
+}
+
 // Old paths keep a small page that sends readers to the new one. Vercel also
 // answers them with a permanent redirect (see vercel.json).
 for (const [from, to] of Object.entries(redirects)) {
+  const canonical = new URL(to, origin).href;
   const target = join(clientDir, from.slice(1), 'index.html');
   await mkdir(dirname(target), { recursive: true });
   await writeFile(
     target,
-    `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Moved</title><meta name="robots" content="noindex"><link rel="canonical" href="${to}"><meta http-equiv="refresh" content="0; url=${to}"></head><body><p>This page moved to <a href="${to}">${to}</a>.</p></body></html>`,
+    `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Moved</title><meta name="robots" content="noindex"><link rel="canonical" href="${canonical}"><meta http-equiv="refresh" content="0; url=${to}"></head><body><p>This page moved to <a href="${to}">${to}</a>.</p></body></html>`,
   );
   console.log(`redirect stub ${from} -> ${to}`);
 }

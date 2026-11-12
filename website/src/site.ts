@@ -30,8 +30,8 @@ export const DOCS_HOME = '/docs/getting-started';
 
 export const REPO_URL = 'https://github.com/lxsmnsyc/solid-labels';
 
-// TODO: set SITE_URL once the domain is known. Vercel's production URL is the
-// fallback. With neither, canonical and Open Graph URLs stay relative.
+// Link previews need absolute URLs. `SITE_URL` overrides the address, then
+// Vercel's URLs, then the production address.
 export function getOrigin(): string {
   const fromEnv =
     typeof process === 'undefined'
@@ -41,7 +41,7 @@ export function getOrigin(): string {
         process.env.VERCEL_BRANCH_URL ??
         process.env.VERCEL_URL);
   if (fromEnv === undefined || fromEnv === '') {
-    return '';
+    return 'https://solid-labels.vercel.app';
   }
   return fromEnv.startsWith('http') ? fromEnv : `https://${fromEnv}`;
 }

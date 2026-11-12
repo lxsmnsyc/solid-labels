@@ -28,9 +28,7 @@ export default function Document(props: { children: JSX.Element }): JSX.Element 
           <meta name="description" content={route.description} />
           <meta name="color-scheme" content="light dark" />
           <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-          <solid:show when={origin !== ''}>
-            <link rel="canonical" href={url} />
-          </solid:show>
+          <link rel="canonical" href={url} />
           <meta property="og:type" content="website" />
           <meta property="og:site_name" content="solid-labels" />
           <meta property="og:title" content={title} />
