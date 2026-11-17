@@ -3,7 +3,9 @@
 'unplugin-solid-labels': major
 ---
 
-Rewrite the compiler on Oxc and retarget the API surface at Solid 2.0.
+Support Solid 2.0 and rewrite the compiler on Oxc.
+
+`solid-labels` now targets Solid 2.0. The peer dependencies are `solid-js@^2.0.0` and `@solidjs/web@^2.0.0`, and `unplugin-solid-labels` requires the matching `solid-labels` major. Solid 1 users stay on the previous major: `solid-labels@0.17` and `unplugin-solid-labels@0.17`, maintained on the `0.x` branch.
 
 The Babel-based compiler is replaced with `oxc-parser` (native parsing) and
 `magic-string` (span-based output): untouched code keeps its formatting and
