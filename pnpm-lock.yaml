@@ -330,8 +330,8 @@ importers:
         specifier: 2.0.0
         version: 2.0.0
       terracotta:
-        specifier: 2.0.0-next.12
-        version: 2.0.0-next.12(@solidjs/web@2.0.0(solid-js@2.0.0))(solid-js@2.0.0)
+        specifier: 2.0.0
+        version: 2.0.0(@solidjs/web@2.0.0(solid-js@2.0.0))(solid-js@2.0.0)
     devDependencies:
       '@fontsource-variable/fraunces':
         specifier: ^5.3.0
@@ -2084,11 +2084,11 @@ packages:
     resolution: {integrity: sha512-9zN4uH2OQeQAYbF4BmIzoaa+L5Hb8Dp6kkP6ZXobHQ1FZVICdmzREPDVDBJY7umzdAE8D6zbFfWhxGtagkyslA==}
     engines: {node: '>=22.12.0'}
 
-  solid-use@1.0.0-next.3:
-    resolution: {integrity: sha512-bEUzCWEKEYIYr807QNUQfewX3MlaIYExZFKuM3S9kK3pc4tlnpc0YPKnpQp28Inmtd3DzLkmK9Zq1UC1xVM7Gw==}
+  solid-use@1.0.0:
+    resolution: {integrity: sha512-luOtSE7xOvtJ0VgWu9mo4CeMF68K8TWhPSOvcte25PHPYiMpY3cePH7iChMQCXd2aFa3vENjzJ4EWimGaKB/gA==}
     engines: {node: '>=20'}
     peerDependencies:
-      solid-js: ^2.0.0-rc.5
+      solid-js: ^2.0.0
 
   source-map-js@1.2.2:
     resolution: {integrity: sha512-KGj/8Y43x35aZVDtt+J4mK1hoLGHULMYfSkODJNQjNDC3oW1PqPoxMwo0pLUsWM/UEGzON/NxeHywEfNXNP3Vw==}
@@ -2102,12 +2102,12 @@ packages:
     engines: {node: '>=16 || 14 >=14.17'}
     hasBin: true
 
-  terracotta@2.0.0-next.12:
-    resolution: {integrity: sha512-XaOFTW+SvRwsV4Ralcz+3uIsfPbxwCRETTlHZPjxpNics4PChO3Ea7cRb7gKtWXntCdVsNw48cMm9ZGUM0ugDQ==}
+  terracotta@2.0.0:
+    resolution: {integrity: sha512-bb/toJg+wu6e4G43nKdvyGzmLs8IdroNpoBUNA4oyKEl73C7tzTSiivRHyFxpd2YGQHhbXz2OUOPPRbHvkK6MQ==}
     engines: {node: '>=20'}
     peerDependencies:
-      '@solidjs/web': ^2.0.0-rc.13
-      solid-js: ^2.0.0-rc.13
+      '@solidjs/web': ^2.0.0
+      solid-js: ^2.0.0
 
   thenify-all@1.6.0:
     resolution: {integrity: sha512-RNxQH/qI8/t3thXJDwcstUO4zeqo64+Uy/+sNVRBx4Xn2OX+OZ9oP+iJnNFqplFra2ZUVeKCSa2oVWi3T4uVmA==}
@@ -3734,7 +3734,7 @@ snapshots:
       seroval: 1.8.1
       seroval-plugins: 1.8.0(seroval@1.8.1)
 
-  solid-use@1.0.0-next.3(solid-js@2.0.0):
+  solid-use@1.0.0(solid-js@2.0.0):
     dependencies:
       solid-js: 2.0.0
 
@@ -3752,11 +3752,11 @@ snapshots:
       tinyglobby: 0.2.17
       ts-interface-checker: 0.1.13
 
-  terracotta@2.0.0-next.12(@solidjs/web@2.0.0(solid-js@2.0.0))(solid-js@2.0.0):
+  terracotta@2.0.0(@solidjs/web@2.0.0(solid-js@2.0.0))(solid-js@2.0.0):
     dependencies:
       '@solidjs/web': 2.0.0(solid-js@2.0.0)
       solid-js: 2.0.0
-      solid-use: 1.0.0-next.3(solid-js@2.0.0)
+      solid-use: 1.0.0(solid-js@2.0.0)
 
   thenify-all@1.6.0:
     dependencies:
