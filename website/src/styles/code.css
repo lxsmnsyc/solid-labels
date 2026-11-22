@@ -339,3 +339,130 @@ html:not(.js) .pm-picker {
   top: 50%;
   translate: 0 -50%;
 }
+
+/*
+ * An editable source. The textarea lies over the highlighted code with the
+ * same metrics, and its own text is transparent, so you see the colors and
+ * the caret together.
+ */
+.code.live {
+  display: grid;
+}
+
+.code.live pre,
+.code.live textarea {
+  grid-area: 1 / 1;
+  margin: 0;
+  padding: 1rem 3rem 1rem 1.15rem;
+  font-family: var(--font-mono);
+  font-size: 0.86rem;
+  line-height: 1.7;
+  letter-spacing: 0;
+  tab-size: 2;
+  white-space: pre;
+  overflow: hidden;
+}
+
+.code.live textarea {
+  min-height: 100%;
+  resize: none;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: transparent;
+  caret-color: var(--ctf);
+  outline: none;
+  overflow-x: auto;
+  cursor: text;
+}
+
+.code.live textarea::selection {
+  background: var(--ctf-wash);
+  color: transparent;
+}
+
+.code.live:has(textarea:focus-visible) {
+  box-shadow: 0 0 0 2px var(--ctf);
+}
+
+.code.live:hover:not(:has(textarea:focus)) {
+  box-shadow: 0 0 0 1px var(--rule);
+}
+
+html:not(.js) .code.live textarea {
+  display: none;
+}
+
+html:not(.js) .live-hint {
+  display: none;
+}
+
+.live-hint,
+.pane-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font: 500 0.78rem var(--font-body);
+  color: var(--ink-soft);
+}
+
+.live-hint svg,
+.pane-action svg {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+.pane-action {
+  min-height: 2rem;
+  padding: 0 0.6rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    color 0.15s ease-out,
+    background-color 0.15s ease-out,
+    transform 0.15s ease-out;
+}
+
+.pane-action:hover {
+  color: var(--ink);
+  background: var(--bg-sunk);
+}
+
+.pane-action:active {
+  transform: scale(0.95);
+}
+
+.pane-action[hidden],
+.live-hint[hidden] {
+  display: none;
+}
+
+/* Output that no longer matches the source, while compiling or on an error. */
+.pane-out .code {
+  transition: opacity 0.2s ease-out;
+}
+
+[data-pending] .pane-out .code {
+  opacity: 0.6;
+  transition-delay: 0.2s;
+}
+
+.pane-out .code[data-stale] {
+  opacity: 0.45;
+}
+
+.live-problem {
+  margin: 0.5rem 0 0;
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--radius);
+  background: var(--ctf-wash);
+  color: var(--ctf);
+  font: 0.82rem/1.5 var(--font-mono);
+  white-space: pre-wrap;
+}
+
+.live-problem[hidden] {
+  display: none;
+}

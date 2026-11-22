@@ -137,6 +137,19 @@ function start(): void {
   setupContents();
   setupSearch();
 
+  // Editable examples load their script and compiler on the first focus.
+  if (document.querySelector('[data-live]') !== null) {
+    let live: Promise<unknown> | undefined;
+    document.addEventListener('focusin', (event) => {
+      if (
+        event.target instanceof HTMLTextAreaElement &&
+        event.target.matches('[data-live-input]')
+      ) {
+        live ??= import('./islands/live').catch(reportError);
+      }
+    });
+  }
+
   // The REPL loads its compilers only on its own page.
   if (document.querySelector('[data-island="repl"]') !== null) {
     import('./islands/repl').catch(reportError);

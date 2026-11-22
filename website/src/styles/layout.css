@@ -1,4 +1,6 @@
 .site-header {
+  box-sizing: border-box;
+  min-height: var(--header-h);
   position: sticky;
   top: 0;
   z-index: 20;
@@ -245,4 +247,15 @@ main {
 
 .site-footer p:first-child a {
   margin: 0;
+}
+
+/* Narrow phones: the mark alone names the site, so the nav and tools fit. */
+@media (max-width: 480px) {
+  .brand-name {
+    display: none;
+  }
+
+  .site-nav a {
+    padding-inline: 0.6rem;
+  }
 }

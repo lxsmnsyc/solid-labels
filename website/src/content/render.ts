@@ -156,9 +156,33 @@ function assertCoverage(): void {
 
 let pairCount = 0;
 
-// A source and its compiled output side by side. When the dev build differs,
-// a radio switch picks the build. It works without scripts.
-function renderPair(source: string, lang: string): string {
+const RESET_ICON =
+  '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8a5 5 0 1 0 1.5-3.5M3 2.5v2.5h2.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+const EDIT_ICON =
+  '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10.5 2.5l3 3-8 8H2.5v-3z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>';
+
+/**
+ * The source of a pair, editable in place. A transparent textarea lies over
+ * the highlighted code, and `src/islands/live.ts` recompiles the output beside
+ * it as you type. Without scripts the textarea is hidden.
+ */
+function renderLiveSource(source: string): string {
+  const trimmed = source.replace(/\n$/, '');
+  return (
+    `<div class="code live"><pre aria-hidden="true"><code>${highlight(trimmed)}\n</code></pre>` +
+    `<textarea data-live-input spellcheck="false" autocapitalize="off" autocomplete="off" ` +
+    `aria-label="Example source, editable">${escapeHtml(trimmed)}</textarea>` +
+    `<button type="button" class="copy" data-copy aria-label="Copy code">${COPY_ICON}</button></div>`
+  );
+}
+
+/**
+ * A source and its compiled output side by side. When the dev build differs,
+ * a radio switch picks the build. The switch works without scripts, and the
+ * source is editable when scripts run.
+ */
+export function renderPair(source: string, lang: string): string {
   pairCount += 1;
   const file = lang === 'jsx' ? 'example.jsx' : 'example.tsx';
   const prod = compileSnippet(source, file, false);
@@ -179,12 +203,16 @@ function renderPair(source: string, lang: string): string {
   if (differs) {
     out += renderCode(dev, 'out-dev');
   }
+  out += '<p class="live-problem" role="alert" hidden></p>';
 
   // Both panes have a head row of the same height, so the code blocks line up.
   return (
-    `<figure class="pair">` +
+    `<figure class="pair" data-live="${file}">` +
     `<div class="pane pane-src" role="group" aria-label="Source">` +
-    `<div class="pane-head"><span class="pane-label">You write</span></div>${renderCode(source)}</div>` +
+    `<div class="pane-head"><span class="pane-label">You write</span>` +
+    `<span class="live-hint">${EDIT_ICON}Editable</span>` +
+    `<button type="button" class="pane-action" data-live-reset hidden>${RESET_ICON}Reset</button>` +
+    `</div>${renderLiveSource(source)}</div>` +
     `<div class="pane pane-out" role="group" aria-label="Compiled output">` +
     `<div class="pane-head">${head}</div>${out}</div>` +
     `</figure>`

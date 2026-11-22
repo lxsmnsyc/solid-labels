@@ -1,11 +1,26 @@
+/*
+ * The REPL fills the window below the header, and the page itself does not
+ * scroll. Each panel scrolls on its own, so a wheel over a panel never has to
+ * choose between the panel and the page.
+ */
 .repl-page {
-  max-width: 1500px;
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - var(--header-h));
+  max-width: 1600px;
   margin: 0 auto;
-  padding: 1rem var(--gutter) 3rem;
+  padding: 0.75rem var(--gutter);
 }
 
 #repl-root {
-  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+body:has(.repl-page) .site-footer {
+  display: none;
 }
 
 .repl-boot {
@@ -27,19 +42,18 @@
   font-size: 0.9rem;
 }
 
-/*
- * Desktop: the editor stays in view on the left. The three results stack on the
- * right, each tall enough to read and resizable with the corner handle.
- */
+/* Wide screens: the editor on the left, the output above the preview on the right. */
 .repl {
+  flex: 1;
+  min-height: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: auto auto auto minmax(0, 1fr);
   grid-template-areas:
     'bar bar'
     'note note'
     'tabs tabs'
     'editor side';
-  align-items: start;
   gap: 0.75rem;
 }
 
@@ -128,11 +142,9 @@
 
 .repl-editor {
   grid-area: editor;
-  position: sticky;
-  top: 4.75rem;
+  position: relative;
   display: grid;
-  height: calc(100vh - 6.5rem);
-  min-height: 24rem;
+  min-height: 0;
   background: var(--bg-raised);
   border: 1.5px solid var(--ink);
   border-radius: var(--radius);
@@ -195,27 +207,98 @@
 
 .repl-side {
   grid-area: side;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: minmax(0, 1.25fr) minmax(0, 1fr);
   gap: 0.75rem;
   min-width: 0;
+  min-height: 0;
 }
 
 .panel {
   position: relative;
   display: flex;
   flex-direction: column;
-  height: 26rem;
-  min-height: 11rem;
+  min-height: 0;
   background: var(--bg-raised);
   border: 1px solid var(--rule);
   border-radius: var(--radius);
   overflow: hidden;
-  resize: vertical;
 }
 
-.panel[data-panel='preview'] {
-  height: 24rem;
+/* The output panel shows one of its two bodies, picked by its own tabs. */
+.panel-body {
+  display: none;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.repl[data-output='labels'] .panel-body[data-panel='labels'],
+.repl[data-output='solid'] .panel-body[data-panel='solid'] {
+  display: flex;
+}
+
+.panel-tabs {
+  flex: none;
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.3rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.panel-tabs button,
+.repl-tabs button {
+  min-height: 2rem;
+  padding: 0 0.75rem;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink-soft);
+  font: 600 0.78rem var(--font-mono);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color 0.15s ease-out,
+    background-color 0.15s ease-out,
+    transform 0.15s ease-out;
+}
+
+.panel-tabs button:hover,
+.repl-tabs button:hover {
+  color: var(--ink);
+}
+
+.panel-tabs button:active,
+.repl-tabs button:active {
+  transform: scale(0.96);
+}
+
+.panel-tabs button[aria-selected='true'],
+.repl-tabs button[aria-selected='true'] {
+  background: var(--bg-sunk);
+  color: var(--ink);
+}
+
+.repl-examples {
+  min-height: 2.25rem;
+  padding: 0 2rem 0 0.8rem;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: var(--bg-raised)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    no-repeat right 0.6rem center / 1rem;
+  color: var(--ink);
+  font: 600 0.85rem var(--font-body);
+  appearance: none;
+  cursor: pointer;
+}
+
+.repl-examples:hover {
+  border-color: var(--ink-soft);
+}
+
+.button.quiet {
+  border-color: transparent;
 }
 
 .panel-title {
@@ -307,71 +390,70 @@
   opacity: 0.45;
 }
 
-/* On a phone the four panels are tabs, and one shows at a time. */
+/* On a phone the panels are tabs, and one shows at a time. */
 @media (max-width: 960px) {
   .repl {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto minmax(0, 1fr);
     grid-template-areas:
       'bar'
       'note'
       'tabs'
-      'editor'
-      'side';
+      'main';
   }
 
   .repl-tabs {
     display: flex;
     gap: 0.25rem;
-    padding: 0.2rem;
-    border: 1px solid var(--rule);
+    padding: 0.25rem;
     border-radius: 999px;
+    background: var(--bg-sunk);
     overflow-x: auto;
   }
 
   .repl-tabs button {
     flex: 1;
-    min-height: 2rem;
-    padding: 0.2rem 0.6rem;
-    border: 0;
     border-radius: 999px;
-    background: transparent;
-    color: var(--ink-soft);
-    font: 600 0.8rem var(--font-mono);
-    white-space: nowrap;
-    cursor: pointer;
   }
 
   .repl-tabs button[aria-selected='true'] {
-    background: var(--ink);
-    color: var(--bg);
+    background: var(--bg-raised);
   }
 
   .repl-editor,
-  .panel {
+  .repl-side {
+    grid-area: main;
+  }
+
+  .repl-side {
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  /* The output tabs move into the tab bar above. */
+  .panel-tabs {
     display: none;
   }
 
-  .repl[data-tab='source'] .repl-editor,
-  .repl[data-tab='labels'] .panel[data-panel='labels'],
-  .repl[data-tab='solid'] .panel[data-panel='solid'],
-  .repl[data-tab='preview'] .panel[data-panel='preview'] {
-    display: flex;
+  .repl-editor,
+  .panel,
+  .panel-body {
+    display: none;
   }
 
   .repl[data-tab='source'] .repl-editor {
     display: grid;
   }
 
-  .repl-editor {
-    position: relative;
-    top: 0;
-    height: 65vh;
-    min-height: 20rem;
+  .repl[data-tab='labels'] .panel-output,
+  .repl[data-tab='solid'] .panel-output,
+  .repl[data-tab='preview'] .panel[data-panel='preview'],
+  .repl[data-tab='labels'] .panel-body[data-panel='labels'],
+  .repl[data-tab='solid'] .panel-body[data-panel='solid'] {
+    display: flex;
   }
 
-  .panel {
-    height: 65vh;
-    min-height: 20rem;
-    resize: none;
+  .repl:not([data-tab='source']) .repl-editor,
+  .repl[data-tab='source'] .repl-side {
+    display: none;
   }
 }

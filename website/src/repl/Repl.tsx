@@ -1,5 +1,5 @@
 import type { JSX } from '@solidjs/web';
-import { DEFAULT_EXAMPLE } from '../lib/examples';
+import { DEFAULT_EXAMPLE, REPL_EXAMPLES } from '../lib/examples';
 import { escapeHtml, highlight } from '../lib/highlight';
 import { decodeState, encodeState } from '../lib/share';
 import { compileInWorker } from './compiler-client';
@@ -8,6 +8,12 @@ import { createPreviewDocument } from './preview';
 import type { PreviewMessage } from './preview';
 
 type Tab = 'source' | 'labels' | 'solid' | 'preview';
+type Output = 'labels' | 'solid';
+
+const OUTPUTS: { id: Output; label: string }[] = [
+  { id: 'labels', label: 'solid-labels' },
+  { id: 'solid', label: 'Solid' },
+];
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'source', label: 'Source' },
@@ -39,7 +45,12 @@ export function Repl(): JSX.Element {
   let code = $signal<string>(saved?.code ?? DEFAULT_EXAMPLE);
   let dev = $signal<boolean>(saved?.dev ?? false);
   let copied = $signal<boolean>(false);
+  // Phones show one panel at a time. Wide screens show the editor, one
+  // output and the preview together.
   let tab = $signal<Tab>('source');
+  let output = $signal<Output>('labels');
+  // The code an example replaced, so loading one by mistake can be undone.
+  let undo = $signal<string | undefined>();
   let dark = $signal<boolean>(isDark());
 
   // The last good result stays on screen while the code has an error.
@@ -136,12 +147,12 @@ export function Repl(): JSX.Element {
 
   // Rebuild the preview when the runnable output changes.
   $effect(() => {
-    const output = result?.runnable;
-    if (output === undefined) {
+    const runnable = result?.runnable;
+    if (runnable === undefined) {
       return undefined;
     }
     const timer = setTimeout(() => {
-      refs.document = createPreviewDocument(output, isDark());
+      refs.document = createPreviewDocument(runnable, isDark());
       mountFrame();
     }, 200);
     return () => {
@@ -218,6 +229,25 @@ export function Repl(): JSX.Element {
 
   function onInput(event: InputEvent & { currentTarget: HTMLTextAreaElement }): void {
     code = event.currentTarget.value;
+    undo = undefined;
+  }
+
+  function loadExample(event: Event & { currentTarget: HTMLSelectElement }): void {
+    const picked = REPL_EXAMPLES.find((example) => example.id === event.currentTarget.value);
+    // The menu goes back to its label, so the same example can be picked again.
+    event.currentTarget.value = '';
+    if (picked === undefined || picked.code === code) {
+      return;
+    }
+    undo = code;
+    code = picked.code;
+  }
+
+  function undoExample(): void {
+    if (undo !== undefined) {
+      code = undo;
+      undo = undefined;
+    }
   }
 
   // Tab indents by two spaces. Escape then Tab moves focus on, as in other editors.
@@ -256,9 +286,13 @@ export function Repl(): JSX.Element {
   }
 
   // Arrow keys move between the tabs, as in a tab list.
-  function onTabKeyDown(event: KeyboardEvent): void {
+  function readStep(event: KeyboardEvent): number | undefined {
     const steps: Record<string, number | undefined> = { ArrowRight: 1, ArrowLeft: -1 };
-    const step = steps[event.key];
+    return steps[event.key];
+  }
+
+  function onTabKeyDown(event: KeyboardEvent): void {
+    const step = readStep(event);
     if (step === undefined) {
       return;
     }
@@ -267,6 +301,18 @@ export function Repl(): JSX.Element {
     const next = TABS[(at + step + TABS.length) % TABS.length];
     tab = next.id;
     document.getElementById(`repl-tab-${next.id}`)?.focus();
+  }
+
+  function onOutputKeyDown(event: KeyboardEvent): void {
+    const step = readStep(event);
+    if (step === undefined) {
+      return;
+    }
+    event.preventDefault();
+    const at = OUTPUTS.findIndex((item) => item.id === output);
+    const next = OUTPUTS[(at + step + OUTPUTS.length) % OUTPUTS.length];
+    output = next.id;
+    document.getElementById(`repl-output-${next.id}`)?.focus();
   }
 
   function getEditorHtml(): string {
@@ -289,7 +335,7 @@ export function Repl(): JSX.Element {
   const editorHtml = $memo(getEditorHtml());
 
   return (
-    <div class="repl" data-tab={tab}>
+    <div class="repl" data-tab={tab} data-output={output}>
       <div class="repl-bar">
         <span class="repl-status" data-state={status} role="status">
           <solid:switch>
@@ -303,6 +349,21 @@ export function Repl(): JSX.Element {
             </solid:match>
           </solid:switch>
         </span>
+        <solid:show when={undo !== undefined}>
+          <button type="button" class="button quiet" onClick={undoExample}>
+            Undo
+          </button>
+        </solid:show>
+        <select class="repl-examples" aria-label="Load an example" onChange={loadExample}>
+          <option value="" selected>
+            Examples
+          </option>
+          <solid:for each={REPL_EXAMPLES}>
+            {(example: (typeof REPL_EXAMPLES)[number]) => (
+              <option value={example.id}>{example.label}</option>
+            )}
+          </solid:for>
+        </select>
         <label class="switch">
           <input
             type="checkbox"
@@ -377,32 +438,51 @@ export function Repl(): JSX.Element {
       </div>
 
       <div class="repl-side">
-        <section class="panel" data-panel="labels" aria-labelledby="repl-title-labels">
-          <h2 class="panel-title" id="repl-title-labels">
-            solid-labels
-          </h2>
-          <Show
-            when={problem}
-            fallback={
-              <pre>
-                <code innerHTML={labelsHtml} />
-              </pre>
-            }
+        <section class="panel panel-output">
+          <div
+            class="panel-tabs"
+            role="tablist"
+            aria-label="Compiled output"
+            onKeyDown={onOutputKeyDown}
           >
-            {(current) => (
-              <p class="problem" id="repl-problem" role="alert">
-                {formatProblem(current())}
-              </p>
-            )}
-          </Show>
-        </section>
-        <section class="panel" data-panel="solid" aria-labelledby="repl-title-solid">
-          <h2 class="panel-title" id="repl-title-solid">
-            Solid
-          </h2>
-          <pre data-stale={problem === undefined ? undefined : ''}>
-            <code innerHTML={solidHtml} />
-          </pre>
+            <solid:for each={OUTPUTS}>
+              {(item: { id: Output; label: string }) => (
+                <button
+                  type="button"
+                  role="tab"
+                  id={`repl-output-${item.id}`}
+                  aria-selected={output === item.id ? 'true' : 'false'}
+                  tabindex={output === item.id ? 0 : -1}
+                  onClick={() => {
+                    output = item.id;
+                  }}
+                >
+                  {item.label}
+                </button>
+              )}
+            </solid:for>
+          </div>
+          <div class="panel-body" data-panel="labels" role="tabpanel" aria-label="solid-labels">
+            <Show
+              when={problem}
+              fallback={
+                <pre>
+                  <code innerHTML={labelsHtml} />
+                </pre>
+              }
+            >
+              {(current) => (
+                <p class="problem" id="repl-problem" role="alert">
+                  {formatProblem(current())}
+                </p>
+              )}
+            </Show>
+          </div>
+          <div class="panel-body" data-panel="solid" role="tabpanel" aria-label="Solid">
+            <pre data-stale={problem === undefined ? undefined : ''}>
+              <code innerHTML={solidHtml} />
+            </pre>
+          </div>
         </section>
         <section class="panel" data-panel="preview" aria-labelledby="repl-title-preview">
           <h2 class="panel-title" id="repl-title-preview">

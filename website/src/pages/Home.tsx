@@ -1,7 +1,6 @@
 import type { JSX } from '@solidjs/web';
-import { compile } from 'solid-labels/compiler';
 import site from '../../package.json';
-import { COPY_ICON, renderInstall } from '../content/render';
+import { COPY_ICON, renderInstall, renderPair } from '../content/render';
 import { COMPARE_HAND, COMPARE_LABELS, DEFAULT_EXAMPLE, DEMOS } from '../lib/examples';
 import type { Demo } from '../lib/examples';
 import { highlight } from '../lib/highlight';
@@ -10,23 +9,6 @@ import { DOCS_HOME } from '../site';
 
 const INSTALL_ARGS = '-D solid-labels unplugin-solid-labels';
 const SOLID_VERSION = site.dependencies['solid-js'];
-
-interface CompiledDemo extends Demo {
-  output: string;
-  replHref: string;
-}
-
-function compileDemo(demo: Demo): CompiledDemo {
-  const output = compile(`${demo.id}.tsx`, demo.source);
-  if (output === null) {
-    throw new Error(`The ${demo.id} demo compiles to nothing.`);
-  }
-  return {
-    ...demo,
-    output: output.code,
-    replHref: `/repl#${encodeState({ code: demo.source, dev: false })}`,
-  };
-}
 
 /** Counts what a reader has to type: characters other than whitespace, and lines with code. */
 function measure(source: string): { chars: number; lines: number } {
@@ -89,28 +71,9 @@ function ChevronIcon(): JSX.Element {
   );
 }
 
-function DemoPanel(props: { demo: CompiledDemo }): JSX.Element {
-  return (
-    <div class="demo-panel">
-      <figure class="pair">
-        <div class="pane pane-src" role="group" aria-label="Source">
-          <div class="pane-head">
-            <span class="pane-label">You write</span>
-          </div>
-          <CodeBlock code={props.demo.source} />
-        </div>
-        <div class="pane pane-out" role="group" aria-label="Compiled output">
-          <div class="pane-head">
-            <span class="pane-label">Solid gets</span>
-            <a class="quiet-link" href={props.demo.replHref}>
-              Edit in the REPL
-            </a>
-          </div>
-          <CodeBlock code={props.demo.output} class="demo-out" />
-        </div>
-      </figure>
-    </div>
-  );
+function DemoPanel(props: { demo: Demo }): JSX.Element {
+  // The same editable pair the docs use, compiled at build time.
+  return <div class="demo-panel" innerHTML={renderPair(props.demo.source, 'tsx')} />;
 }
 
 const FAQ: { question: string; answer: string }[] = [
@@ -150,10 +113,7 @@ const FAQ: { question: string; answer: string }[] = [
 ];
 
 export default function Home(): JSX.Element {
-  const demos: CompiledDemo[] = [];
-  for (const demo of DEMOS) {
-    demos.push(compileDemo(demo));
-  }
+  const demos = DEMOS;
   const labels = measure(COMPARE_LABELS);
   const hand = measure(COMPARE_HAND);
   const saved = Math.round((1 - labels.chars / hand.chars) * 100);
@@ -183,7 +143,7 @@ export default function Home(): JSX.Element {
         <div class="demo">
           <div class="demo-tabs" role="radiogroup" aria-label="Example">
             <solid:for each={demos}>
-              {(demo: CompiledDemo, index: () => number) => (
+              {(demo: Demo, index: () => number) => (
                 <>
                   <input
                     type="radio"
@@ -198,7 +158,7 @@ export default function Home(): JSX.Element {
             </solid:for>
           </div>
           <div class="demo-panels">
-            <solid:for each={demos}>{(demo: CompiledDemo) => <DemoPanel demo={demo} />}</solid:for>
+            <solid:for each={demos}>{(demo: Demo) => <DemoPanel demo={demo} />}</solid:for>
           </div>
         </div>
       </section>

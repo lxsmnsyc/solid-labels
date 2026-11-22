@@ -150,15 +150,15 @@
  * Each time an example shows, a line sweeps down the output once, as if the
  * compiler wrote it. The output fades in behind the line.
  */
-.demo-out {
+.demo-panel .out-prod {
   overflow: hidden;
 }
 
-.demo-out pre {
+.demo-panel .out-prod pre {
   animation: compile-in 0.5s ease-out both;
 }
 
-.demo-out::before {
+.demo-panel .out-prod::before {
   content: '';
   position: absolute;
   z-index: 1;
@@ -394,12 +394,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .demo-out pre,
-  .demo-out::before {
+  .demo-panel .out-prod pre,
+  .demo-panel .out-prod::before {
     animation: none;
   }
 
-  .demo-out::before {
+  .demo-panel .out-prod::before {
     display: none;
   }
 }

@@ -118,7 +118,7 @@ count += 1;
 console.log(count);
 ```
 
-Reads become `count()`. Writes become `setcount_1(...)`. Open the [REPL](/repl) to try your own code.
+Reads become `count()`. Writes become `setcount_1(...)`. Edit the source above to see the output change, or open the [REPL](/repl) for a whole component with a live preview.
 
 ## Options
 
