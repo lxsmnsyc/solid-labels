@@ -32,10 +32,12 @@ export interface Document {
   headings: Heading[];
 }
 
-const COPY_ICON =
-  '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 2.5h7v9h-7zM3.5 5v8.5h7" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>';
+// Two icons in one button. The check shows for a moment after a copy.
+export const COPY_ICON =
+  '<svg class="icon-copy" viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 2.5h7v9h-7zM3.5 5v8.5h7" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>' +
+  '<svg class="icon-done" viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 8.5 3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
-function renderCode(code: string, extraClass = '', plain = false): string {
+export function renderCode(code: string, extraClass = '', plain = false): string {
   const trimmed = code.replace(/\n$/, '');
   const body = plain ? escapeHtml(trimmed) : highlight(trimmed);
   return (
@@ -141,24 +143,27 @@ function renderPair(source: string, lang: string): string {
   const differs = prod !== dev;
   const name = `build-${pairCount}`;
 
-  let out = '';
+  let head = '<span class="pane-label">Solid gets</span>';
   if (differs) {
-    out +=
-      `<div class="builds" role="radiogroup" aria-label="Build">` +
+    head +=
+      `<span class="builds" role="radiogroup" aria-label="Build">` +
       `<input type="radio" name="${name}" id="${name}-prod" value="prod" checked>` +
       `<label for="${name}-prod">prod</label>` +
       `<input type="radio" name="${name}" id="${name}-dev" value="dev">` +
-      `<label for="${name}-dev">dev</label></div>`;
+      `<label for="${name}-dev">dev</label></span>`;
   }
-  out += renderCode(prod, 'out-prod');
+  let out = renderCode(prod, 'out-prod');
   if (differs) {
     out += renderCode(dev, 'out-dev');
   }
 
+  // Both panes have a head row of the same height, so the code blocks line up.
   return (
-    `<figure class="pair${differs ? ' has-builds' : ''}">` +
-    `<div class="pair-src" role="group" aria-label="Source">${renderCode(source)}</div>` +
-    `<div class="pair-out" role="group" aria-label="Compiled output">${out}</div>` +
+    `<figure class="pair">` +
+    `<div class="pane pane-src" role="group" aria-label="Source">` +
+    `<div class="pane-head"><span class="pane-label">You write</span></div>${renderCode(source)}</div>` +
+    `<div class="pane pane-out" role="group" aria-label="Compiled output">` +
+    `<div class="pane-head">${head}</div>${out}</div>` +
     `</figure>`
   );
 }

@@ -55,110 +55,130 @@
 
 .copy {
   position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
+  z-index: 2;
+  top: 0.4rem;
+  right: 0.4rem;
   display: grid;
   place-items: center;
+  /* 32px visible, and the pseudo-element below makes the hit area 44px. */
   width: 2rem;
   height: 2rem;
   padding: 0;
-  border: 1px solid var(--rule);
-  border-radius: 8px;
-  background: var(--bg);
+  border: 0;
+  border-radius: 6px;
+  background: var(--bg-raised);
   color: var(--ink-soft);
   cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.15s ease;
+  transition:
+    color 0.15s ease-out,
+    background-color 0.15s ease-out,
+    transform 0.15s ease-out;
+}
+
+.copy::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+}
+
+.copy:hover {
+  color: var(--ink);
+  background: var(--bg-sunk);
+}
+
+.copy:active {
+  transform: scale(0.92);
 }
 
 .copy svg {
+  grid-area: 1 / 1;
   width: 1rem;
   height: 1rem;
+  transition:
+    opacity 0.15s ease-out,
+    transform 0.2s ease-out;
 }
 
-.code:hover .copy,
-.copy:focus-visible,
-.copy[data-done] {
-  opacity: 1;
+.copy .icon-done {
+  opacity: 0;
+  transform: scale(0.6);
 }
 
 .copy[data-done] {
   color: var(--string);
 }
 
-@media (hover: none) {
-  .copy {
-    opacity: 1;
-  }
+.copy[data-done] .icon-copy {
+  opacity: 0;
+  transform: scale(0.6);
+}
+
+.copy[data-done] .icon-done {
+  opacity: 1;
+  transform: none;
+}
+
+/* Keep the first line of code clear of the copy button. */
+.code pre {
+  padding-right: 3rem;
 }
 
 /*
- * A pair is the site's recurring figure: what you write on the left, what
- * Solid receives on the right, with a dashed seam between them.
+ * A pair shows what you write next to what Solid receives. Each pane has a
+ * head row of the same height, so the two code blocks start on one line.
  */
 .pair {
-  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 1.5rem;
+  gap: 1rem 1.5rem;
   margin: 1.75rem 0;
 }
 
-.pair-src .code {
-  box-shadow: inset 3px 0 0 var(--ctf);
-}
-
-.pair-out .code {
-  box-shadow: inset 3px 0 0 var(--gen);
-}
-
-.pair::before {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: 0;
-  bottom: 0;
-  border-left: 1.5px dashed var(--rule);
-  pointer-events: none;
-}
-
-.pair::after {
-  content: '→';
-  position: absolute;
-  left: 50%;
-  top: 1.1rem;
-  display: grid;
-  place-items: center;
-  width: 1.9rem;
-  height: 1.9rem;
-  translate: -50% 0;
-  border-radius: 50%;
-  background: var(--bg);
-  border: 1.5px solid var(--rule);
-  color: var(--ink-soft);
-  font: 700 0.9rem var(--font-mono);
-  transition:
-    translate 0.3s ease,
-    color 0.3s ease,
-    border-color 0.3s ease;
-}
-
-.pair:hover::after {
-  translate: calc(-50% + 3px) 0;
-  color: var(--ctf);
-  border-color: var(--ctf);
-}
-
-.pair-out {
+.pane {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
   min-width: 0;
 }
 
-.builds {
+.pane > .code {
+  flex: 1;
+}
+
+.pane-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.pane-label {
   display: inline-flex;
-  align-self: flex-end;
+  align-items: center;
+  gap: 0.5rem;
+  font: 600 0.75rem var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+/* A dot in the side's color: vermilion for source, cobalt for output. */
+.pane-label::before {
+  content: '';
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--ctf);
+}
+
+.pane-out .pane-label::before {
+  background: var(--gen);
+}
+
+.builds {
+  position: relative;
+  display: inline-flex;
   gap: 0.15rem;
   padding: 0.15rem;
   border: 1px solid var(--rule);
@@ -173,10 +193,20 @@
 }
 
 .builds label {
-  padding: 0.3rem 0.8rem;
+  display: inline-grid;
+  place-items: center;
+  min-height: 1.6rem;
+  padding: 0 0.8rem;
   border-radius: 999px;
   color: var(--ink-soft);
   cursor: pointer;
+  transition:
+    color 0.15s ease-out,
+    background-color 0.15s ease-out;
+}
+
+.builds label:hover {
+  color: var(--ink);
 }
 
 .builds input:checked + label {
@@ -189,41 +219,15 @@
   outline-offset: 2px;
 }
 
-.pair-out:has(input[value='dev']:checked) .out-prod,
-.pair-out:not(:has(input[value='dev']:checked)) .out-dev {
+.pane-out:has(input[value='dev']:checked) .out-prod,
+.pane-out:not(:has(input[value='dev']:checked)) .out-dev {
   display: none;
 }
 
 @media (max-width: 760px) {
   .pair {
     grid-template-columns: minmax(0, 1fr);
-    gap: 2.25rem;
   }
-
-  .pair::before {
-    left: 0;
-    right: 0;
-    top: 50%;
-    bottom: auto;
-    border-left: 0;
-    border-top: 1.5px dashed var(--rule);
-  }
-
-  .pair::after {
-    left: 50%;
-    top: 50%;
-    translate: -50% -50%;
-    rotate: 90deg;
-  }
-
-  .pair:hover::after {
-    translate: -50% calc(-50% + 3px);
-  }
-}
-
-/* Align both panels of a pair that has the build switch above the output. */
-.pair.has-builds .pair-src {
-  padding-top: 2.1rem;
 }
 
 /* A shadow on the edge of a code block marks content that scrolls out of view. */

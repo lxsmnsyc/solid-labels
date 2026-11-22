@@ -27,119 +27,28 @@ function setupCopy(): void {
       return;
     }
     const button = event.target.closest<HTMLButtonElement>('[data-copy]');
-    const code = button?.parentElement?.querySelector('pre');
-    if (!button || !code) {
+    // A button can name its text, such as an install command without the prompt.
+    const text =
+      button?.dataset.copyText ?? button?.parentElement?.querySelector('pre')?.textContent;
+    if (!button || text === undefined) {
       return;
     }
-    navigator.clipboard.writeText(code.textContent).then(
+    // Keep the first label, so a second click during the check does not save 'Copied'.
+    button.dataset.label ??= button.getAttribute('aria-label') ?? 'Copy code';
+    const label = button.dataset.label;
+    navigator.clipboard.writeText(text).then(
       () => {
         button.dataset.done = '';
         button.setAttribute('aria-label', 'Copied');
         setTimeout(() => {
           delete button.dataset.done;
-          button.setAttribute('aria-label', 'Copy code');
+          button.setAttribute('aria-label', label);
         }, 1600);
       },
       () => {
         button.setAttribute('aria-label', 'Copy failed');
       },
     );
-  });
-}
-
-// The hero beam. It sweeps on its own. A horizontal drag or the arrow keys take
-// over, and the button pauses it or starts it again (WCAG 2.2.2).
-function setupBeam(): void {
-  const beam = document.querySelector<HTMLElement>('[data-beam]');
-  const stage = beam?.querySelector<HTMLElement>('.beam-stage');
-  const toggle = beam?.querySelector<HTMLButtonElement>('[data-beam-toggle]');
-  if (!beam || !stage || !toggle) {
-    return;
-  }
-
-  function describeToggle(): void {
-    const running = !beam?.hasAttribute('data-manual');
-    toggle?.setAttribute('aria-label', running ? 'Pause animation' : 'Play animation');
-    toggle?.toggleAttribute('data-paused', !running);
-  }
-
-  function setBeam(percent: number): void {
-    const value = Math.min(100, Math.max(0, percent));
-    beam?.setAttribute('data-manual', '');
-    stage?.style.setProperty('--beam', `${value}%`);
-    stage?.setAttribute('aria-valuenow', String(Math.round(value)));
-    describeToggle();
-  }
-
-  // The stage scrolls the page vertically, so only the horizontal position of
-  // the pointer moves the beam.
-  function fromPointer(event: PointerEvent): void {
-    const box = stage?.getBoundingClientRect();
-    if (box !== undefined) {
-      setBeam(((event.clientX - box.left) / box.width) * 100);
-    }
-  }
-
-  // A mouse takes over at once. A touch only takes over on a horizontal move,
-  // so a vertical swipe on the stage still scrolls the page.
-  let dragging = false;
-  let startX = 0;
-  let startY = 0;
-  stage.addEventListener('pointerdown', (event) => {
-    startX = event.clientX;
-    startY = event.clientY;
-    if (event.pointerType !== 'touch') {
-      dragging = true;
-      stage.setPointerCapture(event.pointerId);
-      fromPointer(event);
-    }
-  });
-  stage.addEventListener('pointermove', (event) => {
-    if (!dragging && event.pointerType === 'touch' && event.buttons === 1) {
-      const dx = Math.abs(event.clientX - startX);
-      const dy = Math.abs(event.clientY - startY);
-      if (dx > 8 && dx > dy) {
-        dragging = true;
-        stage.setPointerCapture(event.pointerId);
-      }
-    }
-    if (dragging) {
-      fromPointer(event);
-    }
-  });
-  function stopDrag(): void {
-    dragging = false;
-  }
-  stage.addEventListener('pointerup', stopDrag);
-  stage.addEventListener('pointercancel', stopDrag);
-  stage.addEventListener('keydown', (event) => {
-    const now = Number(stage.getAttribute('aria-valuenow'));
-    const steps: Record<string, number> = {
-      ArrowDown: 10,
-      ArrowRight: 10,
-      ArrowUp: -10,
-      ArrowLeft: -10,
-    };
-    if (event.key in steps) {
-      event.preventDefault();
-      setBeam(now + steps[event.key]);
-    } else if (event.key === 'Home' || event.key === 'End') {
-      event.preventDefault();
-      setBeam(event.key === 'Home' ? 0 : 100);
-    }
-  });
-
-  toggle.addEventListener('click', () => {
-    if (beam.hasAttribute('data-manual')) {
-      // Back to the sweep.
-      beam.removeAttribute('data-manual');
-      stage.style.removeProperty('--beam');
-    } else {
-      // Freeze where the line is now.
-      const current = Number.parseFloat(getComputedStyle(stage).getPropertyValue('--beam'));
-      setBeam(Number.isNaN(current) ? 50 : current);
-    }
-    describeToggle();
   });
 }
 
@@ -223,7 +132,6 @@ function setupSearch(): void {
 function start(): void {
   setupTheme();
   setupCopy();
-  setupBeam();
   setupContents();
   setupSearch();
 

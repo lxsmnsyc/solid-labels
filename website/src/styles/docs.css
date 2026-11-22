@@ -108,7 +108,6 @@
   font-size: clamp(2.4rem, 6vw, 4rem);
   font-weight: 700;
   letter-spacing: -0.035em;
-  animation: rise 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
 .prose h1 + p {

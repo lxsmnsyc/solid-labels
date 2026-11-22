@@ -176,15 +176,29 @@ main {
   font-weight: 600;
   font-size: 1rem;
   text-decoration: none;
+  min-height: 2.75rem;
   transition:
-    transform 0.15s ease,
-    background 0.15s ease;
+    transform 0.15s ease-out,
+    background-color 0.15s ease-out;
 }
 
 .button:hover {
   color: var(--ink);
   background: var(--ctf-wash);
-  transform: translateY(-2px);
+}
+
+.button:active {
+  transform: scale(0.97);
+}
+
+.button-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+  transition: transform 0.15s ease-out;
+}
+
+.button:hover .button-icon {
+  transform: translateX(3px);
 }
 
 .button.primary {
@@ -196,7 +210,7 @@ main {
 .button.primary:hover {
   color: var(--on-accent);
   background: var(--ctf);
-  box-shadow: 0 6px 0 -2px color-mix(in srgb, var(--ctf) 40%, transparent);
+  background: color-mix(in srgb, var(--ctf) 88%, var(--ink));
 }
 
 .actions {
@@ -204,76 +218,6 @@ main {
   flex-wrap: wrap;
   gap: 0.75rem;
   margin: 1.75rem 0 0;
-}
-
-.features {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-  max-width: var(--page);
-  margin: 4rem auto 0;
-  padding-inline: var(--gutter);
-  counter-reset: feature;
-}
-
-.feature {
-  position: relative;
-  padding: 1.25rem 1.5rem 1.5rem 0;
-  border-top: 2px solid var(--ink);
-}
-
-.feature + .feature {
-  padding-left: 1.5rem;
-  border-left: 1px solid var(--rule);
-}
-
-.feature h2 {
-  margin: 0 0 0.4rem;
-  font-size: 1.35rem;
-}
-
-.feature h2::before {
-  counter-increment: feature;
-  content: '0' counter(feature);
-  display: block;
-  margin-bottom: 0.4rem;
-  font: 500 0.78rem var(--font-mono);
-  letter-spacing: 0.08em;
-  color: var(--ctf);
-}
-
-.feature p {
-  margin: 0;
-  color: var(--ink-soft);
-}
-
-@media (max-width: 700px) {
-  .feature + .feature {
-    padding-left: 0;
-    border-left: 0;
-  }
-}
-
-.showcase {
-  max-width: var(--page);
-  margin: 5rem auto 0;
-  padding-inline: var(--gutter);
-}
-
-.closing {
-  max-width: var(--page);
-  margin: 6rem auto 0;
-  padding: 3rem var(--gutter);
-  text-align: center;
-  border-top: 1px solid var(--rule);
-}
-
-.closing h2 {
-  margin: 0;
-  font-size: clamp(1.8rem, 4vw, 2.8rem);
-}
-
-.closing .actions {
-  justify-content: center;
 }
 
 .site-footer {
