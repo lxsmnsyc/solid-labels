@@ -233,9 +233,12 @@ body:has(.repl-page) .site-footer {
   flex-direction: column;
 }
 
-.repl[data-output='labels'] .panel-body[data-panel='labels'],
-.repl[data-output='solid'] .panel-body[data-panel='solid'] {
-  display: flex;
+/* On a phone the tab bar picks the body instead, so this rule must not apply there. */
+@media (min-width: 961px) {
+  .repl[data-output='labels'] .panel-body[data-panel='labels'],
+  .repl[data-output='solid'] .panel-body[data-panel='solid'] {
+    display: flex;
+  }
 }
 
 .panel-tabs {

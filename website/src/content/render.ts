@@ -170,7 +170,7 @@ const EDIT_ICON =
 function renderLiveSource(source: string): string {
   const trimmed = source.replace(/\n$/, '');
   return (
-    `<div class="code live"><pre aria-hidden="true"><code>${highlight(trimmed)}\n</code></pre>` +
+    `<div class="code live"><pre><code>${highlight(trimmed)}\n</code></pre>` +
     `<textarea data-live-input spellcheck="false" autocapitalize="off" autocomplete="off" ` +
     `aria-label="Example source, editable">${escapeHtml(trimmed)}</textarea>` +
     `<button type="button" class="copy" data-copy aria-label="Copy code">${COPY_ICON}</button></div>`

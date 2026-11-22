@@ -262,8 +262,15 @@ export function Repl(): JSX.Element {
   }
 
   // Tab indents by two spaces. Escape then Tab moves focus on, as in other editors.
+  let tabReleased = false;
   function onKeyDown(event: KeyboardEvent): void {
-    if (event.key !== 'Tab' || event.shiftKey) {
+    if (event.key === 'Escape') {
+      tabReleased = true;
+      return;
+    }
+    const released = tabReleased;
+    tabReleased = false;
+    if (event.key !== 'Tab' || event.shiftKey || released) {
       return;
     }
     event.preventDefault();
@@ -444,7 +451,7 @@ export function Repl(): JSX.Element {
           autocapitalize="off"
           autocomplete="off"
           aria-label="Code"
-          aria-describedby="repl-problem"
+          aria-describedby={problem === undefined ? undefined : 'repl-problem'}
         />
       </div>
 

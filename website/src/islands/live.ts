@@ -23,8 +23,15 @@ let nextId = 0;
 let ready: Promise<Worker> | undefined;
 
 async function connect(): Promise<Worker> {
-  ready ??= new Promise((resolve) => {
+  ready ??= new Promise((resolve, reject) => {
     const created = new Worker(new URL('../live/worker.ts', import.meta.url), { type: 'module' });
+    // A worker that fails to load would leave every edit pending. Reject, and
+    // let the next edit try again.
+    created.addEventListener('error', () => {
+      ready = undefined;
+      created.terminate();
+      reject(new Error('The compiler could not load.'));
+    });
     created.addEventListener('message', (event: MessageEvent<LiveReply>) => {
       const message = event.data;
       if (message.type === 'ready') {
@@ -141,11 +148,12 @@ function setup(figure: HTMLElement): void {
     setEdited(pair, input.value !== pair.original);
     schedule(pair);
   });
-  // The highlighted copy follows the textarea when a long line scrolls.
+  // The highlighted copy follows the textarea when it scrolls.
   input.addEventListener('scroll', () => {
     const pre = highlighted.parentElement;
     if (pre !== null) {
       pre.scrollLeft = input.scrollLeft;
+      pre.scrollTop = input.scrollTop;
     }
   });
   pair.reset?.addEventListener('click', () => {

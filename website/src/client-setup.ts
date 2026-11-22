@@ -28,8 +28,11 @@ function setupCopy(): void {
     }
     const button = event.target.closest<HTMLButtonElement>('[data-copy]');
     // A button can name its text, such as an install command without the prompt.
+    // An editable source copies what the reader typed.
     const text =
-      button?.dataset.copyText ?? button?.parentElement?.querySelector('pre')?.textContent;
+      button?.dataset.copyText ??
+      button?.parentElement?.querySelector('textarea')?.value ??
+      button?.parentElement?.querySelector('pre')?.textContent;
     if (!button || text === undefined) {
       return;
     }
@@ -139,6 +142,10 @@ function start(): void {
 
   // Editable examples load their script and compiler on the first focus.
   if (document.querySelector('[data-live]') !== null) {
+    // The textarea carries the source now, so screen readers skip the highlighted copy.
+    for (const pre of document.querySelectorAll('.code.live pre')) {
+      pre.setAttribute('aria-hidden', 'true');
+    }
     let live: Promise<unknown> | undefined;
     document.addEventListener('focusin', (event) => {
       if (
