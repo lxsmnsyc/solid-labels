@@ -181,7 +181,17 @@ export function Repl(): JSX.Element {
   // The watchdog. Code such as `while (true) {}` blocks the frame, which then
   // sends no beats. The frame is removed, and the page offers a restart.
   $effect(() => {
+    // A hidden tab throttles the frame's timers, so beats stop arriving
+    // without the code being stuck. The watchdog waits while the tab is
+    // hidden, and starts counting again when it shows.
+    function onVisibility(): void {
+      refs.lastBeat = Date.now();
+    }
+    document.addEventListener('visibilitychange', onVisibility);
     const timer = setInterval(() => {
+      if (document.hidden) {
+        return;
+      }
       if (refs.frame !== undefined && Date.now() - refs.lastBeat > BEAT_TIMEOUT_MS) {
         refs.frame.remove();
         refs.frame = undefined;
@@ -190,6 +200,7 @@ export function Repl(): JSX.Element {
     }, 500);
     return () => {
       clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVisibility);
     };
   });
 
