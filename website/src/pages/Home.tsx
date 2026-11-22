@@ -1,19 +1,15 @@
 import type { JSX } from '@solidjs/web';
 import { compile } from 'solid-labels/compiler';
 import site from '../../package.json';
-import { COPY_ICON } from '../content/render';
+import { COPY_ICON, renderInstall } from '../content/render';
 import { COMPARE_HAND, COMPARE_LABELS, DEFAULT_EXAMPLE, DEMOS } from '../lib/examples';
 import type { Demo } from '../lib/examples';
 import { highlight } from '../lib/highlight';
 import { encodeState } from '../lib/share';
-import { loadStats } from '../lib/stats';
-import { DOCS_HOME, REPO_URL } from '../site';
+import { DOCS_HOME } from '../site';
 
-const INSTALL = 'npm install -D solid-labels unplugin-solid-labels';
+const INSTALL_ARGS = '-D solid-labels unplugin-solid-labels';
 const SOLID_VERSION = site.dependencies['solid-js'];
-
-// Prerendering runs this module once, so the numbers are read once per build.
-const stats = await loadStats();
 
 interface CompiledDemo extends Demo {
   output: string;
@@ -59,26 +55,8 @@ function CodeBlock(props: { code: string; class?: string }): JSX.Element {
 }
 
 function Install(): JSX.Element {
-  return (
-    <div class="code install">
-      <pre tabindex="0">
-        <code>
-          <span class="install-prompt" aria-hidden="true">
-            ${' '}
-          </span>
-          {INSTALL}
-        </code>
-      </pre>
-      <button
-        type="button"
-        class="copy"
-        data-copy
-        data-copy-text={INSTALL}
-        aria-label="Copy install command"
-        innerHTML={COPY_ICON}
-      />
-    </div>
-  );
+  // `display: contents` on the wrapper, so the group lays out as a flex child.
+  return <div class="install-slot" innerHTML={renderInstall(INSTALL_ARGS)} />;
 }
 
 function ArrowIcon(): JSX.Element {
@@ -223,31 +201,6 @@ export default function Home(): JSX.Element {
             <solid:for each={demos}>{(demo: CompiledDemo) => <DemoPanel demo={demo} />}</solid:for>
           </div>
         </div>
-      </section>
-
-      <section class="proof" aria-label="Project facts">
-        <ul>
-          <solid:show when={stats.stars !== undefined}>
-            <li>
-              <a href={REPO_URL}>
-                <strong>{formatCount(stats.stars ?? 0)}</strong> stars on GitHub
-              </a>
-            </li>
-          </solid:show>
-          <solid:show when={stats.downloads !== undefined}>
-            <li>
-              <a href="https://www.npmjs.com/package/solid-labels">
-                <strong>{formatCount(stats.downloads ?? 0)}</strong> npm downloads last week
-              </a>
-            </li>
-          </solid:show>
-          <li>
-            <strong>0 bytes</strong> added at runtime
-          </li>
-          <li>
-            <strong>MIT</strong> licensed
-          </li>
-        </ul>
       </section>
 
       <section class="benefits">

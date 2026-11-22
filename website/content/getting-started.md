@@ -7,15 +7,7 @@
 Add the compiler and the plugin for your bundler.
 
 ```sh
-pnpm add -D solid-labels unplugin-solid-labels
-```
-
-```sh
 npm install -D solid-labels unplugin-solid-labels
-```
-
-```sh
-yarn add -D solid-labels unplugin-solid-labels
 ```
 
 Tell TypeScript about the compile-time functions in any `.d.ts` file of your project.

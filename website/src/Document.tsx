@@ -1,11 +1,12 @@
 import type { JSX } from '@solidjs/web';
 import { getCurrentPath } from './lib/location';
+import { RESTORE_PACKAGE_MANAGER_SCRIPT } from './lib/package-manager';
 import { NOT_FOUND, findRoute, getOrigin } from './site';
 import './styles/index.css';
 
-// Runs before first paint. It restores the saved theme, and marks the page so
+// Runs before first paint. It restores the saved package manager and theme, and marks the page so
 // the buttons that need scripts (copy, theme) show only when scripts run.
-const BOOT = `(()=>{try{var t=localStorage.getItem('theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}document.documentElement.classList.add('js')})()`;
+const BOOT = `(()=>{${RESTORE_PACKAGE_MANAGER_SCRIPT};try{var t=localStorage.getItem('theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}document.documentElement.classList.add('js')})()`;
 
 export default function Document(props: { children: JSX.Element }): JSX.Element {
   const path = getCurrentPath();

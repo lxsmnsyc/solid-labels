@@ -12,6 +12,7 @@ import {
   NAMESPACE_COMPONENTS,
 } from '../../../packages/core/compiler/registry';
 import { escapeHtml, highlight } from '../lib/highlight';
+import { ADD_COMMANDS, PACKAGE_MANAGERS, parseNpmInstall } from '../lib/package-manager';
 import { createSlugger, plainHeading } from '../lib/slug';
 
 const sources: Record<string, string | undefined> = import.meta.glob<string>('../../content/*.md', {
@@ -44,6 +45,28 @@ export function renderCode(code: string, extraClass = '', plain = false): string
     `<div class="code ${extraClass}"><pre tabindex="0"><code>${body}</code></pre>` +
     `<button type="button" class="copy" data-copy aria-label="Copy code">${COPY_ICON}</button></div>`
   );
+}
+
+/**
+ * An install command with a package manager picker above it. One command per
+ * manager is rendered, and the stylesheet shows the chosen one. Prerendered
+ * buttons mark npm. The boot script and the client fix that before paint.
+ */
+export function renderInstall(args: string): string {
+  let picker = '<div class="pm-picker" role="group" aria-label="Package manager">';
+  let commands = '';
+  for (const manager of PACKAGE_MANAGERS) {
+    const command = escapeHtml(`${ADD_COMMANDS[manager]} ${args}`);
+    picker +=
+      `<button type="button" class="pm-option" data-pm-option="${manager}" ` +
+      `aria-pressed="${manager === 'npm'}">${manager}</button>`;
+    commands +=
+      `<div class="code install" data-pm-command="${manager}"><pre tabindex="0"><code>` +
+      `<span class="install-prompt" aria-hidden="true">$ </span>${command}</code></pre>` +
+      `<button type="button" class="copy" data-copy data-copy-text="${command}" ` +
+      `aria-label="Copy install command">${COPY_ICON}</button></div>`;
+  }
+  return `<div class="install-group">${picker}</div>${commands}</div>`;
 }
 
 function compileSnippet(source: string, file: string, dev: boolean): string {
@@ -192,6 +215,10 @@ function createMarked(headings: Heading[]): Marked {
           return renderPair(token.text, lang);
         }
         if (kind === 'sh' || kind === 'bash') {
+          const args = parseNpmInstall(token.text);
+          if (args !== undefined) {
+            return renderInstall(args);
+          }
           return renderCode(token.text, 'shell', true);
         }
         return renderCode(token.text);

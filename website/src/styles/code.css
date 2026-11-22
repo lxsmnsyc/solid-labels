@@ -247,3 +247,95 @@
     radial-gradient(farthest-side at 50% 100%, var(--edge), transparent) bottom / 100% 0.7rem scroll
       no-repeat;
 }
+
+/*
+ * An install command with a package manager picker above it. The root
+ * element's data-pm attribute picks the command, so every install command on
+ * the page follows one choice.
+ */
+.install-slot {
+  display: contents;
+}
+
+.install-group {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.prose .install-group {
+  display: flex;
+  max-width: 52rem;
+  margin: 1.25rem 0;
+}
+
+.pm-picker {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.pm-option {
+  display: inline-grid;
+  place-items: center;
+  min-height: 1.75rem;
+  padding: 0 0.6rem;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink-soft);
+  font: 600 0.78rem var(--font-mono);
+  cursor: pointer;
+  transition:
+    color 0.15s ease-out,
+    background-color 0.15s ease-out,
+    transform 0.15s ease-out;
+}
+
+.pm-option:hover {
+  color: var(--ink);
+}
+
+.pm-option:active {
+  transform: scale(0.95);
+}
+
+:root:not([data-pm]) [data-pm-option='npm'],
+:root[data-pm='npm'] [data-pm-option='npm'],
+:root[data-pm='pnpm'] [data-pm-option='pnpm'],
+:root[data-pm='yarn'] [data-pm-option='yarn'],
+:root[data-pm='bun'] [data-pm-option='bun'] {
+  background: var(--bg-sunk);
+  color: var(--ink);
+}
+
+:root:not([data-pm]) [data-pm-command]:not([data-pm-command='npm']),
+:root[data-pm='npm'] [data-pm-command]:not([data-pm-command='npm']),
+:root[data-pm='pnpm'] [data-pm-command]:not([data-pm-command='pnpm']),
+:root[data-pm='yarn'] [data-pm-command]:not([data-pm-command='yarn']),
+:root[data-pm='bun'] [data-pm-command]:not([data-pm-command='bun']) {
+  display: none;
+}
+
+/* The picker needs scripts. Without them, npm shows alone. */
+html:not(.js) .pm-picker {
+  display: none;
+}
+
+.install pre {
+  padding: 0.7rem 3rem 0.7rem 1rem;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  white-space: pre;
+}
+
+.install-prompt {
+  color: var(--ctf);
+  user-select: none;
+}
+
+.install .copy {
+  top: 50%;
+  translate: 0 -50%;
+}

@@ -1,6 +1,5 @@
 /* The home page. Sections share one width and left edge. */
 .hero,
-.proof,
 .benefits,
 .compare,
 .faq,
@@ -48,36 +47,9 @@
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-end;
   gap: 0.75rem;
   margin-top: 2rem;
-}
-
-/* The install command reads as a field next to the primary button. */
-.install {
-  flex: 0 1 auto;
-  min-width: 0;
-  border-radius: 999px;
-}
-
-.install pre {
-  padding: 0.7rem 3.25rem 0.7rem 1.25rem;
-  font-size: 0.88rem;
-  line-height: 1.5;
-  border-radius: 999px;
-  white-space: pre;
-}
-
-.install-prompt {
-  color: var(--ctf);
-  user-select: none;
-}
-
-.install .copy {
-  top: 50%;
-  right: 0.35rem;
-  translate: 0 -50%;
-  border-radius: 999px;
 }
 
 /* Demo: three examples, each compiled by the real compiler at build time. */
@@ -221,35 +193,6 @@
   font-size: 0.9rem;
   font-weight: 500;
   color: var(--ink-soft);
-}
-
-/* Proof */
-
-.proof {
-  margin-top: clamp(2.5rem, 5vw, 3.5rem);
-}
-
-.proof ul {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem 2.5rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  color: var(--ink-soft);
-}
-
-.proof strong {
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-}
-
-.proof a {
-  text-decoration: none;
-}
-
-.proof a:hover strong {
-  color: var(--ctf);
 }
 
 /* Benefits */
@@ -444,7 +387,8 @@
     justify-content: center;
   }
 
-  .hero-actions > * {
+  .hero-actions > .button,
+  .hero-actions .install-group {
     width: 100%;
   }
 }

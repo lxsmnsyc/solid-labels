@@ -1,6 +1,6 @@
 // Runs in the browser before hydration. Pages are static HTML, so the work
 // here is small: a few behaviors that attach to markup the server rendered.
-export {};
+import { onPackageManagerClick, syncPackageManagerButtons } from './lib/package-manager';
 
 function setupTheme(): void {
   const button = document.querySelector('[data-theme-toggle]');
@@ -130,6 +130,8 @@ function setupSearch(): void {
 }
 
 function start(): void {
+  syncPackageManagerButtons();
+  document.addEventListener('click', onPackageManagerClick);
   setupTheme();
   setupCopy();
   setupContents();
