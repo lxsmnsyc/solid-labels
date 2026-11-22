@@ -1,6 +1,6 @@
 # Getting started
 
-`solid-labels` targets Solid 2.0 (`solid-js@2.0.0-rc.21` and `@solidjs/web@2.0.0-rc.21`). For Solid 1.x, use `solid-labels@0.17` or older.
+`solid-labels` targets Solid 2.0 (`solid-js@^2.0.0` and `@solidjs/web@^2.0.0`). For Solid 1.x, use `solid-labels@0.17` or older.
 
 ## Install
 
