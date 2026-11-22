@@ -7,15 +7,7 @@
 Add the compiler and the plugin for your bundler.
 
 ```sh
-pnpm add -D solid-labels unplugin-solid-labels
-```
-
-```sh
 npm install -D solid-labels unplugin-solid-labels
-```
-
-```sh
-yarn add -D solid-labels unplugin-solid-labels
 ```
 
 Tell TypeScript about the compile-time functions in any `.d.ts` file of your project.
@@ -126,7 +118,7 @@ count += 1;
 console.log(count);
 ```
 
-Reads become `count()`. Writes become `setcount_1(...)`. Open the [REPL](/repl) to try your own code.
+Reads become `count()`. Writes become `setcount_1(...)`. Edit the source above to see the output change, or open the [REPL](/repl) for a whole component with a live preview.
 
 ## Options
 

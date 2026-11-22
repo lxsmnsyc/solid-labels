@@ -48,6 +48,9 @@ export function Layout(props: { route: Route; children: JSX.Element }): JSX.Elem
           >
             Docs
           </a>
+          <a href="/repl" aria-current={props.route.path === '/repl' ? 'page' : undefined}>
+            REPL
+          </a>
         </nav>
         <button
           type="button"

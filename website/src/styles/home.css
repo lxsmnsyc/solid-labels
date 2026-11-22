@@ -1,0 +1,409 @@
+/* The home page. Sections share one width and left edge. */
+.hero,
+.benefits,
+.compare,
+.faq,
+.closing {
+  max-width: var(--page);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* Hero */
+
+.hero {
+  padding-top: clamp(2.5rem, 7vw, 5rem);
+}
+
+.hero-copy {
+  max-width: 52rem;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(2.6rem, 7.5vw, 5.5rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.035em;
+}
+
+.hero h1 em {
+  color: var(--gen);
+}
+
+.lead {
+  max-width: 40rem;
+  margin: 1.5rem 0 0;
+  font-size: clamp(1.1rem, 2vw, 1.25rem);
+  color: var(--ink-soft);
+}
+
+.lead code {
+  font-size: 0.9em;
+  font-weight: 600;
+  color: var(--ctf);
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+/* Demo: three examples, each compiled by the real compiler at build time. */
+
+.demo {
+  margin-top: clamp(2.5rem, 6vw, 4rem);
+}
+
+.demo-tabs {
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border-radius: 999px;
+  background: var(--bg-sunk);
+}
+
+.demo-tabs input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.demo-tabs label {
+  display: inline-grid;
+  place-items: center;
+  min-height: 2.5rem;
+  padding: 0 1.1rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition:
+    color 0.15s ease-out,
+    background-color 0.15s ease-out,
+    transform 0.15s ease-out;
+}
+
+.demo-tabs label:hover {
+  color: var(--ink);
+}
+
+.demo-tabs label:active {
+  transform: scale(0.96);
+}
+
+.demo-tabs input:checked + label {
+  background: var(--bg-raised);
+  color: var(--ink);
+}
+
+.demo-tabs input:focus-visible + label {
+  outline: 2px solid var(--ctf);
+  outline-offset: 2px;
+}
+
+.demo-panel {
+  display: none;
+}
+
+.demo-panel .pair {
+  margin: 1.25rem 0 0;
+}
+
+.demo:has(.demo-tabs input:nth-of-type(1):checked) .demo-panel:nth-child(1),
+.demo:has(.demo-tabs input:nth-of-type(2):checked) .demo-panel:nth-child(2),
+.demo:has(.demo-tabs input:nth-of-type(3):checked) .demo-panel:nth-child(3),
+.demo:has(.demo-tabs input:nth-of-type(4):checked) .demo-panel:nth-child(4) {
+  display: block;
+}
+
+/* Without :has, show the first example. */
+@supports not selector(:has(*)) {
+  .demo-panel:first-child {
+    display: block;
+  }
+
+  .demo-tabs {
+    display: none;
+  }
+}
+
+.demo .code pre {
+  font-size: 0.9rem;
+  min-height: 100%;
+}
+
+.demo .code {
+  display: flex;
+  flex-direction: column;
+}
+
+.demo .code pre {
+  flex: 1;
+}
+
+/*
+ * Each time an example shows, a line sweeps down the output once, as if the
+ * compiler wrote it. The output fades in behind the line.
+ */
+.demo-panel .out-prod {
+  overflow: hidden;
+}
+
+.demo-panel .out-prod pre {
+  animation: compile-in 0.5s ease-out both;
+}
+
+.demo-panel .out-prod::before {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  border-bottom: 2px solid var(--gen);
+  background: linear-gradient(transparent 60%, var(--gen-wash));
+  pointer-events: none;
+  transform: translateY(-100%);
+  animation: compile-sweep 0.6s ease-in-out;
+}
+
+@keyframes compile-in {
+  from {
+    opacity: 0.15;
+  }
+}
+
+@keyframes compile-sweep {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0%);
+    opacity: 0;
+  }
+}
+
+.quiet-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+
+/* Benefits */
+
+.benefits {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 3rem 4rem;
+  margin-top: clamp(4rem, 9vw, 7rem);
+}
+
+.benefit h2 {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+.benefit p {
+  margin: 0;
+  color: var(--ink-soft);
+}
+
+.benefit .benefit-proof {
+  margin-bottom: 0.6rem;
+  color: var(--ink);
+}
+
+.benefit code,
+.closing code,
+.compare :not(pre) > code,
+.faq code {
+  padding: 0.1em 0.35em;
+  border-radius: 5px;
+  background: var(--bg-sunk);
+  font-size: 0.86em;
+}
+
+/* Comparison */
+
+.compare,
+.faq {
+  margin-top: clamp(4rem, 9vw, 7rem);
+}
+
+.compare h2,
+.faq h2 {
+  margin: 0 0 1.5rem;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+}
+
+.compare-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem 1.5rem;
+}
+
+.compare-grid .code {
+  flex: 1;
+}
+
+.compare-label-hand::before {
+  background: var(--ink-soft);
+}
+
+.compare-count {
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+}
+
+.table-scroll {
+  margin-top: 2rem;
+  overflow-x: auto;
+}
+
+.compare-table {
+  width: 100%;
+  min-width: 34rem;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.compare-table th,
+.compare-table td {
+  padding: 0.75rem 1rem 0.75rem 0;
+  border-bottom: 1px solid var(--rule);
+  text-align: left;
+  vertical-align: top;
+}
+
+.compare-table thead th {
+  font: 600 0.75rem var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.compare-table tbody th {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.compare-table code {
+  white-space: nowrap;
+}
+
+.compare-note {
+  margin: 1rem 0 0;
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+}
+
+/* Questions */
+
+.faq-list {
+  max-width: 48rem;
+}
+
+.faq details {
+  border-bottom: 1px solid var(--rule);
+}
+
+.faq summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 3.5rem;
+  padding: 0.75rem 0;
+  font-weight: 600;
+  font-size: 1.05rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.faq summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq summary:hover {
+  color: var(--ctf);
+}
+
+.faq-icon {
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--ink-soft);
+  transition: transform 0.2s ease-out;
+}
+
+.faq details[open] .faq-icon {
+  transform: rotate(180deg);
+}
+
+.faq details p {
+  margin: 0 0 1.25rem;
+  color: var(--ink-soft);
+}
+
+/* Closing call to action */
+
+.closing {
+  margin-top: clamp(4rem, 9vw, 7rem);
+  padding-top: clamp(2.5rem, 5vw, 4rem);
+  border-top: 1px solid var(--rule);
+}
+
+.closing h2 {
+  margin: 0;
+  font-size: clamp(1.8rem, 4.5vw, 3rem);
+}
+
+.closing-lead {
+  margin: 0.75rem 0 0;
+  color: var(--ink-soft);
+}
+
+.closing-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  margin: 1.25rem 0 0;
+}
+
+@media (max-width: 760px) {
+  .benefits,
+  .compare-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hero-actions .button {
+    justify-content: center;
+  }
+
+  .hero-actions > .button,
+  .hero-actions .install-group {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .demo-panel .out-prod pre,
+  .demo-panel .out-prod::before {
+    animation: none;
+  }
+
+  .demo-panel .out-prod::before {
+    display: none;
+  }
+}
+
+.not-found {
+  padding-bottom: 6rem;
+}
